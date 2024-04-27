@@ -423,12 +423,115 @@ Note- Rest parameter should always be used at the last parameter of a function:
 
 Spread operator (…): Although the syntax of the spread operator is exactly the same as the rest parameter, the spread operator is used to spreading an array, and object literals. We also use spread operators where one or more arguments are expected in a function call.
 
+Key differences between rest parameter and spread operator:
+
+Rest parameter is used to take a variable number of arguments and turns them into an array while the spread operator takes an array or an object and spreads it
+Rest parameter is used in function declaration whereas the spread operator is used in function calls.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Classes
+
+Classes are a template for creating objects. They encapsulate data with code to work on that data. Classes in JS are built on prototypes but also have some syntax and semantics that are unique to classes.
+
+Unlike functions, classes are not hoisted. A class cannot be used before it is declared.
+A class can inherit properties and methods from other classes by using the extend keyword.
+All the syntaxes inside the class must follow the strict mode(‘use strict’) of javascript. An error will be thrown if the strict mode rules are not followed
+
+Class body
+The body of a class is the part that is in curly braces {}. This is where you define class members, such as methods or constructor.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Constructor
+The constructor method is a special method for creating and initializing an object created with a class. There can only be one special method with the name "constructor" in a class — a SyntaxError is thrown if the class contains more than one occurrence of a constructor method.
+
+A constructor can use the super keyword to call the constructor of the super class.
+
+You can create instance properties inside the constructor:
+
+A class method called constructor cannot be a getter, setter, async, or generator.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Generator
+
+Generators generate value on the fly which means whenever there is a need for that value then only it will be generated. It means the value is generated but not stored in memory so it takes less time to execute. It uses asterick (*) symbol after the keyword function i.e. function* to tell javaScript it is a generator function. The generator function returns the object.
+
+Use cases:
+
+It uses in infinite loop and does not stop computer or freeze your program.
+It uses as iterator.
+It has special type of return keyword i.e. Yield. The purpose yield is to run some code then return value, run some more code and return value like that.
+--------------------------------------------------------------------------------------------------------------------------------
+JavaScript WeakSet
+
+JavaScript WeakSet is used to store a collection of objects. It adapts the same properties of that of a set i.e. does not store duplicates. The major difference of a WeakSet with a set is that a WeakSet is a collection of objects and not values of some particular type. 
+--------------------------------------------------------------------------------------------------------------------------------
+What is a WeakMap?
+
+A WeakMap is a collection of key/value pairs where the keys are objects and values are any JavaScript object.
+
+It is similar to Map with some differences:
+
+It is not enumerable and the keys are private in nature.
+Allows garbage collection of any values if keys are not referenced from somewhere other than a WeakMap.
+Only objects are allowed as keys.
+It depends on garbage collection, introducing non-determinism.
+Note: Keys cannot be Primitive data type (E.g. a string cannot be a WeakMap key).
+--------------------------------------------------------------------------------------------------------------------------------
+What is Object Destructuring?
+
+Object destructuring is a new way to extract elements from an object or an array.
+eg - syntax
+const classDetails = {
+  strength: 78,
+  benches: 39,
+  blackBoard:1
+}
+
+const {strength:classStrength, benches:classBenches,blackBoard:classBlackBoard} = classDetails;
+
+console.log(classStrength); // Outputs 78
+console.log(classBenches); // Outputs 39
+console.log(classBlackBoard); // Outputs 1
+
+Array destructuring
+
+const arr = [1, 2, 3, 4];
+const [first,second,third,fourth] = arr;
+console.log(first); // Outputs 1
+console.log(second); // Outputs 2
+console.log(third); // Outputs 3
+console.log(fourth); // Outputs 4
+
+--------------------------------------------------------------------------------------------------------------------------------
+ Difference between Async/Await and Generators usage to achieve the same functionality.
+ 
+Generator functions are run by their generator yield by yield which means one output at a time, whereas Async-await functions are executed sequentially one after another.
+Async/await provides a certain use case for Generators easier to execute.
+The output result of the Generator function is always value: X, done: Boolean, but the return value of the Async function is always an assurance or throws an error
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
 
 
 
---------------------------------------------------------------------------------------------------------------------------------
 
 
---------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
