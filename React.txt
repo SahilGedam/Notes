@@ -1,0 +1,57 @@
+A browser cannot understand JSX syntax.
+This means that making a browser understand React code requires a lot of supporting technologies.
+
+An example of such a technology is a transpiler.
+
+A transpiler takes a piece of code and transforms it into some other code.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Single-Page Apps
+A Single Page Application allows the user to interact with the website without downloading entire new webpages. Instead, it rewrites the current webpage as the user interacts with it. The outcome is that the application will feel faster and more responsive to the user.
+--------------------------------------------------------------------------------------------------------------------------------
+
+Conditional Rendering
+
+Rendering components Conditionally using data from states
+eg - using ternary operators to decide which component to display
+eg - using if else statements to decide which component to display
+   if (weekday) {
+        message = <Workdays />
+    } else if (weekend) {
+        message = <Weekends />
+    } else {
+        message = <ErrorComponent />
+    }
+
+Conditional rendering using the logical AND operator
+     <div>
+            <h1>Please don't type in a zero</h1>
+            {val &&
+                <h2>Yay, no 0 was typed in!</h2>
+            }
+        </div>
+
+--------------------------------------------------------------------------------------------------------------------------------
+Assets
+
+all the files used in the application
+kept in Assets folder or public folder
+
+--------------------------------------------------------------------------------------------------------------------------------
+Bundling is a process that takes all the imported files in an app and joins them into a single file, referred to as a bundle. Several tools can perform this bundling.
+
+In development mode, webpack bundles your files and optimizes your bundles for updates - so that any updates to any of the files in your locally developed app are quickly re-bundled. It also builds source maps so you can inspect the original file included in the bundled code.
+
+In production mode, webpack bundles your files so that they are optimized for speed. This means the files are minified and organized to take up the least amount of memory. So, they are optimized for speed because these bundles are fast to download when a user visits the website online.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+3 ways to add images
+1. import => import image name from images folder , use it directly  in src tag
+2. require => add image by require(../.) in src attribute
+2. image url => use a variable to store url , use variable in src tag
+
+videos =>
+npm install react-player
+
+--------------------------------------------------------------------------------------------------------------------------------

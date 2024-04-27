@@ -1,0 +1,97 @@
+What is JavaScript ?
+JavaScript is a lightweight, cross-platform, single-threaded, and interpreted compiled programming language. It is also known as the scripting language for webpages. It is well-known for the development of web pages, and many non-browser environments also use it.
+
+JavaScript is a weakly typed language (dynamically typed). JavaScript can be used for Client-side developments as well as Server-side developments. JavaScript is both an imperative and declarative type of language. JavaScript contains a standard library of objects, like Array, Date, and Math, and a core set of language elements like operators, control structures, and statements. 
+--------------------------------------------------------------------------------------------------------------------------------
+
+What is Memoization?
+In programming, memoization is an optimization technique that makes applications more efficient and hence faster. It does this by storing computation results in cache, and retrieving that same information from the cache the next time it's needed instead of computing it again.
+
+In simpler words, it consists of storing in cache the output of a function, and making the function check if each required computation is in the cache before computing it.
+
+A cache is simply a temporary data store that holds data so that future requests for that data can be served faster.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Promises
+
+promise is an object representing eventual completion or failure of an asynchronous operation. ( defination from mdn docs)
+
+A Promise is in one of these states:
+
+pending: initial state, neither fulfilled nor rejected.
+fulfilled: meaning that the operation was completed successfully.
+rejected: meaning that the operation failed.
+
+- promise objects are immutable - can never be changed/updated 
+
+
+Chained Promises
+The methods Promise.prototype.then(), Promise.prototype.catch(), and Promise.prototype.finally() are used to associate further action with a promise that becomes settled. As these methods return promises, they can be chained.
+
+The .then() method takes up to two arguments; the first argument is a callback function for the fulfilled case of the promise, and the second argument is a callback function for the rejected case. Each .then() returns a newly generated promise object, which can optionally be used for chaining;
+
+error handling-
+.catch() is really just a .then() without a slot for a callback function for the case when the promise is fulfilled.
+----------------------------------------------------------------
+Promise concurrency-
+The Promise class offers four static methods to facilitate async task 
+
+Promise.all()
+Fulfills when all of the promises fulfill; rejects when any of the promises rejects.
+
+Promise.allSettled()
+Fulfills when all promises settle.
+
+Promise.any()
+Fulfills when any of the promises fulfills; rejects when all of the promises reject.
+
+Promise.race()
+Settles when any of the promises settles. In other words, fulfills when any of the promises fulfills; rejects when any of the promises rejects.
+---------------
+Promise.reject()
+Returns a new Promise object that is rejected with the given reason.
+
+Promise.resolve()
+Returns a Promise object that is resolved with the given value. If the value is a thenable (i.e. has a then method), the returned promise will "follow" that thenable, adopting its eventual state; otherwise, the returned promise will be fulfilled with the value.
+
+Promise.withResolvers()
+Returns an object containing a new Promise object and two functions to resolve or reject it, corresponding to the two parameters passed to the executor of the Promise() constructor.
+--------------------------------------------------------------------------------------------------------------------------------
+setTimeOut()
+it forms closure with the function it is in -> when the timer completes-> js by pass by refrence uses the value from the function 
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+What are diffrent data types in JavaScript ?
+
+To know the type of a JavaScript variable, we can use the typeof operator.
+
+1. Primitive type - String , Number , Boolean, BigInt , Undefined , Null , Symbol 
+
+        typeof of primitive types :
+        typeof "John Doe" // Returns "string"
+        typeof 3.14 // Returns "number"
+        typeof true // Returns "boolean"
+        typeof 234567890123456789012345678901234567890n // Returns bigint
+        typeof undefined // Returns "undefined"
+        typeof null // Returns "object" (kind of a bug in JavaScript)
+        typeof Symbol('symbol') // Returns Symbol
+
+2.Non-primitive types 
+    Primitive data types can store only a single value. To store multiple and complex values, non-primitive data types are used.
+    Object - Used to store collection of data.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Hoisting 
+
+JavaScript Hoisting refers to the process whereby the interpreter appears to move the declaration of functions, variables, classes, or imports to the top of their scope, prior to execution of the code.
+
+Features of Hoisting
+Declarations are hoisted, not initializations.
+Allows calling functions before their declarations.
+All variable and function declarations are processed before any code execution.
+Undeclared variables are implicitly created as global variables when assigned a value.
+
+--------------------------------------------------------------------------------------------------------------------------------
