@@ -1,0 +1,393 @@
+
+What is Angular? / What do you know about Angular?
+Angular is one of the most popular JavaScript frameworks developed and maintained by Google. It is an open-source front-end web framework based on TypeScript. It is most suited for developing enterprise web applications because its code is reusable and maintainable.
+--------------------------------------------------------------------------------------------------------------------------------
+What are some powerful features integrated into Angular?
+Angular integrates some powerful features like declarative templates, end to end tooling, dependency injection and various other best practices that smoothens the development path.
+--------------------------------------------------------------------------------------------------------------------------------
+What is the main purpose of Angular?
+he main purpose of using Angular is to create fast, dynamic and scalable web applications. We can create these applications very easily with Angular using components and directives.
+
+Angular was started as a SPA (Single-Page-Application) framework, and now it supports dynamic content based on different users through dependency injection. It provides a platform for easy development of web-based applications and empowers the front end developers in curating cross-platform applications. YouTubeTV is the most popular example that uses Angular.
+--------------------------------------------------------------------------------------------------------------------------------
+What are the biggest advantages of using Angular?
+Angular supports two-way data-binding.
+It follows MVC pattern architecture.
+It supports static templates and Angular template.
+It facilitates you to add a custom directive.
+It also supports RESTfull services.
+Validations are supported in Angular.
+Angular provides client and server communication.
+It provides support for dependency injection.
+It provides powerful features like Event Handlers, Animation, etc.
+--------------------------------------------------------------------------------------------------------------------------------
+What do you understand by Angular expressions? How are Angular expressions different from JavaScript expressions?
+Angular expressions are code snippets that are used to bind application data to HTML. Angular resolves the expressions, and the result is returned to where the expression is written. Angular expressions are usually written in double braces: {{ expression }} similar to JavaScript.
+
+Syntax:
+
+{{ expression }}
+1. The most crucial difference between Angular expressions and JavaScript expressions is that the Angular expressions allow us to write JavaScript in HTML. On the other hand, the JavaScript expressions don't allow.
+
+2. The Angular expressions are evaluated against a local scope object. On the other hand, the JavaScript expressions are evaluated against the global window object.
+3. The Angular expressions can handle null and undefined, whereas JavaScript expressions cannot.
+4. In Angular expressions, we cannot use loops, conditionals, and exceptions. The difference which makes Angular expressions quite beneficial is the use of pipes. Angular uses pipes (known as filters in AngularJS) to format data before displaying it.
+--------------------------------------------------------------------------------------------------------------------------------
+What is the difference between an Annotation and a Decorator in Angular?
+In Angular, annotations are the "only" metadata set of the class using the Reflect Metadata library. They are used to create an "annotation" array. On the other hand, decorators are the design patterns used for separating decoration or modification of a class without actually altering the original source code.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Each component is declared with three properties:
+
+Selector - It is used to access the component.
+Template/TemplateURL - It contains HTML of the component.
+StylesURL - It contains component-specific stylesheets.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are the different Lifecycle hooks of Angular?
+
+When the Angular components are created, they enter their lifecycle and remain when they are destroyed. Angular Lifecycle hooks are used to check the phases and trigger changes at specific phases during the entire duration.
+ngOnChanges( ): This method is called when one or more input properties of the component are changed. The hook receives a SimpleChanges object containing the previous and current values of the property.
+
+ngOnInit( ): This is the second lifecycle hook. It is called once, after the ngOnChanges hook. It is used to initialize the component and sets the input properties of the component.
+
+ngDoCheck( ): This hook is called after ngOnChanges and ngOnInit and is used to detect and act on changes that Angular cannot detect. In this hook, we can implement our change detection algorithm.
+
+ngAfterContentInit( ): This hook is called after the first ngDoCheck hook. This hook responds after the content gets projected inside the component.
+
+ngAfterContentChecked( ): This hook is called after ngAfterContentInit and every subsequent ngDoCheck. It responds after the projected content is checked.
+
+ngAfterViewInit( ): This hook is called after a component's view or initializing a child component's view.
+
+ngAfterViewChecked( ): This hook is called after ngAfterViewInit. It responds after the component's view or when the child component's view is checked.
+
+ngOnDestroy( ): This hook is called just before Angular destroys the component. This is used to clean up the code and detach event handlers.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is AOT in Angular?
+In Angular, AOT stands for Ahead-Of-Time compiler. It is used to convert your Angular HTML and TypeScript code into efficient JavaScript code during the build phase before the browser downloads and runs that code. By compiling the application during the build process provides a faster rendering in the browser.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is the difference between Observables and Promises in Angular?
+
+Promise
+It emits a single value.
+Not Lazy
+We can not cancel
+it.
+
+Observable
+It emits multiple values over a period of time.
+Lazy. An observable is not called until we subscribe to the observable.
+We can cancel it by using the unsubscribe() method.
+Observable provides operators like map, forEach, filter, reduce, retry, retryWhen etc.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are directives in Angular?
+A directive is a class in Angular that is declared with a @Directive decorator. Every directive has its own behavior, and you can import them into various components of an application.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is lazy loading in Angular?
+
+Lazy loading is one of the most powerful and useful concepts of Angular Routing. It makes the web pages easy to download by downloading them in chunks instead of downloading everything in a big bundle. Lazy loading facilitates asynchronously loading the feature module for routing whenever required using the property loadChildren.
+
+eg-
+const routes: Routes = [  
+  {  
+    path: 'employees',  
+    loadChildren: () => import('./employees/employees.module').then(module => module.EmployeesModule)  
+  },  ]
+--------------------------------------------------------------------------------------------------------------------------------
+What is Angular Router?
+Angular Router is a mechanism that facilitates users to navigate from one view to the next as users perform application tasks. It follows the concept model of browser's application navigation.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What do you understand by RouterOutlet and RouterLink?
+
+A RouterOutlet is a directive from the router library that acts as a placeholder. It marks the spot in the template where the Router should display the components for that outlet. Router outlet is used as a component.
+<router-outlet></router-outlet>  
+
+On the other hand, a RouterLink is a directive on the anchor tags that gives the router control over those elements. Since the navigation paths are fixed, you can assign string values to router-link directive as below,
+
+ <a routerLink="/todosList" >List of todos</a>  
+--------------------------------------------------------------------------------------------------------------------------------
+The RouterLinkActive is a directive used to toggle CSS classes for active RouterLink bindings based on the current RouterState. i.e., the Router will add CSS classes when this link is active and remove them when the link is inactive.
+
+  <a routerLink="/todosList" routerLinkActive="active">List of todos</a>  
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is HttpClient, and what are the advantages of it?
+Most front-end applications use either XMLHttpRequest interface or the fetch() API to communicate with backend services over HTTP protocol. For the same purpose, Angular provides a simplified client HTTP API known as HttpClient. This is based on top of XMLHttpRequest interface. This HttpClient is available in the @angular/common/http package, which you can import in your root module as follows:
+import { HttpClientModule } from '@angular/common/http';  
+
+Following are some of the crucial advantages of HttpClient:
+
+HttpClient contains testability features.
+It provides typed request and response objects.
+It can intercept requests and responses.
+It supports Observalbe APIs.
+HttpClient also supports streamlined error handling.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is the best way to perform Error handling in Angular?
+Error is when the request fails on the server or fails to reach the server due to network issues. In this condition, HttpClient returns an error object instead of a successful response. To resolve this issue, we must handle the component by passing the error object as a second callback to the subscribe() method.
+
+eg -
+fetchUser() {  
+  this.userService.getProfile()  
+    .subscribe(  
+      (data: User) => this.userProfile = { ...data }, // success path  
+      error => this.error = error // error path  
+    );  
+}  
+
+--------------------------------------------------------------------------------------------------------------------------------
+What do you understand by Angular bootstrapping?
+Angular bootstrapping is nothing but to allow developers to initialize or start the Angular application. Angular supports two types of bootstrapping:
+
+Manual bootstrapping
+Automatic bootstrapping
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is the purpose of AsyncPipe in Angular?
+The AsyncPipe is used to subscribe to an observable or promise and return the latest value it has emitted. When a new value is emitted, the pipe marks the component that has been checked for changes.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What do you understand by services in Angular?
+In Angular, services are singleton objects that get instantiated only once during the lifetime of an application. An Angular service contains methods that are used to maintain the data throughout the life of an application. Angular services are used to organize as well as share business logic, models, or data and functions with various components of an Angular application.
+
+Angular services offer some functions that can be invoked from an Angular component, such as a controller or directive
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is the key difference between a constructor and ngOnInit?
+Constructor is a default method in TypeScript classes that are normally used for the initialization purpose. On the other hand, the ngOnInit is specifically an Angular method and is used to define Angular bindings. Even though constructors are getting called first, it is always preferred to move all of your Angular bindings to the ngOnInit method.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What do you understand by observable and observer in Angular?
+Observable: An observable is a unique object just like a promise that that is used to manage async code. Observables are not part of the JavaScript language so the developers have to rely on a popular Observable library called RxJS. The observables are created using the new keyword.
+Observer: Any object that has to be notified when the state of another object changes is called an observer. An observer is an interface for push-based notifications delivered by an Observable.
+--------------------------------------------------------------------------------------------------------------------------------
+What are the different types of directives in Angular?
+There are mainly three types of directives in Angular:
+
+Component Directives: The component directives are used to form the main class in directives. To declare these directives, we have to use the @Component decorator instead of @Directive decorator. These directives have a view, a stylesheet and a selector property.
+
+Structural directives: These directives are generally used to manipulate DOM elements. The structural directive has a ' * ' sign before them. We can apply these directives to any DOM element.
+
+Following are some example of built-in structural directives:
+
+*ngIf Structural Directive: *ngIf is used to check a Boolean value and if it's truthy, the div element will be displayed.
+
+<div *ngIf="isReady" class="display_name">  
+          {{name}}  
+      </div>  
+*ngFor Structural Directive: *ngFor is used to iterate over a list and display each item of the list.
+
+<div class="details" *ngFor="let x of details" >  
+    <p>{{x.name}}</p>  
+    <p> {{x.address}}</p>  
+    <p>{{x.age}}</p>  
+</div>  
+Attribute Directives: The attribute directives are used to change the look and behavior of a DOM element. Let's create an attribute directive to understand it well:
+
+This is how we can create a custom directive:
+
+Go to the command terminal, navigate to the directory of the angular app and type the following command to generate a directive:
+
+ng g directive yellowBackground   
+This will generate the following directive. Manipulate the directive to look like this:
+
+import { Directive, ElementRef } from '@angular/core';  
+@Directive({  
+ selector: '[appYellowBackground]'  
+})  
+export class YellowBackgroundDirective {  
+ constructor(el:ElementRef) {  
+   el.nativeElement.style.backgroundColor = "yellow";  
+ }  
+}  
+Now, you can easily apply the above directive to any DOM element:
+
+<p appYellowBackground>Hello JavaTpoint</p>  
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are string interpolation and property binding in Angular?
+String interpolation and property binding are parts of data-binding in Angular. Data-binding is a feature of Angular, which is used to provide a way to communicate between the component (Model) and its view (HTML template). There are two ways of data-binding, one-way data binding and two-way data binding. In Angular, data from the component can be inserted inside the HTML template. Any changes in the component will directly reflect inside the HTML template in one-way binding, but vice-versa is not possible. On the other hand, it is possible in two-way binding.
+
+String interpolation and property binding both are examples of one-way data binding. They allow only one-way data binding.
+
+String Interpolation: String interpolation uses the double curly braces {{ }} to display data from the component. Angular automatically runs the expression written inside the curly braces. For example, {{ 5+5 }} will be evaluated by Angular, and the output will be 10. This output will be displayed inside the HTML template.
+
+Property Binding: Property binding is used to bind the DOM properties of an HTML element to a component's property. In property binding, we use the square brackets [ ] syntax.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is Dependency Injection in Angular?
+Dependency injection is an application design pattern that is implemented by Angular. It is used to form the core concepts of Angular. Dependencies are services in Angular which have some specific functionality. Various components and directives in an application can need these functionalities of the service. Angular provides a smooth mechanism by which these dependencies are injected into components and directives.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is data binding?
+In Angular, data binding is one of the most powerful and important features that allow you to define the communication between the component and DOM(Document Object Model). It basically simplifies the process of defining interactive applications without having to worry about pushing and pulling data between your view or template and component. In Angular, there are four forms of data binding:
+
+ String Interpolation
+Property Binding
+Event Binding
+Two-Way Data Binding
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+How does one share data between components in Angular?
+Data Sharing Between Angular Components
+Parent to Child: via Input
+Child to Parent: via Output() and EventEmitter
+Child to Parent: via ViewChild
+Unrelated Components: via a Service
+--------------------------------------------------------------------------------------------------------------------------------
+What is Eager and Lazy Loading?
+The application module i.e. AppModule is loaded eagerly before application starts. Whereas there is something called feature modules which holds all the features of each module which can be loaded in two ways namely eagerly or lazily or even preloaded in some cases.
+
+Eager loading:
+To load a feature module eagerly we need to import it into an application module using imports metadata of @NgModule decorator. Eager loading is highly used in small size applications. In eager loading, all the feature modules will be loaded before the application starts.This is the reason the subsequent request to the application will always be faster.
+
+Lazy loading:
+To load a feature module lazily we need to load it using loadChildren property in route configuration and that feature module must not be imported in the application module. Lazy loading generally is useful when the application is growing in size. In lazy loading, feature modules will be loaded on demand and hence application start will be faster.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Explain Components, Modules and Services in Angular
+Modules, components and services are classes that use decorators. These decorators mark their type and provide metadata that tells Angular how to use them. The metadata for a component class associates it with a template that defines a view.
+
+Components:
+We have one or more components at the heart of every Angular App. In fact, in the real world, we create complicated apps that contain tens of components. The data, HTML markup, and logic for a view behind the view are all encapsulated in a Component. Component-based design is embraced by Angular, allowing us to work on smaller, more maintainable portions that may also be reused in different places.
+Every application must have at least one component, referred to as the appcomponent or root component. Starting with the appcomponent, a real-world Angular app is effectively a tree of components.
+Modules:
+A module is a container that holds a collection of connected components. Every angular app contains at least one module, which we refer to as the app module. We may want to divide our modules into smaller, more maintainable modules as our application expands. As the programme expands, we will need to subdivide our app module into smaller modules, each of which will be responsible for a different section. It has components that are connected.
+Service:
+Angular services are singleton objects that are instantiated only once during an application’s lifetime. They include methods for preserving data during the life of an application, i.e., data is not refreshed and is always available.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Explain the @Component Decorator
+A component decorator(@Component) lets you mark a class as an Angular component and add metadata that controls how the component is processed, instantiated, and used at runtime. Components are the most fundamental building blocks of an Angular application’s user interface
+
+--------------------------------------------------------------------------------------------------------------------------------
+On which types of the component can we create a custom directive?
+Angular provides support to create custom directives for the following:
+
+Element directives − Directive activates when a matching element is encountered.
+Attribute − Directive activates when a matching attribute is encountered.
+CSS − Directive activates when a matching CSS style is encountered.
+Comment − Directive activates when a matching comment is encountered
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are the different types of filters in Angular?
+Below are the various filters supported by Angular:
+
+currency: Format a number to a currency format.
+date: Format a date to a specified format.
+filter: Select a subset of items from an array.
+json: Format an object to a JSON string.
+limit: To Limits an array/string, into a specified number of elements/characters.
+lowercase: Format a string to lower case.
+number: Format a number to a string.
+orderBy: Orders an array by an expression.
+uppercase: Format a string to upper case.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What do you understand by REST in Angular?
+REST stands for REpresentational State Transfer. REST is an API (Application Programming Interface) style that works on the HTTP request. In this, the requested URL pinpoints the data that needs to be processed. Further ahead, an HTTP method then identifies the specific operation that needs to be performed on that requested data. Thus, the APIs which follows this approach are known as RESTful APIs.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are Angular directives?
+Directives are classes in Angular that add custom behavior to elements and components. They enable developers to create reusable components that can be utilized across different parts of an application.
+
+In Angular, there are three different kinds of directives:
+
+Component directives: These are directives that define new custom elements, which can be used as UI components in an Angular application.
+
+Attribute directives: These are directives that modify the behavior or appearance of an existing element by changing the appearance of attributes.
+
+Structural directives: These are directives that change the template's structure by adding, removing, or modifying DOM elements.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Explain two-way data binding in Angular
+Two-way data binding in Angular is a feature that enables automatic data synchronization between the view and the model. It allows data to flow in both directions between the component class and the template. This implies that any changes made to the view (user interface) are mirrored instantly in the underlying model (data source), and vice versa.
+
+We can achieve two-way data binding in Angular via a combination of property binding and event binding. The [(ngModel)] directive, imported from the FormsModule, is utilized to bind the value of an input element in the template to a property in the component class.
+
+--------------------------------------------------------------------------------------------------------------------------------
+How would you define a Single Page Application (SPA)?
+A Single Page Application (SPA) is a web application that dynamically updates the current web page without requiring a full page reload. We create a SPA in Angular using the Angular framework and it consists of a single HTML page, which is dynamically updated with new data from the server as the user engages with the system.
+
+This approach ensures a seamless and smooth user experience akin to a desktop application. The navigation and data exchange between components occurs without page reloading, translating into faster and more responsive web applications.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are annotations?
+Annotations are ways of adding metadata to a class or its members using decorators. The decorators are a TypeScript feature — the language used to write Angular applications.
+
+Annotations are specifically used to supply information to the Angular compiler on how to process a class and/or its members. We may use them to specify various things, such as the class's dependencies, how it should be injected, and how it can be used in templates.
+
+To add annotations to classes, methods, and properties, we use the @ symbol followed by the decorator name
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is a service in Angular and how is it used?
+A service in Angular is a TypeScript class that is used to share data and functionality among many components, directives, or other services in an application. We can utilize services to encapsulate logic for handling data caching, making API calls, or executing other tasks that require sharing across multiple components.
+
+Services are injected into components via a dependency injection — which is a design pattern that allows loose coupling between components. 
+
+To use a service in Angular, you must first define it by creating a class that implements the service's functionality. Then, you have to register the service with the Angular injector by adding it to the provider's array of the module that will utilize it. After service registration, you can inject it into any component or other service that needs it.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+What is the purpose of the ngForOf directive?
+The shorthand form ngFor is commonly used for the ngForOf directive in Angular. It is used to iterate over a collection of data and create a template for each item in the collection. The ngFor directive is mainly utilized to display a list of items, such as a list of products, shopping items, or comments.
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
