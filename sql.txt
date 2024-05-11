@@ -1,0 +1,61 @@
+(DBMS)---- is a software application that interacts with the user, applications, and database to capture and analyze data.
+RDBMS--a collection of data items with pre-defined relationships between them.
+
+DDl-- create,alter,drop,truncate,rename
+DML-- insert,update,delete
+DQL- select
+DCL---commit,grant,rollback,
+Constraint--.
+NOT NULL - Restricts NULL value from being inserted into a column.
+CHECK - Verifies that all values in a field satisfy a condition.
+DEFAULT - Automatically assigns a default value if no value has been specified for the field.
+UNIQUE - Ensures unique values to be inserted into the field.
+PRIMARY KEY - Uniquely identifies each record in a table. MUST HAVE ONE PK.
+FOREIGN KEY - Ensures referential integrity for a record in another table.
+
+INDEX - Indexes a field providing faster retrieval of records.
+UNIQUE Key---is a set of one or more than one field of a table that uniquely identifies a record in a database table.it can accept only one null value and it cannot have duplicate values.
+CANDIDATE keY---->A single key or a group of multiple keys that uniquely identify rows in a table. A table can have multiple Candidate keys.
+
+Normalization ---the process of organizing data attributes with their relationships to avoid duplication and redundancy.
+1NF--single-valued attribute
+2NF--no partial dependency
+3NF--no transitive dependency.
+Denormalization ---the process of adding precomputed redundant data ,to improve read performance DB.
+Atomicity--ALL /nothing transaction
+Consistency--Data must be consistent after transaction
+Isolation--no other process can change data while transaction
+Durability--the changes made by transaction must persist.
+VIEW---virtual table based on the result-set of an SQL statement. A view contains rows and columns, just like a real table.
+--------------------------------------------------------------------------
+Order of clauses:FWGHSOL
+--------------------------------------
+SET OPRRATION--used to join the results of 2/more SELECT statements.
+UNION:-------used to combine the results of 2/more SELECT Statements with Identical columns without returning any duplicate rows. should be the same number of columns.
+UNION ALL---used to combine the results of two or more SELECT Statements into a single set of rows and columns without the removal of any duplicates.
+INTERSECT----used to combine two SELECT statements with identical columns and returns rows only common rows returned by the two select statements.
+MINUS--- combines the results of two SELECT statements and returns only those in
+the final result, which belongs to the first set of the result.
+--------------------------------------------
+JOIN------ clause is used to combine rows from two or more tables, based on a related column between them.
+SELF JOIN---joins data from the same table.Records taken from the table are matched to other records from the same table.
+INNERJOIN--------Retrieves records that have matching values in both tables involved in the join. 
+LEFT JOIN-------Retrieves all the records/rows from the left and the matched records/rows from the right table.
+RIGHTJOIN--Retrieves all the records/rows from the right and the matched records/rows from the left table.
+FULL JOIN--- Retrieves all the records where there is a match in either the left or right table.
+----------------------------------------------
+INDEX---data structure that provides a quick lookup of data in a column or columns of a table. 
+SUBQUERY----- a query within another query, also known as a nested query or inner query.
+WHERE clause--- used to filter records that are necessary, based on specific conditions.
+ORDER BY---- used to sort the records based on some fieldS in ascending (ASC) /(DESC).
+GROUP BY ---- used to group records with identical data & to produce summarized results from DB.
+HAVING --- used to filter records in combination with the GROUP BY clause. 
+WHERE clause--- cannot filter aggregated records.
+--------------------------------------------
+Data Integrity-- the assurance of accuracy and consistency.
+DELETE -- used to delete rows from a table.
+TRUNCATE--used to delete all the rows from the table and free the space containing the table.
+DROP --used to remove an object from the database.table structure is removed from the database. 
+stored procedure ---------is a prepared SQL code that you can save, so the code can be reused over and over again.
+trigger---- is a database object that is associated with a table and automatically executes a set of SQL statements when a specific event occurs on that table
+

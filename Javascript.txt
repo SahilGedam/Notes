@@ -510,9 +510,17 @@ Generator functions are run by their generator yield by yield which means one ou
 Async/await provides a certain use case for Generators easier to execute.
 The output result of the Generator function is always value: X, done: Boolean, but the return value of the Async function is always an assurance or throws an error
 --------------------------------------------------------------------------------------------------------------------------------
+Debouncing in JavaScript
 
+Debouncing is a programming practice used to ensure that time-consuming tasks do not fire so often, that it stalls the performance of the web page. In other words, it limits the rate at which a function gets invoked.
+
+Debouncing in JavaScript is a practice used to improve browser performance. There might be some functionality in a web page that requires time-consuming computations. If such a method is invoked frequently, it might greatly affect the performance of the browser, as JavaScript is a single-threaded language. 
 --------------------------------------------------------------------------------------------------------------------------------
+Infinity
 
+Infinity is a property of the global object. In other words, it is a variable in global scope.
+
+The value Infinity (positive infinity) is greater than any other number.
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------

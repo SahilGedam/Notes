@@ -1,0 +1,122 @@
+ 1)add bootstrap
+
+ "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "src/styles.css"
+
+
+2) regex
+integreRegex = /^\d+$/;
+
+passwordRegex =
+    /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/;
+
+
+3)ngClass ternary operator
+
+<div [ngClass]="textValue !='' ? 'class1' : 'class2' " >
+
+ngStyle ternary operator
+
+<button [ngStyle]="{ color: colorName === 'red' ? 'red' : 'green' }" >click</button>
+
+4) make array for ngFor
+inputNumber: any;
+
+this.number = Array(this.inputNumber).fill(0).map((x,i)=>i);
+
+5) 2 diffrent ways of making template driven form
+
+<form #basicForm="ngForm" (ngSubmit)="getData(basicForm.value)">
+<input ngModel  name="name" type="text" placeholder="name"><br>
+<input ngModel name="email" type="text" placeholder="email"><br>
+<input ngModel name="password" type="text" placeholder="password"><br>
+<button>submit</button>
+</form>
+
+<form #basicForm (ngSubmit)="getData2()">
+<input  [(ngModel)]="form.name" name="name" type="text" placeholder="name"><br>
+<input [(ngModel)]="form.email" name="email" type="text" placeholder="email"><br>
+<input [(ngModel)]="form.password" name="password" type="text" placeholder="password"><br>
+<button>submit</button>
+</form>
+
+6) cross component communication
+
+==> parent to child
+
+(parent html)
+
+<app-child  [item]="name"></app-child>
+(parent ts)
+
+name = "";
+
+(Child html)
+
+<h1>hello {{item}}</h1>
+
+(child ts)
+
+@Input() item = '';
+
+==> child to parent
+
+(parent html)
+
+<app-child (updateDataEvent)="updateData($event)"></app-child>
+
+(parent ts)
+
+  updateData (data: any) {
+    this.name=data;
+  }
+
+(Child html)
+
+<input type="text" #box name="" id="">
+<button (click)="updateDataEvent.emit(box.value)">update</button>
+
+(child ts)
+
+@Output() updateDataEvent=new EventEmitter <string>();
+
+7)Reactive form
+(html)
+<form [formGroup]="loginForm" (ngSubmit)="loginUser()">
+  <input type="text" formControlName="user" /><br />
+  <input type="text" formControlName="email" /><br />
+  <button [disabled]="loginForm.invalid">click</button>
+</form>
+
+(TS)
+ loginForm = new FormGroup({
+    user: new FormControl('',[Validators.required,Validators.minLength(5)]),
+    email: new FormControl('',[Validators.required,Validators.email]),
+  });
+  loginUser() {
+    console.log(this.loginForm.value);
+  }
+
+8) Id with routing
+in reciever component TS
+
+  ngOnInit(): void {
+    this.courseId = this.activatedRoute.snapshot.paramMap.get('id');
+  }
+  courseId: any;
+
+in sender HTML
+
+<a routerLink="/fourth/{{number}}">fourth</a>
+
+in routing module
+ {
+    path: 'fourth/:id',
+    component: FourthComponent,
+  },
+
+9) custom directive
+in directive file TS
+   constructor(el:ElementRef) {
+         el.nativeElement.style.backgroundColor = "blue";
+       }

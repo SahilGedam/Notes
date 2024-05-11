@@ -1,0 +1,233 @@
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is Express.Js?
+Express is a small framework that sits on top of Node.js’s web server functionality to simplify its APIs and add helpful new features. It makes it easier to organize your application’s functionality with middleware and routing; it adds helpful utilities to Node.js’s HTTP objects; it facilitates the rendering of dynamic HTTP objects.
+--------------------------------------------------------------------------------------------------------------------------------
+Express.js is a lightweight Node.js framework that gives us ability to create server-side web applications faster and smarter. The main reason for choosing Express is its simplicity, minimalism, flexibility, and scalability characteristics. It provides easy setup for middlewares and routing.
+--------------------------------------------------------------------------------------------------------------------------------
+Differentiate between Node.js and Express.js?
+Node.js is the runtime environment that allows you to execute JavaScript on the server side, on the other hand Express.js is a framework built on top of Node.js that provides a set of tools for building web applications and APIs.
+
+Express.js is not the only framework available for Node.js, but it is widely used because to its simplicity and flexibility.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+Mentions few features of Express.js.
+Few features of the Express.js includes
+
+Routing: Express provides a simple way to define routes for handling HTTP requests. Routes are used to map different URLs to specific pieces of code, making it easy to organize your application’s logic.
+Middleware: Express uses middleware functions to perform tasks during the request-response cycle. Middleware functions have access to the request, response, and the next middleware function.
+HTTP Utility Methods: Express mainly used for handling HTTP methods like GET, POST, PUT, and DELETE. This makes it easy to define how the application should respond to different types of HTTP requests.
+Static File Serving: It can also serve static files, such as images, CSS, and JavaScript, with the help of built-in express.static middleware.
+Security: It includes features and middleware to strengthen the security of your web applications, such as the helmet middleware to secure your app.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Explain the structure of an Express JS application?
+The structure of an Express JS application can vary greatly depending on its complexity and the specific needs of the project. However, here is a basic approach that is commonly used:
+
+Entry point: This is the starting point of the application where you set up your server, connect to your database, add middleware, and define the main routes.
+Routes directory: This directory contains files for the app’s routes.
+Controllers directory: This directory contains files that define the logic to handle requests for a specific route.
+Models directory: This directory is used for creating the schema models for the different data.
+Middleware directory: This directory contains custom middleware functions that you can use in your routes.
+Views directory: If you’re using a templating engine, this directory contains your view templates.
+Public directory: This directory contains static files that are served directly by the server such as images, CSS files, and JavaScript files.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is .env file used for?
+
+The .env file is used for storing sensitive information in a web application which we don’t want to expose to others like password, database connection string etc. It is a simple text file where each line represents a key-value pair, and these pairs are used to configure various aspects of the application.
+--------------------------------------------------------------------------------------------------------------------------------
+What are JWT?
+Json Web Tokens are mainly a token which is used for authentication and information exchange. When a user signs in to an application, the application then assigns JWT to that user. Subsequent requests by the user will include the assigned JWT. This token tells the server what routes, services, and resources the user is allowed to access. Json Web Token includes 3 part namely- Header, Payload and Signatur
+
+--------------------------------------------------------------------------------------------------------------------------------
+Why should you separate the Express app and server?
+In Express.js, it is recommended to separate the Express App and the server setup. This provides the modularity and flexibility and makes the codebase more easier to maintain and test. Here are some reasons why you should separate the Express app and server:
+
+Modularity: You can define routes, middleware, and other components in the Express app independently of the server configuration.
+Ease of Testing: Separation makes it easier to write unit tests for the Express app without starting an actual server. You can test routes, middleware, and other components in isolation.
+Reusability: You can reuse the same Express app in different server configurations.
+Configuration Management: Separating the app and server allows for cleaner configuration management.
+Scalability: It provides a foundation for a scalable code structure. As your application grows, it will easier to maintain the code.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What do you understand about ESLint?
+EsLint is a JavaScript linting tool which is used for automatically detecting incorrect patterns found in ECMAScript/JavaScript code. It is used with the purpose of improving code quality, making code more consistent, and avoiding bugs. ESLint is written using Node.js to provide a fast runtime environment and easy installation via npm.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Differentiate between res.send() and res.json().
+Both res.send() and res.json() serves similar purposes with some difference. So it depends on the data type which we are working with. Choose res.json() when you are specifically working with JSON data. Use res.send() when you need versatility and control over the content type or when dealing with various data types in your responses.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Explain what CORS is in Express JS?
+CORS (Cross-Origin Resource Sharing) is a security feature implemented by web browsers to control how web pages in one domain can request and interact with resources hosted on another domain.
+
+In the context of Express.js, CORS refers to a middleware that enables Cross-Origin Resource Sharing for your application. This allows the application to control which domains can access your resources by setting HTTP headers.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are Built-in Middlewares?
+Express.js, includes a set of built-in middlewares that provide common functionality. These built-in middlewares are included by default when you create an Express application and can be used to handle various tasks. Here are some of the built-in middlewares in Express:
+
+express.json(): This middleware is used to parse incoming JSON requests. It automatically parses the request body if the Content-Type header is set to application/json.
+express.Router(): The express.Router() function is often used to create modular route handlers. It allows you to group route handlers together and then use them as a middleware.
+express.static(): This middleware is used to serve static files, such as images, CSS, and JavaScript files, from a specified directory.
+
+--------------------------------------------------------------------------------------------------------------------------------
+How would you configure properties in Express JS?
+app.set(name, value);
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is the use of ‘Response.cookie()’ function?
+The response.cookie() function in Express.js is used to set cookies in the HTTP response. Cookies are small pieces of data sent from a server and stored on the client’s browser. They are commonly used to store information about the user or to maintain session data.
+
+res.cookie(name, value, [options]);
+
+--------------------------------------------------------------------------------------------------------------------------------
+Under what circumstances does a Cross-Origin resource fail in Express JS?
+When a Cross-Origin Resource Sharing request is made, the browser enforces certain security checks, and the request may fail under various circumstances:
+
+No CORS Headers: The server doesn’t include the necessary CORS headers in its response.
+Mismatched Origin: The requesting origin does not match the origin specified in the Access-Control-Allow-Origin header.
+Restricted HTTP Methods: The browser enforces restrictions on which HTTP methods are allowed in cross-origin requests.
+No Credentials: The browser makes restrictions on requests that include credentials (such as cookies or HTTP authentication).
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are middlewares in Express.Js?
+Middleware functions are those functions that have the access to request and response object and the next middleware or function. They can add functionality to an application, such as logging, authentication, and error handling.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are the types of middlewares?
+
+There are mainly five types of Middleware in Express.js:
+
+Application-level middleware
+Router-level middleware
+Error-handling middleware
+Built-in middleware
+Third-party middleware
+
+--------------------------------------------------------------------------------------------------------------------------------
+List the built-in middleware functions provided by Express.
+Express.js comes with several built-in middleware functions. Few of them are:
+
+express.json: This is used for parsing incoming requests with JSON payloads.
+express.static: This is used to serve static files like images, CSS files, and JavaScript files.
+express.urlencoded: This is used for parsing incoming requests with URL-encoded payloads.
+express.raw: This is used for parse incoming requests with a raw body.
+express.text: This is used for parse incoming requests with a text body.
+--------------------------------------------------------------------------------------------------------------------------------
+Mention some third-party middleware provided by Express JS.
+Express.js allows you to use third-party middleware to extend and enhance the functionality of your web application. Here are some commonly used third-party middleware in Express.js:
+
+body-parser: This middleware is used to parse incoming request bodies, allowing you to access form data or JSON payloads on req.body.
+cors: This module provides middleware to enable Cross-Origin Resource Sharing (CORS) in your Express application.
+morgan: Morgan is a middleware module that provides request logging functionality.
+helmet: Helmet helps to secure Express apps by setting various HTTP headers.
+express-session: This middleware is used for managing user sessions in your Express application.
+passport: This middleware is used for implementing authentication and authorization in Express applications.
+
+--------------------------------------------------------------------------------------------------------------------------------
+When application-level Middleware is used?
+Application-level middlewares are bound to an instance of the Express application and are executed for every incoming request. These middlewares are defined using the app.use() method, and they can perform tasks such as logging, authentication, setting global variables, and more.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+Explain Router-level Middleware.
+Router-level middlewares are specific to a particular router instance. This type of middleware is bound to an instance of express.Router(). Router-level middleware works similarly to application-level middleware, but it’s only invoked for the routes that are handled by that router instance. This allows you to apply middleware to specific subsets of your routes, keeping your application organized and manageable.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+What is Express router() function?
+The express.Router() function is used to create a new router object. This function is used when you want to create a new router object in your program to handle requests.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What are the different types of HTTP requests?
+The primary HTTP methods are commonly referred to as CRUD operations, representing Create, Read, Update, and Delete. Here are the main HTTP methods:
+
+GET: The GET method is used to request data from a specified resource.
+POST: The POST method is used to submit data to be processed to a specified resource.
+PUT: The PUT method is used to update a resource or create a new resource if it does not exist.
+PATCH: The PATCH method is used to apply partial modifications to a resource.
+DELETE: The DELETE method is used to request that a specified resource be removed.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+Which are the arguments available to an Express JS route handler function?
+In Express JS route handler function, there are mainly3 arguments available that provide useful information and functionality.
+
+req: This represents the HTTP request object which holds information about the incoming request. It allows you to access and manipulate the request data.
+res: This represents the HTTP response object which is used to send the response back to the client. It provides methods and properties to set response headers, status codes, and send the response body.
+next: This is a callback function that is used to pass control to the next middleware function in the request-response cycle.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+How can you deal with error handling in Express.js?
+Express.js provides built-in error-handling mechanism with the help of the next() function. When an error occurs, you can pass it to the next middleware or route handler using the next() function. You can also add an error-handling middleware to your application that will be executed whenever an error occurs.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+What is the difference between a traditional server and an Express.js server?
+A traditional server is a server that is built and managed independently. Traditional server may provide a basic foundation for handling HTTP requests and responses. While an Express.js server is built using the Express.js framework. It runs on top of Node.js. Express.js provides a simple and efficient way to create and manage web applications. It offers a wide range of features and tools for handling routing, middleware, and request or response objects.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+What is the purpose of the next() function in Express.js?
+The next() function is used to pass control from one middleware function to the next function. It is used to execute the next middleware function in the chain. If there are no next middleware function in the chain then it will give control to router or other functions in the app. If you don’t call next() in a middleware function, the request-response cycle can be terminated, and subsequent middleware functions won’t be executed.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+What is the difference between app.route() and app.use() in Express.js?
+app.route() is more specific to route handling and allows you to define a sequence of handlers for a particular route, on the other hand app.use() is a more general-purpose method for applying middleware globally or to specific routes.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Explain what dynamic routing is in Express.js.
+Dynamic routing in Express.js include parameters, which allows you to create flexible and dynamic routes in your web application. This parameters are used in your route handlers to customize the behaviour based on the data provided.
+
+In Express, dynamic routing is achieved by using route parameters, denoted by a colon (:) followed by the parameter name.
+
+--------------------------------------------------------------------------------------------------------------------------------
+How to serve static files in Express.Js?
+In Express.js, you can serve static files using the built-in express.static middleware. This middleware function takes the root directory of your static files as an argument and serves them automatically.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is the use of app.use() in Express.js?
+app.use() is used to add middleware functions in an Express application. It can be used to add global middleware functions or to add middleware functions to specific routes.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
