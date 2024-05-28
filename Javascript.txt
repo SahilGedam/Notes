@@ -522,6 +522,63 @@ Infinity is a property of the global object. In other words, it is a variable in
 
 The value Infinity (positive infinity) is greater than any other number.
 --------------------------------------------------------------------------------------------------------------------------------
+What is an event loop in JavaScript ?
+JavaScript’s event loop is the core mechanism that enables asynchronous operations.
+An event loop is something that pulls stuff out of the queue and places it onto the function execution stack whenever the function stack becomes empty.
+
+The event loop continuously checks the call stack and the callback queue. If the call stack is empty, it takes the first function from the callback queue and pushes it onto the call stack for execution.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Callback Queue
+Asynchronous operations, such as I/O operations or timers, are handled by the browser or Node.js runtime. When these operations are complete, corresponding functions (callbacks) are placed in the callback queue.
+--------------------------------------------------------------------------------------------------------------------------------
+Map
+The map() method is used for creating a new array from an existing one, applying a function to each one of the elements of the first array.
+
+Syntax
+var new_array = arr.map(function callback(element, index, array) {
+    // Return value for new_array
+}[, thisArg])
+--------------------------------------------------------------------------------------------------------------------------------
+Filter
+The filter() method takes each element in an array and it applies a conditional statement against it. If this conditional returns true, the element gets pushed to the output array. If the condition returns false, the element does not get pushed to the output array.
+
+Syntax
+var new_array = arr.filter(function callback(element, index, array) {
+    // Return true or false
+}[, thisArg])
+--------------------------------------------------------------------------------------------------------------------------------
+Reduce
+The reduce() method reduces an array of values down to just one value. To get the output value, it runs a reducer function on each element of the array.
+
+Syntax
+arr.reduce(callback[, initialValue])
+
+eg -
+const numbers = [1, 2, 3, 4];
+const sum = numbers.reduce(function (result, item) {
+  return result + item;
+}, 0);
+console.log(sum); // 10
+--------------------------------------------------------------------------------------------------------------------------------
+async function
+The async function declaration creates a binding of a new async function to a given name. The await keyword is permitted within the function body, enabling asynchronous, promise-based behavior to be written in a cleaner style and avoiding the need to explicitly configure promise chains.
+
+An async function declaration creates an AsyncFunction object. Each time when an async function is called, it returns a new Promise which will be resolved with the value returned by the async function, or rejected with an exception uncaught within the async function.
+--------------------------------------------------------------------------------------------------------------------------------
+await
+The await operator is used to wait for a Promise and get its fulfillment value. It can only be used inside an async function or at the top level of a module.
+
+await is usually used to unwrap promises by passing a Promise as the expression. Using await pauses the execution of its surrounding async function until the promise is settled (that is, fulfilled or rejected). When execution resumes, the value of the await expression becomes that of the fulfilled promise.
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
 
