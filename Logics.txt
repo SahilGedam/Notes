@@ -1,0 +1,3 @@
+convert string to upper case
+
+str.replace(/\b\w/g, l => l.toUpperCase()) 
