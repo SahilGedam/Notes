@@ -1,0 +1,238 @@
+--------------------------------------------------------------------------------------------------------------------------------
+ What is Node.js? Where can you use it?
+Node.js is an open-source, cross-platform JavaScript runtime environment and library to run web applications outside the client’s browser. It is used to create server-side web applications.
+
+Node.js is perfect for data-intensive applications as it uses an asynchronous, event-driven model. You can use  I/O intensive web applications like video streaming sites. You can also use it for developing: Real-time web applications, Network applications, General-purpose applications, and Distributed systems.
+--------------------------------------------------------------------------------------------------------------------------------
+Why use Node.js?
+Node.js makes building scalable network programs easy. Some of its advantages include:
+
+It is generally fast
+It rarely blocks
+It offers a unified programming language and data type
+Everything is asynchronous 
+It yields great concurrency
+--------------------------------------------------------------------------------------------------------------------------------
+How does Node.js work?
+Clients send requests to the webserver to interact with the web application. Requests can be non-blocking or blocking:
+Querying for data
+Deleting data 
+Updating the data
+Node.js retrieves the incoming requests and adds those to the Event Queue
+The requests are then passed one-by-one through the Event Loop. It checks if the requests are simple enough not to require any external resources
+The Event Loop processes simple requests (non-blocking operations), such as I/O Polling, and returns the responses to the corresponding clients
+A single thread from the Thread Pool is assigned to a single complex request. This thread is responsible for completing a particular blocking request by accessing external resources, such as computation, database, file system, etc.
+
+Once the task is carried out completely, the response is sent to the Event Loop that sends that response back to the client.
+--------------------------------------------------------------------------------------------------------------------------------
+Why is Node.js Single-threaded?
+Node.js is single-threaded for async processing. By doing async processing on a single-thread under typical web loads, more performance and scalability can be achieved instead of the typical thread-based implementation.
+--------------------------------------------------------------------------------------------------------------------------------
+If Node.js is single-threaded, then how does it handle concurrency?
+The Multi-Threaded Request/Response Stateless Model is not followed by the Node JS Platform, and it adheres to the Single-Threaded Event Loop Model. The Node JS Processing paradigm is heavily influenced by the JavaScript Event-based model and the JavaScript callback system. As a result, Node.js can easily manage more concurrent client requests. The event loop is the processing model's beating heart in Node.js.
+--------------------------------------------------------------------------------------------------------------------------------
+Explain callback in Node.js.
+A callback function is called after a given task. It allows other code to be run in the meantime and prevents any blocking.  Being an asynchronous platform, Node.js heavily relies on callback. All APIs of Node are written to support callbacks.
+--------------------------------------------------------------------------------------------------------------------------------
+What are the advantages of using promises instead of callbacks?
+The control flow of asynchronous logic is more specified and structured.
+The coupling is low.
+We've built-in error handling.
+Improved readability.
+--------------------------------------------------------------------------------------------------------------------------------
+How would you define the term I/O? 
+The term I/O is used to describe any program, operation, or device that transfers data to or from a medium and to or from another medium
+Every transfer is an output from one medium and an input into another. The medium can be a physical device, network, or files within a system
+--------------------------------------------------------------------------------------------------------------------------------
+How is Node.js most frequently used?
+Node.js is widely used in the following applications:
+
+Real-time chats
+Internet of Things
+Complex SPAs (Single-Page Applications)
+Real-time collaboration tools
+Streaming applications
+Microservices architecture
+--------------------------------------------------------------------------------------------------------------------------------
+What is NPM?
+NPM stands for Node Package Manager, responsible for managing all the packages and modules for Node.js.
+
+Node Package Manager provides two main functionalities:
+
+Provides online repositories for node.js packages/modules, which are searchable on search.nodejs.org
+Provides command-line utility to install Node.js packages and also manages Node.js versions and dependencies  
+--------------------------------------------------------------------------------------------------------------------------------
+What are the modules in Node.js?
+Modules are like JavaScript libraries that can be used in a Node.js application to include a set of functions. To include a module in a Node.js application, use the require() function with the parentheses containing the module's name.
+
+Node.js has many modules to provide the basic functionality needed for a web application. 
+--------------------------------------------------------------------------------------------------------------------------------
+What is the purpose of the module .Exports?
+In Node.js, a module encapsulates all related codes into a single unit of code that can be parsed by moving all relevant functions into a single file. You may export a module with the module and export the function, which lets it be imported into another file with a needed keyword.
+--------------------------------------------------------------------------------------------------------------------------------
+Why is Node.js preferred over other backend technologies like Java and PHP?
+Some of the reasons why Node.js is preferred include:
+
+Node.js is very fast
+Node Package Manager has over 50,000 bundles available at the developer’s disposal
+Perfect for data-intensive, real-time web applications, as Node.js never waits for an API to return data
+Better synchronization of code between server and client due to same code base
+Easy for web developers to start using Node.js in their projects as it is a JavaScript library
+--------------------------------------------------------------------------------------------------------------------------------
+What is the command used to import external libraries?
+The “require” command is used for importing external libraries. For example - “var http=require (“HTTP”).”  This will load the HTTP library and the single exported object through the HTTP variable.
+--------------------------------------------------------------------------------------------------------------------------------
+What does event-driven programming mean?
+An event-driven programming approach uses events to trigger various functions. An event can be anything, such as typing a key or clicking a mouse button. A call-back function is already registered with the element executes whenever an event is triggered.
+--------------------------------------------------------------------------------------------------------------------------------
+What is an Event Loop in Node.js?
+Event loops handle asynchronous callbacks in Node.js. It is the foundation of the non-blocking input/output in Node.js, making it one of the most important environmental features.
+--------------------------------------------------------------------------------------------------------------------------------
+Differentiate between process.nextTick() and setImmediate()?
+The distinction between method and product. This is accomplished through the use of nextTick() and setImmediate(). next Tick() postpones the execution of action until the next pass around the event loop, or it simply calls the callback function once the event loop's current execution is complete, whereas setImmediate() executes a callback on the next cycle of the event loop and returns control to the event loop for any I/O operations.
+--------------------------------------------------------------------------------------------------------------------------------
+What is an EventEmitter in Node.js?
+EventEmitter is a class that holds all the objects that can emit events
+Whenever an object from the EventEmitter class throws an event, all attached functions are called upon synchronously
+--------------------------------------------------------------------------------------------------------------------------------
+What are the two types of API functions in Node.js?
+The two types of API functions in Node.js are:
+
+Asynchronous, non-blocking functions
+Synchronous, blocking functions
+--------------------------------------------------------------------------------------------------------------------------------
+What is the package.json file?
+The package.json file is the heart of a Node.js system. This file holds the metadata for a particular project. The package.json file is found in the root directory of any Node application or module
+
+You can edit the parameters when you create a Node.js project.
+--------------------------------------------------------------------------------------------------------------------------------
+How would you use a URL module in Node.js?
+The URL module in Node.js provides various utilities for URL resolution and parsing. It is a built-in module that helps split up the web address into a readable format.
+--------------------------------------------------------------------------------------------------------------------------------
+What is the Express.js package?
+Express is a flexible Node.js web application framework that provides a wide set of features to develop both web and mobile applications
+--------------------------------------------------------------------------------------------------------------------------------
+How do you create a simple Express.js application?
+The request object represents the HTTP request and has properties for the request query string, parameters, body, HTTP headers, and so on
+The response object represents the HTTP response that an Express app sends when it receives an HTTP request
+--------------------------------------------------------------------------------------------------------------------------------
+What are streams in Node.js?
+Streams are objects that enable you to read data or write data continuously.
+
+There are four types of streams:
+
+Readable – Used for reading operations
+
+Writable − Used for write operations
+
+Duplex − Can be used for both reading and write operations
+
+Transform − A type of duplex stream where the output is computed based on input
+--------------------------------------------------------------------------------------------------------------------------------
+Explain asynchronous and non-blocking APIs in Node.js.
+All Node.js library APIs are asynchronous, which means they are also non-blocking
+A Node.js-based server never waits for an API to return data. Instead, it moves to the next API after calling it, and a notification mechanism from a Node.js event responds to the server for the previous API call
+--------------------------------------------------------------------------------------------------------------------------------
+What is a callback function in Node.js?
+A callback is a function called after a given task. This prevents any blocking and enables other code to run in the meantime.
+--------------------------------------------------------------------------------------------------------------------------------
+What is Node.js?
+Node.js is a JavaScript engine used for executing JavaScript code outside the browser. It is normally used to build the backend of the application and is highly scalable.
+--------------------------------------------------------------------------------------------------------------------------------
+ What is the difference between Node.js and JavaScript?
+JavaScript is a scripting language whereas Node.js is an engine that provides the runtime environment to run JavaScript code.
+--------------------------------------------------------------------------------------------------------------------------------
+ Is Node.js single-threaded?
+Yes, Node.js is single-threaded by default. However, it utilizes event-driven architecture and non-blocking I/O operations to handle multiple concurrent requests efficiently, enabling scalability and high performance in applications.
+--------------------------------------------------------------------------------------------------------------------------------
+What kind of API function is supported by Node.js?
+There are two types of API functions supported by Node.js:
+
+Synchronous: These API functions are used for blocking code.
+Asynchronous: These API functions are used for non-blocking code.
+--------------------------------------------------------------------------------------------------------------------------------
+What is the difference between Synchronous and Asynchronous functions?
+--------------------------------------------------------------------------------------------------------------------------------
+What is a module in Node.js?
+In Node.js Application, a Module can be considered as a block of code that provide a simple or complex functionality that can communicate with external application. Modules can be organized in a single file or a collection of multiple files/folders. Modules are useful because of their reusability and ability to reduce the complexity of code into smaller pieces. Some examples of modules are. http, fs, os, path, etc.
+--------------------------------------------------------------------------------------------------------------------------------
+What is middleware?
+Middleware is the function that works between the request and the response cycle. Middleware gets executed after the server receives the request and before the controller sends the response.
+--------------------------------------------------------------------------------------------------------------------------------
+How does Node.js handle concurrency even after being single-threaded?
+Node.js handles concurrency by using asynchronous, non-blocking operations. Instead of waiting for one task to complete before starting the next, it can initiate multiple tasks and continue processing while waiting for them to finish, all within a single thread.
+--------------------------------------------------------------------------------------------------------------------------------
+What is control flow in Node.js?
+Control flow in Node.js refers to the sequence in which statements and functions are executed. It manages the order of execution, handling asynchronous operations, callbacks, and error handling to ensure smooth program flow.
+--------------------------------------------------------------------------------------------------------------------------------
+What do you mean by event loop in Node.js?
+The event loop in Node.js is a mechanism that allows it to handle multiple asynchronous tasks concurrently within a single thread. It continuously listens for events and executes associated callback functions.
+--------------------------------------------------------------------------------------------------------------------------------
+What is the order in which control flow statements get executed?
+The order in which the statements are executed is as follows:
+
+Execution and queue handling
+Collection of data and storing it
+Handling concurrency
+Executing the next lines of code
+--------------------------------------------------------------------------------------------------------------------------------
+ What is REPL in Node.js?
+REPL in Node.js stands for Read, Evaluate, Print, and Loop. It is a computer environment similar to the shell which is useful for writing and debugging code as it executes the code in on go.
+--------------------------------------------------------------------------------------------------------------------------------
+What is the difference between Node.js and AJAX?
+Node.js is a JavaScript runtime environment that runs on the server side whereas AJAX is a client-side programming language that runs on the browser.
+--------------------------------------------------------------------------------------------------------------------------------
+ What are promises in Node.js?
+A promise is basically an advancement of callbacks in NodeJS. In other words, a promise is a JavaScript object which is used to handle all the asynchronous data operations. While developing an application you may encounter that you are using a lot of nested callback functions which causes a problem of callback hell. Promises solve this problem of callback hell.
+--------------------------------------------------------------------------------------------------------------------------------
+What is event-driven programming in Node.js?
+Event-driven programming is used to synchronize the occurrence of multiple events and to make the program as simple as possible. The basic components of an Event-Driven Program are:
+
+A callback function ( called an event handler) is called when an event is triggered.
+An event loop that listens for event triggers and calls the corresponding event handler for that event.
+--------------------------------------------------------------------------------------------------------------------------------
+What is buffer in Node.js?
+The Buffer class in Node.js is used to perform operations on raw binary data. Generally, Buffer refers to the particular memory location in memory. Buffer and array have some similarities, but the difference is array can be any type, and it can be resizable. Buffers only deal with binary data, and it can not be resizable. Each integer in a buffer represents a byte. console.log() function is used to print the Buffer instance.
+--------------------------------------------------------------------------------------------------------------------------------
+What are streams in Node.js?
+Streams are a type of data-handling method and are used to read or write input into output sequentially. Streams are used to handle reading/writing files or exchanging information in an efficient way. The stream module provides an API for implementing the stream interface. Examples of the stream object in Node.js can be a request to an HTTP server and process.stdout are both stream instances.
+--------------------------------------------------------------------------------------------------------------------------------
+Explain crypto module in Node.js
+The crypto module is used for encrypting, decrypting, or hashing any type of data. This encryption and decryption basically help to secure and add a layer of authentication to the data. The main use case of the crypto module is to convert the plain readable text to an encrypted format and decrypt it when required.
+--------------------------------------------------------------------------------------------------------------------------------
+What is callback hell?
+Callback hell is an issue caused due to a nested callback. This causes the code to look like a pyramid and makes it unable to read To overcome this situation we use promises.
+--------------------------------------------------------------------------------------------------------------------------------
+Explain the use of timers module in Node.js
+The Timers module in Node.js contains various functions that allow us to execute a block of code or a function after a set period of time. The Timers module is global, we do not need to use require() to import it. 
+
+It has the following methods:
+
+setTimeout() method
+setImmediate() method
+setInterval() method
+--------------------------------------------------------------------------------------------------------------------------------
+Difference between setImmediate() and process.nextTick() methods
+The process.nextTick() method is used to add a new callback function at the start of the next event queue. it is called before the event is processed. The setImmediate is called at the check phase of the next event queue. It is created in the poll phase and is invoked during the check phase.
+--------------------------------------------------------------------------------------------------------------------------------
+What is the difference between setTimeout() and setImmediate() method?
+The setImmediate function is used to execute a particular script immediately whereas the setTimeout function is used to hold a function and execute it after a specified period of time.
+--------------------------------------------------------------------------------------------------------------------------------
+ What is fork in Node.js?
+Fork is a method in Node.js that is used to create child processes. It helps to handle the increasing workload. It creates a new instance of the engine which enables multiple processes to run the code.
+--------------------------------------------------------------------------------------------------------------------------------
+ What are the three methods to avoid callback hell?
+The three methods to avoid callback hell are:
+
+Using async/await()
+Using promises
+Using generators
+--------------------------------------------------------------------------------------------------------------------------------
+ What is body-parser in Node.js?
+Body-parser is the Node.js body-parsing middleware. It is responsible for parsing the incoming request bodies in a middleware before you handle it. It is an NPM module that processes data sent in HTTP requests.
+--------------------------------------------------------------------------------------------------------------------------------
+What is CORS in Node.js?
+The word CORS stands for “Cross-Origin Resource Sharing”. Cross-Origin Resource Sharing is an HTTP-header based mechanism implemented by the browser which allows a server or an API to indicate any origins (different in terms of protocol, hostname, or port) other than its origin from which the unknown origin gets permission to access and load resources. The cors package available in the npm registry is used to tackle CORS errors in a Node.js application.
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
