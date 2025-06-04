@@ -589,13 +589,57 @@ simply saying - || return false for all false values , but ?? returns false only
 It’s forbidden to use it with || or && without explicit parentheses.
 
 --------------------------------------------------------------------------------------------------------------------------------
+Functions-
 
+Functions are the main “building blocks” of the program. They allow the code to be called many times without repetition.
+
+Function Declaration-
+To create a function we can use a function declaration.
+eg - function showMessage() {
+  alert( 'Hello everyone!' );
+}
 --------------------------------------------------------------------------------------------------------------------------------
+Function expressions-
+another syntax for creating a function that is called a Function Expression.
+It allows us to create a new function in the middle of any expression.
 
+eg - let sayHi = function() {
+  alert( "Hello" );
+};
+function creation happens in the context of the assignment expression (to the right side of =), this is a Function Expression.
 --------------------------------------------------------------------------------------------------------------------------------
+Callback functions-
+passing functions as values and using function expressions.
 
+eg-function ask(question, yes, no) {
+  if (confirm(question)) yes()
+  else no();
+}
+
+function showOk() {
+  alert( "You agreed." );
+}
+
+function showCancel() {
+  alert( "You canceled the execution." );
+}
+
+// usage: functions showOk, showCancel are passed as arguments to ask
+ask("Do you agree?", showOk, showCancel);
+
+The arguments showOk and showCancel of ask are called callback functions or just callbacks.
 --------------------------------------------------------------------------------------------------------------------------------
+Function Expression vs Function Declaration
 
+Function Declaration: a function, declared as a separate statement
+Function Expression: a function, created inside an expression or inside another syntax construct.
+
+A Function Expression is created when the execution reaches it and is usable only from that moment.
+A Function Declaration can be called earlier than it is defined.
+
+In strict mode, when a Function Declaration is within a code block, it’s visible everywhere inside that block. But not outside of it.
+
+In most cases when we need to declare a function, a Function Declaration is preferable, because it is visible prior to the declaration itself. That gives us more flexibility in code organization, and is usually more readable.
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
