@@ -1,4 +1,3 @@
-
 What is Angular? / What do you know about Angular?
 Angular is one of the most popular JavaScript frameworks developed and maintained by Google. It is an open-source front-end web framework based on TypeScript. It is most suited for developing enterprise web applications because its code is reusable and maintainable.
 --------------------------------------------------------------------------------------------------------------------------------
@@ -39,8 +38,8 @@ In Angular, annotations are the "only" metadata set of the class using the Refle
 --------------------------------------------------------------------------------------------------------------------------------
 Each component is declared with three properties:
 
-Selector - It is used to access the component.
-Template/TemplateURL - It contains HTML of the component.
+Selector - It is used to access the component. ( unique key for each component)
+Template/TemplateURL - It contains HTML of the component. 
 StylesURL - It contains component-specific stylesheets.
 
 --------------------------------------------------------------------------------------------------------------------------------
@@ -225,6 +224,15 @@ Property Binding: Property binding is used to bind the DOM properties of an HTML
 What is Dependency Injection in Angular?
 Dependency injection is an application design pattern that is implemented by Angular. It is used to form the core concepts of Angular. Dependencies are services in Angular which have some specific functionality. Various components and directives in an application can need these functionalities of the service. Angular provides a smooth mechanism by which these dependencies are injected into components and directives.
 
+dependencies are declared as providers in and angular module , and the injector then creates an instance of the dependancy , when a component requests a dependency the injector provides the dependency
+
+benifits -
+loose coupling of the  service and component
+reusability
+testability
+maintainability
+scalablilty
+
 --------------------------------------------------------------------------------------------------------------------------------
 What is data binding?
 In Angular, data binding is one of the most powerful and important features that allow you to define the communication between the component and DOM(Document Object Model). It basically simplifies the process of defining interactive applications without having to worry about pushing and pulling data between your view or template and component. In Angular, there are four forms of data binding:
@@ -261,6 +269,8 @@ We have one or more components at the heart of every Angular App. In fact, in th
 Every application must have at least one component, referred to as the appcomponent or root component. Starting with the appcomponent, a real-world Angular app is effectively a tree of components.
 Modules:
 A module is a container that holds a collection of connected components. Every angular app contains at least one module, which we refer to as the app module. We may want to divide our modules into smaller, more maintainable modules as our application expands. As the programme expands, we will need to subdivide our app module into smaller modules, each of which will be responsible for a different section. It has components that are connected.
+Module is declared with @NgModule Decorator
+In Import of Module we can import other modules and use its services
 Service:
 Angular services are singleton objects that are instantiated only once during an application’s lifetime. They include methods for preserving data during the life of an application, i.e., data is not refreshed and is always available.
 
@@ -340,37 +350,114 @@ To use a service in Angular, you must first define it by creating a class that i
 What is the purpose of the ngForOf directive?
 The shorthand form ngFor is commonly used for the ngForOf directive in Angular. It is used to iterate over a collection of data and create a template for each item in the collection. The ngFor directive is mainly utilized to display a list of items, such as a list of products, shopping items, or comments.
 --------------------------------------------------------------------------------------------------------------------------------
+What is RxJS
+
+RxJS is a library for reactive programming using observables that makes it easier to compose asynchronous or event-based programs by providing a set of powerful operators. It’s a popular library for reactive programming in Angular development because Angular makes use of it extensively for dealing with events, streams of data, and async operations.
+
+RxJS provides a wide range of operators, and some of the most commonly used operators include:
+
+Map: This operator is used to transform the values emitted by an observable by applying a function to each value.
+Filter: This operator is used to filter the values emitted by an observable based on a condition.
+Merge: This operator is used to combine multiple observables into a single observable that emits all the values from each observable.
+DebounceTime: This operator is used to throttle the values emitted by an observable by waiting for a specified time before emitting the latest value.
+SwitchMap: This operator is used to transform an observable into another observable, and it cancels the previous observable when a new value is emitted.
+CombineLatest: This operator is used to combine multiple observables into a single observable that emits an array of the latest values from each observable.
+Retry: This operator is used to resubscribe to an observable when it encounters an error, and it can be used to handle retry logic when making HTTP requests.
+
+--------------------------------------------------------------------------------------------------------------------------------
+RxJS Subjects
+
+Subjects are observable in RxJS that allow for multiple subscribers to receive the same values.
+
+There are four types of subjects in RxJS:
+
+BehaviorSubject: This subject stores the latest value emitted and emits that value immediately to new subscribers.
+ReplaySubject: This subject stores a buffer of previous values emitted and emits those values immediately to new subscribers.
+AsyncSubject: This subject only emits the last value when the complete() method is called, making it useful for scenarios where only the final value is needed.
+Subject: This is a basic subject that does not have any special behavior.
+
+
+Subjects can be used in a wide variety of scenarios, including:
+
+Communication between components: Subjects can be used to communicate between components in an Angular application, allowing multiple components to subscribe to the same values.
+Caching data: Subjects can be used to cache data that is frequently used in an application, improving performance and reducing the number of HTTP requests.
+State management: Subjects can be used to manage the state of an application, allowing multiple components to subscribe to changes in the application’s state.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Difference between Observable and Subject
+
+· In Angular, Observables are part of the Reactive Extensions for JavaScript (RxJS) library.
+
+· Observables provide support for passing messages between parts of your application.
+
+· Observables are a powerful feature used extensively in reactive programming to handle asynchronous operations and data streams.
+
+· Observables provide a way to subscribe to and receive notifications when new data or events are emitted, enabling you to react to changes in real-time.
+              ---------------------
+
+· An RxJS Subject is a special type of Observable that allows values to be multicast to many Observers. While plain Observables are unicast (each subscribed Observer owns an independent execution of the Observable), Subjects are multicast.
+
+· A Subject is like an observable but can be multicast to many Observers. Subjects are like Event Emitters: they maintain a registry of many listeners.
+
+· It is a part of the Reactive Extensions for JavaScript (RxJS) library, which is included by default in Angular projects.
+
+--------------------------------------------------------------------------------------------------------------------------------
+BehaviorSubject
+· The behavior subject is another type of subject in RxJS.
+
+· It has an initial value and will immediately emit the initial value to any subscriber as soon as they subscribe, even if no values have been emitted yet using the next() method.
+
+· After the initial value is emitted, it behaves like a regular Subject and notifies subscribers about new values emitted using next().
+
+· This is useful when you want to provide the last known value to new subscribers, such as the current state of an application or the latest data fetched from an API.
+
+--------------------------------------------------------------------------------------------------------------------------------
+What is a cli tool ?
+COmmand line interface - we use it to developed the angular application from terminal
+
+--------------------------------------------------------------------------------------------------------------------------------
+Change Detection In Angular
+2 types
+1- default - angular checks for changes in all components and thier child components whenever an event occurs or data is updated
+this approach is not reccomended for larger applications as may affect the performance
+2- on push change detection - angular only checks for changes in componet's data and its input properties - if no change is detected angular skips the change detection for the component and the child components , reccomended for larger applications
+
+to use on push change detection use changeDetection property of the component as changeDetection: ChangeDetectionStrategy.OnPush
+
+while using changeDetection: ChangeDetectionStrategy.OnPush you can use ChangeDetectorRef in methods to execute change detection
+
 
 
 --------------------------------------------------------------------------------------------------------------------------------
 
-
+In Authentication - you can use the Angular HTTP Interceptor which will automatically add access token to the outgoing request
 --------------------------------------------------------------------------------------------------------------------------------
 
+Explain NgModule ?
+NgModule is a core building block in the Angular application. It is used to organize and configure application . NgModule is container that groups together related components , directives and serices
+
+purpose - way to organise and modularise the Angular application into smaller and managebale pieces , also can be used to load on demand (lazy loading)
 
 --------------------------------------------------------------------------------------------------------------------------------
+How to communicate with the Angular components which are not parent child
 
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
+1 - Services
+2 - Event Bus - object that act as centralised communication hub 
+3 - RXJS - Observable which can be subscribed from any component
+4 - Message Service 
 
 --------------------------------------------------------------------------------------------------------------------------------
-
+Error handling in Angular
+1- Error handling Service - 
+2 - Global Error Handling - use Angular 'ErrorHandler' 
+3 - Observable Error Handling - can be used while making HTTP requests
+4 - Form Validations
+5 - Logging - console.logic
+6 - Error Interceptor - Can be used to intercept the error requests
 
 --------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
+Internationalization - i18n - can be used to change/ translate the language 
+use i18n for it
 
 --------------------------------------------------------------------------------------------------------------------------------
 

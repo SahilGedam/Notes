@@ -55,3 +55,6 @@ videos =>
 npm install react-player
 
 --------------------------------------------------------------------------------------------------------------------------------
+
+Keys - Unique Identifier in lists
+Unique keys solve issue of re rendering of items
