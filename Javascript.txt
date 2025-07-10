@@ -641,7 +641,33 @@ In strict mode, when a Function Declaration is within a code block, it’s visib
 
 In most cases when we need to declare a function, a Function Declaration is preferable, because it is visible prior to the declaration itself. That gives us more flexibility in code organization, and is usually more readable.
 --------------------------------------------------------------------------------------------------------------------------------
+to make our modern code work on older engines that don’t understand recent features
+There are two tools for that:
 
+Transpilers.
+Polyfills.
+
+A transpiler is a special piece of software that translates source code to another source code. It can parse (“read and understand”) modern code and rewrite it using older syntax constructs, so that it’ll also work in outdated engines.
+
+E.g. JavaScript before year 2020 didn’t have the “nullish coalescing operator” ??. So, if a visitor uses an outdated browser, it may fail to understand the code like height = height ?? 100.
+
+A transpiler would analyze our code and rewrite height ?? 100 into (height !== undefined && height !== null) ? height : 100.
+Usually, a developer runs the transpiler on their own computer, and then deploys the transpiled code to the server.
+
+Speaking of names, Babel is one of the most prominent transpilers out there.
+
+Modern project build systems, such as webpack, provide a means to run a transpiler automatically on every code change, so it’s very easy to integrate into the development process.
+
+----------
+
+New language features may include not only syntax constructs and operators, but also built-in functions.
+
+For example, Math.trunc(n) is a function that “cuts off” the decimal part of a number, e.g Math.trunc(1.23) returns 1.
+
+In some (very outdated) JavaScript engines, there’s no Math.trunc, so such code will fail.
+A script that updates/adds new functions is called “polyfill”. It “fills in” the gap and adds missing implementations.
+
+One interesting polyfill library is core-js, which supports a wide range of features and allows you to include only the ones you need.
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
