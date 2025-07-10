@@ -1,6 +1,15 @@
 --------------------------------------------------------------------------------------------------------------------------------
+JavaScript is a Synchronous Single threaded language
 
+Single-Threaded - JavaScript runs one command at a time in a single call stack.
+This means it can only do one task at a time in a given sequence
+
+Synchronous - Each line of code is executed in order, and the next line waits until the current one finishes.
 --------------------------------------------------------------------------------------------------------------------------------
+JavaScript runs in Execution Context 
+Execution context has two parts
+1. Memory (Variable environment)- it stores variables and functions
+2. Code (Thread of execution)- code run line by line
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
