@@ -849,7 +849,51 @@ If we want to add a property into an object that “belongs” to another script
 
 So we can “covertly” hide something into objects that we need, but others should not see, using symbolic properties.
 --------------------------------------------------------------------------------------------------------------------------------
+Object to primitive conversion
 
+Conversion rules
+
+There’s no conversion to boolean. All objects are true in a boolean context, as simple as that. There exist only numeric and string conversions.
+
+The numeric conversion happens when we subtract objects or apply mathematical functions. For instance, Date objects can be subtracted, and the result of date1 - date2 is the time difference between two dates.
+
+
+There are three variants of type conversion, that happen in various situations. They’re called “hints”
+
+"string"
+For an object-to-string conversion, when we’re doing an operation on an object that expects a string, like alert:
+
+// output
+alert(obj);
+
+// using object as a property key
+anotherObj[obj] = 123;
+
+"number"
+For an object-to-number conversion, like when we’re doing maths:
+
+// explicit conversion
+let num = Number(obj);
+
+// maths (except binary plus)
+let n = +obj; // unary plus
+let delta = date1 - date2;
+
+// less/greater comparison
+let greater = user1 > user2;
+
+"default"
+Occurs in rare cases when the operator is “not sure” what type to expect.
+
+For instance, binary plus + can work both with strings (concatenates them) and numbers (adds them). So if a binary plus gets an object as an argument, it uses the "default" hint to convert it.
+
+Also, if an object is compared using == with a string, number or a symbol, it’s also unclear which conversion should be done, so the "default" hint is used.
+
+// binary plus uses the "default" hint
+let total = obj1 + obj2;
+
+// obj == number uses the "default" hint
+if (user == 1) { ... };
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 
