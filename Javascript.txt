@@ -740,13 +740,114 @@ let b = {}; // two independent objects
 
 alert( a == b ); // false
 --------------------------------------------------------------------------------------------------------------------------------
+Constructor function
+
+Constructor functions technically are regular functions. There are two conventions though:
+
+They are named with capital letter first.
+They should be executed only with "new" operator.
+
+function User(name) {
+  this.name = name;
+  this.isAdmin = false;
+}
+
+let user = new User("Jack");
+
+alert(user.name); // Jack
+alert(user.isAdmin); // false
+
+When a function is executed with new, it does the following steps:
+
+A new empty object is created and assigned to this.
+The function body executes. Usually it modifies this, adds new properties to it.
+The value of this is returned.
+--------------------------------------------------------------------------------------------------------------------------------
+Optional chaining
+
+The optional chaining ?. stops the evaluation if the value before ?. is undefined or null and returns undefined.
+
+Other variants: ?.(), ?.[]
+
+The optional chaining ?. is not an operator, but a special syntax construct, that also works with functions and square brackets.
+
+For example, ?.() is used to call a function that may not exist.
+
+let userAdmin = {
+  admin() {
+    alert("I am admin");
+  }
+};
+
+let userGuest = {};
+
+userAdmin.admin?.(); // I am admin
+
+userGuest.admin?.(); // nothing happens (no such method)
+
+----------------
+The optional chaining ?. syntax has three forms:
+
+obj?.prop – returns obj.prop if obj exists, otherwise undefined.
+obj?.[prop] – returns obj[prop] if obj exists, otherwise undefined.
+obj.method?.() – calls obj.method() if obj.method exists, otherwise returns undefined.
 
 --------------------------------------------------------------------------------------------------------------------------------
+Symbol type
+By specification, only two primitive types may serve as object property keys:
 
-
+string type, or
+symbol type.
 --------------------------------------------------------------------------------------------------------------------------------
+Symbols
+A “symbol” represents a unique identifier.
 
---------------------------------------------------------------------------------------------------------------------------------
+A value of this type can be created using Symbol():
+
+let id = Symbol();
+
+Upon creation, we can give symbols a description (also called a symbol name), mostly useful for debugging purposes:
+
+// id is a symbol with the description "id"
+let id = Symbol("id");
+----------------------
+Symbols are guaranteed to be unique.
+let id1 = Symbol("id");
+let id2 = Symbol("id");
+
+alert(id1 == id2); // false
+---------------------
+Symbols don’t auto-convert to a string
+let id = Symbol("id");
+alert(id); // TypeError: Cannot convert a Symbol value to a string
+
+If we really want to show a symbol, we need to explicitly call .toString()
+--------------
+Symbols in an object literal
+Symbols are skipped by for…in
+Object.keys(user) also ignores them.
+Object.assign copies both string and symbol properties
+
+-------------------
+Symbol.keyFor
+We have seen that for global symbols, Symbol.for(key) returns a symbol by name
+
+--------------------
+Symbol is a primitive type for unique identifiers.
+
+Symbols are created with Symbol() call with an optional description (name).
+
+Symbols are always different values, even if they have the same name
+. If we want same-named symbols to be equal, then we should use the global registry:
+ Symbol.for(key) returns (creates if needed) a global symbol with key as the name
+ . Multiple calls of Symbol.for with the same key return exactly the same symbol.
+
+
+ “Hidden” object properties.
+
+If we want to add a property into an object that “belongs” to another script or a library, we can create a symbol and use it as a property key. A symbolic property does not appear in for..in, so it won’t be accidentally processed together with other properties. Also it won’t be accessed directly, because another script does not have our symbol. So the property will be protected from accidental use or overwrite.
+
+So we can “covertly” hide something into objects that we need, but others should not see, using symbolic properties.
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
