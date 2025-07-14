@@ -354,6 +354,16 @@ function randomFunc(){
 var initialiseClosure = randomFunc(); // Returns a function
 initialiseClosure(); 
 
+-----------------
+Lexical Environment
+In JavaScript, every running function, code block {...}, and the script as a whole have an internal (hidden) associated object known as the Lexical Environment.
+
+The Lexical Environment object consists of two parts:
+
+Environment Record – an object that stores all local variables as its properties (and some other information like the value of this).
+A reference to the outer lexical environment, the one associated with the outer code.
+A “variable” is just a property of the special internal object, Environment Record. “To get or change a variable” means “to get or change a property of that object”.
+
 --------------------------------------------------------------------------------------------------------------------------------
 What are callbacks?
 
@@ -895,14 +905,85 @@ let total = obj1 + obj2;
 // obj == number uses the "default" hint
 if (user == 1) { ... };
 --------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
+Numbers
+In modern JavaScript, there are two types of numbers:
+Regular numbers in JavaScript are stored in 64-bit format IEEE-754, also known as “double precision floating point numbers”.
+BigInt numbers represent integers of arbitrary length
 
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
+-----------------
+let billion = 1_000_000_000;
+Here the underscore _ plays the role of the “syntactic sugar”, it makes the number more readable. The JavaScript engine simply ignores _ between digits, so it’s exactly the same one billion as above.
 
+In JavaScript, we can shorten a number by appending the letter "e" to it and specifying the zeroes count:
+
+let billion = 1e9;  // 1 billion, literally: 1 and 9 zeroes
+
+alert( 7.3e9 );  // 7.3 billions (same as 7300000000 or 7_300_000_000)
+
+In other words, e multiplies the number by 1 with the given zeroes count.
+
+1e3 === 1 * 1000; // e3 means *1000
+1.23e6 === 1.23 * 1000000; // e6 means *1000000
+
+--------------
+
+let mcs = 1e-6; // five zeroes to the left from 1
+--------------------------------------------------------------------------------------------------------------------------------
+Global Object
+
+The global object provides variables and functions that are available anywhere. By default, those that are built into the language or the environment.
+
+In a browser it is named window, for Node.js it is global, for other environments it may have another name.
+
+Recently, globalThis was added to the language, as a standardized name for a global object, that should be supported across all environments. It’s supported in all major browsers.
+--------------------------------------------------------------------------------------------------------------------------------
+new Function
+The syntax for creating a function:
+let func = new Function ([arg1, arg2, ...argN], functionBody);
+--------------------------------------------------------------------------------------------------------------------------------
+There are also methods that limit access to the whole object:
+
+Object.preventExtensions(obj)
+Forbids the addition of new properties to the object.
+Object.seal(obj)
+Forbids adding/removing of properties. Sets configurable: false for all existing properties.
+Object.freeze(obj)
+Forbids adding/removing/changing of properties. Sets configurable: false, writable: false for all existing properties.
+And also there are tests for them:
+
+Object.isExtensible(obj)
+Returns false if adding properties is forbidden, otherwise true.
+Object.isSealed(obj)
+Returns true if adding/removing properties is forbidden, and all existing properties have configurable: false.
+Object.isFrozen(obj)
+Returns true if adding/removing/changing properties is forbidden, and all current properties are configurable: false, writable: false.
+
+These methods are rarely used in practice.
+--------------------------------------------------------------------------------------------------------------------------------
+Getters and setters
+Accessor properties are represented by “getter” and “setter” methods. In an object literal they are denoted by get and set:
+
+let obj = {
+  get propName() {
+    // getter, the code executed on getting obj.propName
+  },
+
+  set propName(value) {
+    // setter, the code executed on setting obj.propName = value
+  }
+};
+--------------------------------------------------------------------------------------------------------------------------------
+Eval: run a code string
+The built-in eval function allows to execute a string of code.
+
+The syntax is:
+
+let result = eval(code);
+For example:
+
+let code = 'alert("Hello")';
+eval(code); // Hello
 --------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 
