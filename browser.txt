@@ -120,11 +120,32 @@ The syntax to open a popup is: window.open(url, name, params):
 
 it will open a new window with given URL. Most modern browsers are configured to open url in new tabs instead of separate windows.
 
+Browsers open a new tab by default, but if sizes are provided, then it’ll be a popup window.
+
+
+Closing a popup
+To close a window: win.close().
+
+To check if a window is closed: win.closed.
+
 --------------------------------------------------------------------------------------------------------------------------------
+Cross-window communication
+The “Same Origin” (same site) policy limits access of windows and frames to each other.
 
+The idea is that if a user has two pages open: one from john-smith.com, and another one is gmail.com, then they wouldn’t want a script from john-smith.com to read our mail from gmail.com. So, the purpose of the “Same Origin” policy is to protect users from information theft.
 
 --------------------------------------------------------------------------------------------------------------------------------
+Cross-window messaging
+The postMessage interface allows windows to talk to each other no matter which origin they are from.
 
+So, it’s a way around the “Same Origin” policy. It allows a window from john-smith.com to talk to gmail.com and exchange information, but only if they both agree and call corresponding JavaScript functions. That makes it safe for users.
+
+The interface has two parts.
+
+postMessage
+The window that wants to send a message calls postMessage method of the receiving window. In other words, if we want to send the message to win, we should call win.postMessage(data, targetOrigin).
+onmessage
+To receive a message, the target window should have a handler on the message event. It triggers when postMessage is called (and targetOrigin check is successful).
 
 --------------------------------------------------------------------------------------------------------------------------------
 
