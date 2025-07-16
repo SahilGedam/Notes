@@ -148,61 +148,306 @@ onmessage
 To receive a message, the target window should have a handler on the message event. It triggers when postMessage is called (and targetOrigin check is successful).
 
 --------------------------------------------------------------------------------------------------------------------------------
+TextDecoder and TextEncoder
+if the binary data is actually a string , eg - we received a file with textual data.
+
+The built-in TextDecoder object allows one to read the value into an actual JavaScript string, given the buffer and the encoding.
+let decoder = new TextDecoder([label], [options]);
+label – the encoding, utf-8 by default, but big5, windows-1251 and many other are also supported.
+options – optional object:
+
+then decode:
+
+let str = decoder.decode([input], [options]);
+input – BufferSource to decode.
+options – optional object:
+
+eg - let uint8Array = new Uint8Array([72, 101, 108, 108, 111]);
+
+alert( new TextDecoder().decode(uint8Array) ); // Hello
+
+
+TextEncoder
+TextEncoder does the reverse thing – converts a string into bytes.
+
+let encoder = new TextEncoder();
+
+let uint8Array = encoder.encode("Hello");
+alert(uint8Array); // 72,101,108,108,111
+
+--------------------------------------------------------------------------------------------------------------------------------
+ArrayBuffer, binary arrays
+
+In web-development we meet binary data mostly while dealing with files (create, upload, download). Another typical use case is image processing.
+
+The basic binary object is ArrayBuffer – a reference to a fixed-length contiguous memory area.
+
+let buffer = new ArrayBuffer(16); // create a buffer of length 16
+alert(buffer.byteLength); // 16
+
+
+ArrayBuffer is a memory area. What’s stored in it? It has no clue. Just a raw sequence of bytes.
+
+To manipulate an ArrayBuffer, we need to use a “view” object
+
+--------------------------------------------------------------------------------------------------------------------------------
+Blob
+While ArrayBuffer, Uint8Array and other BufferSource are “binary data”, a Blob represents “binary data with type”.
+
+That makes Blobs convenient for upload/download operations, that are so common in the browser.
+
+Methods that perform web-requests, such as XMLHttpRequest, fetch and so on, can work with Blob natively, as well as with other binary types.
+
+We can easily convert between Blob and low-level binary data types:
+
+We can make a Blob from a typed array using new Blob(...) constructor.
+We can get back ArrayBuffer from a Blob using blob.arrayBuffer(), and then create a view over it for low-level binary processing.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Blob as URL
+A Blob can be easily used as a URL for <a>, <img> or other tags,
+
+<!-- download attribute forces the browser to download instead of navigating -->
+<a download="hello.txt" href='#' id="link">Download</a>
+
+<script>
+let blob = new Blob(["Hello, world!"], {type: 'text/plain'});
+
+link.href = URL.createObjectURL(blob);
+</script>
+
+--------------------------------------------------------------------------------------------------------------------------------
+Blob to base64
+An alternative to URL.createObjectURL is to convert a Blob into a base64-encoded string.
+
+That encoding represents binary data as a string of ultra-safe “readable” characters with ASCII-codes from 0 to 64. And what’s more important – we can use this encoding in “data-urls”.
 
 
 --------------------------------------------------------------------------------------------------------------------------------
 
+File and FileReader
+A File object inherits from Blob and is extended with filesystem-related capabilities.
 
+There are two ways to obtain it.
+
+First, there’s a constructor, similar to Blob:
+
+new File(fileParts, fileName, [options])
+
+Second, more often we get a file from <input type="file">
 --------------------------------------------------------------------------------------------------------------------------------
 
+FileReader
+FileReader is an object with the sole purpose of reading data from Blob (and hence File too) objects.
+
+let reader = new FileReader(); // no arguments
+
+FileReader objects can read from a file or a blob, in one of three formats:
+
+String (readAsText).
+ArrayBuffer (readAsArrayBuffer).
+Data url, base-64 encoded (readAsDataURL).
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch
+JavaScript can send network requests to the server and load new information whenever it’s needed.
+
+There’s an umbrella term “AJAX” (abbreviated Asynchronous JavaScript And XML) for network requests from JavaScript. We don’t have to use XML though: the term comes from old times, that’s why that word is there.
+
+
+The basic syntax is:
+
+let promise = fetch(url, [options])
+--------------------------------------------------------------------------------------------------------------------------------
+Response headers
+The response headers are available in a Map-like headers object in response.headers.
+
+It’s not exactly a Map, but it has similar methods to get individual headers by name or iterate over them:
+
+let response = await fetch('https://api.github.com/repos/javascript-tutorial/en.javascript.info/commits');
+
+// get one header
+alert(response.headers.get('Content-Type')); // application/json; charset=utf-8
+
+// iterate over all headers
+for (let [key, value] of response.headers) {
+  alert(`${key} = ${value}`);
+}
 
 --------------------------------------------------------------------------------------------------------------------------------
+Request headers
+To set a request header in fetch, we can use the headers option. It has an object with outgoing headers, like this:
+
+let response = fetch(protectedUrl, {
+  headers: {
+    Authentication: 'secret'
+  }
+});
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch 
+
+A typical fetch request consists of two await calls:
+
+let response = await fetch(url, options); // resolves with response headers
+let result = await response.json(); // read body as json
+Or, without await:
+
+fetch(url, options)
+  .then(response => response.json())
+  .then(result => /* process result */)
 
 
 --------------------------------------------------------------------------------------------------------------------------------
+FormData
+
+FormData objects are used to capture HTML form and submit it using fetch or another network method.
+
+We can either create new FormData(form) from an HTML form, or create an object without a form at all, and then append fields with methods:
+
+formData.append(name, value)
+formData.append(name, blob, fileName)
+formData.set(name, value)
+formData.set(name, blob, fileName)
+
+The set method removes fields with the same name, append doesn’t. That’s the only difference between them.
+To send a file, 3-argument syntax is needed, the last argument is a file name, that normally is taken from user filesystem for <input type="file">.
+
+-----------------------
+
+We can modify fields in FormData with methods:
+
+formData.append(name, value) – add a form field with the given name and value,
+formData.append(name, blob, fileName) – add a field as if it were <input type="file">, the third argument fileName sets file name (not form field name), as it were a name of the file in user’s filesystem,
+formData.delete(name) – remove the field with the given name,
+formData.get(name) – get the value of the field with the given name,
+formData.has(name) – if there exists a field with the given name, returns true, otherwise false
+---------------------
+Sending a form with a file
+The form is always sent as Content-Type: multipart/form-data, this encoding allows to send files. So, <input type="file"> fields are sent also, similar to a usual form submission.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch: Download progress
+The fetch method allows to track download progress.
+
+Please note: there’s currently no way for fetch to track upload progress. For that purpose, please use XMLHttpRequest,
+To track download progress, we can use response.body property. It’s a ReadableStream – a special object that provides body chunk-by-chunk, as it comes. 
+
+We receive response chunks in the loop, until the loading finishes, that is: until done becomes true.
+
+To log the progress, we just need for every received fragment value to add its length to the counter.
+
+Prior to reading, we can figure out the full response length from the Content-Length header.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch: Abort
+to cancel an ongoing fetch
+
+The AbortController object
+Create a controller:
+
+let controller = new AbortController();
+
+
+eg - // abort in 1 second
+let controller = new AbortController();
+setTimeout(() => controller.abort(), 1000);
+
+try {
+  let response = await fetch('/article/fetch-abort/demo/hang', {
+    signal: controller.signal
+  });
+} catch(err) {
+  if (err.name == 'AbortError') { // handle abort()
+    alert("Aborted!");
+  } else {
+    throw err;
+  }
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch: Cross-Origin Requests
+
+If we send a fetch request to another web-site, it will probably fail.
+
+Cross-origin requests – those sent to another domain (even a subdomain) or protocol or port – require special headers from the remote side.
+
+That policy is called “CORS”: Cross-Origin Resource Sharing.
+
+
+From the browser point of view, there are two kinds of cross-origin requests: “safe” and all the others.
+
+“Safe” requests must satisfy the following conditions:
+
+Method: GET, POST or HEAD.
+Headers – we can set only:
+Accept
+Accept-Language
+Content-Language
+Content-Type to the value application/x-www-form-urlencoded, multipart/form-data or text/plain.
+The essential difference is that safe requests were doable since ancient times using <form> or <script> tags, while unsafe were impossible for browsers for a long time.
+
+So, the practical difference is that safe requests are sent right away, with the Origin header, while for the other ones the browser makes a preliminary “preflight” request, asking for permission.
+
+For safe requests:
+
+→ The browser sends the Origin header with the origin.
+← For requests without credentials (not sent by default), the server should set:
+Access-Control-Allow-Origin to * or same value as Origin
+← For requests with credentials, the server should set:
+Access-Control-Allow-Origin to same value as Origin
+Access-Control-Allow-Credentials to true
+Additionally, to grant JavaScript access to any response headers except Cache-Control, Content-Language, Content-Type, Expires, Last-Modified or Pragma, the server should list the allowed ones in Access-Control-Expose-Headers header.
+
+For unsafe requests, a preliminary “preflight” request is issued before the requested one:
+
+→ The browser sends an OPTIONS request to the same URL, with the headers:
+Access-Control-Request-Method has requested method.
+Access-Control-Request-Headers lists unsafe requested headers.
+← The server should respond with status 200 and the headers:
+Access-Control-Allow-Methods with a list of allowed methods,
+Access-Control-Allow-Headers with a list of allowed headers,
+Access-Control-Max-Age with a number of seconds to cache the permissions.
+Then the actual request is sent, and the previous “safe” scheme is applied.
 
 
 --------------------------------------------------------------------------------------------------------------------------------
+URL objects
+The built-in URL class provides a convenient interface for creating and parsing URLs.
+
+There are no networking methods that require exactly a URL object, strings are good enough. So technically we don’t have to use URL.
+
+The syntax to create a new URL object:
+
+new URL(url, [base])
+
+
+--------
+URL components:
+href is the full url, same as url.toString()
+protocol ends with the colon character :
+search – a string of parameters, starts with the question mark ?
+hash starts with the hash character #
+
+--------------------------------------------------------------------------------------------------------------------------------
+XMLHttpRequest
+XMLHttpRequest is a built-in browser object that allows to make HTTP requests in JavaScript.
+
+Despite having the word “XML” in its name, it can operate on any data, not only in XML format. We can upload/download files, track progress and much more.
+
+Right now, there’s another, more modern method fetch, that somewhat deprecates XMLHttpRequest.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Resumable file upload
+fetch doesn’t allow to track upload progress, we’ll use XMLHttpRequest
+
+
+to resume upload, we need to know exactly the number of bytes received by the server. And only the server can tell that, so we’ll make an additional request.
+
 
 
 --------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
+Long polling
+Long polling is the simplest way of having persistent connection with server, that doesn’t use any specific protocol like WebSocket or Server Sent Events.
 
 --------------------------------------------------------------------------------------------------------------------------------
 
