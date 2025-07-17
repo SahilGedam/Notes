@@ -354,6 +354,16 @@ function randomFunc(){
 var initialiseClosure = randomFunc(); // Returns a function
 initialiseClosure(); 
 
+-----------------
+Lexical Environment
+In JavaScript, every running function, code block {...}, and the script as a whole have an internal (hidden) associated object known as the Lexical Environment.
+
+The Lexical Environment object consists of two parts:
+
+Environment Record – an object that stores all local variables as its properties (and some other information like the value of this).
+A reference to the outer lexical environment, the one associated with the outer code.
+A “variable” is just a property of the special internal object, Environment Record. “To get or change a variable” means “to get or change a property of that object”.
+
 --------------------------------------------------------------------------------------------------------------------------------
 What are callbacks?
 
@@ -656,15 +666,430 @@ eg - let sum = (a, b) => {  // the curly brace opens a multiline function
 };
 
 alert( sum(1, 2) ); // 3
+to make our modern code work on older engines that don’t understand recent features
+There are two tools for that:
+
+Transpilers.
+Polyfills.
+
+A transpiler is a special piece of software that translates source code to another source code. It can parse (“read and understand”) modern code and rewrite it using older syntax constructs, so that it’ll also work in outdated engines.
+
+E.g. JavaScript before year 2020 didn’t have the “nullish coalescing operator” ??. So, if a visitor uses an outdated browser, it may fail to understand the code like height = height ?? 100.
+
+A transpiler would analyze our code and rewrite height ?? 100 into (height !== undefined && height !== null) ? height : 100.
+Usually, a developer runs the transpiler on their own computer, and then deploys the transpiled code to the server.
+
+Speaking of names, Babel is one of the most prominent transpilers out there.
+
+Modern project build systems, such as webpack, provide a means to run a transpiler automatically on every code change, so it’s very easy to integrate into the development process.
+
+----------
+
+New language features may include not only syntax constructs and operators, but also built-in functions.
+
+For example, Math.trunc(n) is a function that “cuts off” the decimal part of a number, e.g Math.trunc(1.23) returns 1.
+
+In some (very outdated) JavaScript engines, there’s no Math.trunc, so such code will fail.
+A script that updates/adds new functions is called “polyfill”. It “fills in” the gap and adds missing implementations.
+
+One interesting polyfill library is core-js, which supports a wide range of features and allows you to include only the ones you need.
+--------------------------------------------------------------------------------------------------------------------------------
+Objects
+
+An empty object (“empty cabinet”) can be created using one of two syntaxes:
+
+let user = new Object(); // "object constructor" syntax
+let user = {};  // "object literal" syntax
+
+To remove a property, we can use the delete operator:
+delete user.age;
+
+
+We can also use multiword property names, but then they must be quoted:
+
+let user = {
+  name: "John",
+  age: 30,
+  "likes birds": true  // multiword property name must be quoted
+};
+
+For multiword properties, the dot access doesn’t work:
+
+// this would give a syntax error
+user.likes birds = true
+
+There’s an alternative “square bracket notation” that works with any string:
+
+let user = {};
+
+// set
+user["likes birds"] = true;
+
+
+The "for..in" loop
+To walk over all keys of an object, there exists a special form of the loop: for..in.
+
+for (key in object) {
+  // executes the body for each key among object properties
+}
+
+
+To access a property, we can use:
+
+The dot notation: obj.property.
+Square brackets notation obj["property"]. Square brackets allow taking the key from a variable, like obj[varWithKey].
+Additional operators:
+
+To delete a property: delete obj.prop.
+To check if a property with the given key exists: "key" in obj.
+To iterate over an object: for (let key in obj) loop.
+--------------------------------------------------------------------------------------------------------------------------------
+Object references and copying
+One of the fundamental differences of objects versus primitives is that objects are stored and copied “by reference”, whereas primitive values: strings, numbers, booleans, etc – are always copied “as a whole value”.
+
+
+Comparison by reference
+Two objects are equal only if they are the same object.
+
+For instance, here a and b reference the same object, thus they are equal:
+
+let a = {};
+let b = a; // copy the reference
+
+alert( a == b ); // true, both variables reference the same object
+alert( a === b ); // true
+And here two independent objects are not equal, even though they look alike (both are empty):
+
+let a = {};
+let b = {}; // two independent objects
+
+alert( a == b ); // false
+--------------------------------------------------------------------------------------------------------------------------------
+Constructor function
+
+Constructor functions technically are regular functions. There are two conventions though:
+
+They are named with capital letter first.
+They should be executed only with "new" operator.
+
+function User(name) {
+  this.name = name;
+  this.isAdmin = false;
+}
+
+let user = new User("Jack");
+
+alert(user.name); // Jack
+alert(user.isAdmin); // false
+
+When a function is executed with new, it does the following steps:
+
+A new empty object is created and assigned to this.
+The function body executes. Usually it modifies this, adds new properties to it.
+The value of this is returned.
+--------------------------------------------------------------------------------------------------------------------------------
+Optional chaining
+
+The optional chaining ?. stops the evaluation if the value before ?. is undefined or null and returns undefined.
+
+Other variants: ?.(), ?.[]
+
+The optional chaining ?. is not an operator, but a special syntax construct, that also works with functions and square brackets.
+
+For example, ?.() is used to call a function that may not exist.
+
+let userAdmin = {
+  admin() {
+    alert("I am admin");
+  }
+};
+
+let userGuest = {};
+
+userAdmin.admin?.(); // I am admin
+
+userGuest.admin?.(); // nothing happens (no such method)
+
+----------------
+The optional chaining ?. syntax has three forms:
+
+obj?.prop – returns obj.prop if obj exists, otherwise undefined.
+obj?.[prop] – returns obj[prop] if obj exists, otherwise undefined.
+obj.method?.() – calls obj.method() if obj.method exists, otherwise returns undefined.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Symbol type
+By specification, only two primitive types may serve as object property keys:
+
+string type, or
+symbol type.
+--------------------------------------------------------------------------------------------------------------------------------
+Symbols
+A “symbol” represents a unique identifier.
+
+A value of this type can be created using Symbol():
+
+let id = Symbol();
+
+Upon creation, we can give symbols a description (also called a symbol name), mostly useful for debugging purposes:
+
+// id is a symbol with the description "id"
+let id = Symbol("id");
+----------------------
+Symbols are guaranteed to be unique.
+let id1 = Symbol("id");
+let id2 = Symbol("id");
+
+alert(id1 == id2); // false
+---------------------
+Symbols don’t auto-convert to a string
+let id = Symbol("id");
+alert(id); // TypeError: Cannot convert a Symbol value to a string
+
+If we really want to show a symbol, we need to explicitly call .toString()
+--------------
+Symbols in an object literal
+Symbols are skipped by for…in
+Object.keys(user) also ignores them.
+Object.assign copies both string and symbol properties
+
+-------------------
+Symbol.keyFor
+We have seen that for global symbols, Symbol.for(key) returns a symbol by name
+
+--------------------
+Symbol is a primitive type for unique identifiers.
+
+Symbols are created with Symbol() call with an optional description (name).
+
+Symbols are always different values, even if they have the same name
+. If we want same-named symbols to be equal, then we should use the global registry:
+ Symbol.for(key) returns (creates if needed) a global symbol with key as the name
+ . Multiple calls of Symbol.for with the same key return exactly the same symbol.
+
+
+ “Hidden” object properties.
+
+If we want to add a property into an object that “belongs” to another script or a library, we can create a symbol and use it as a property key. A symbolic property does not appear in for..in, so it won’t be accidentally processed together with other properties. Also it won’t be accessed directly, because another script does not have our symbol. So the property will be protected from accidental use or overwrite.
+
+So we can “covertly” hide something into objects that we need, but others should not see, using symbolic properties.
+--------------------------------------------------------------------------------------------------------------------------------
+Object to primitive conversion
+
+Conversion rules
+
+There’s no conversion to boolean. All objects are true in a boolean context, as simple as that. There exist only numeric and string conversions.
+
+The numeric conversion happens when we subtract objects or apply mathematical functions. For instance, Date objects can be subtracted, and the result of date1 - date2 is the time difference between two dates.
+
+
+There are three variants of type conversion, that happen in various situations. They’re called “hints”
+
+"string"
+For an object-to-string conversion, when we’re doing an operation on an object that expects a string, like alert:
+
+// output
+alert(obj);
+
+// using object as a property key
+anotherObj[obj] = 123;
+
+"number"
+For an object-to-number conversion, like when we’re doing maths:
+
+// explicit conversion
+let num = Number(obj);
+
+// maths (except binary plus)
+let n = +obj; // unary plus
+let delta = date1 - date2;
+
+// less/greater comparison
+let greater = user1 > user2;
+
+"default"
+Occurs in rare cases when the operator is “not sure” what type to expect.
+
+For instance, binary plus + can work both with strings (concatenates them) and numbers (adds them). So if a binary plus gets an object as an argument, it uses the "default" hint to convert it.
+
+Also, if an object is compared using == with a string, number or a symbol, it’s also unclear which conversion should be done, so the "default" hint is used.
+
+// binary plus uses the "default" hint
+let total = obj1 + obj2;
+
+// obj == number uses the "default" hint
+if (user == 1) { ... };
+--------------------------------------------------------------------------------------------------------------------------------
+
+Numbers
+In modern JavaScript, there are two types of numbers:
+Regular numbers in JavaScript are stored in 64-bit format IEEE-754, also known as “double precision floating point numbers”.
+BigInt numbers represent integers of arbitrary length
+
+-----------------
+let billion = 1_000_000_000;
+Here the underscore _ plays the role of the “syntactic sugar”, it makes the number more readable. The JavaScript engine simply ignores _ between digits, so it’s exactly the same one billion as above.
+
+In JavaScript, we can shorten a number by appending the letter "e" to it and specifying the zeroes count:
+
+let billion = 1e9;  // 1 billion, literally: 1 and 9 zeroes
+
+alert( 7.3e9 );  // 7.3 billions (same as 7300000000 or 7_300_000_000)
+
+In other words, e multiplies the number by 1 with the given zeroes count.
+
+1e3 === 1 * 1000; // e3 means *1000
+1.23e6 === 1.23 * 1000000; // e6 means *1000000
+
+--------------
+
+let mcs = 1e-6; // five zeroes to the left from 1
+--------------------------------------------------------------------------------------------------------------------------------
+Global Object
+
+The global object provides variables and functions that are available anywhere. By default, those that are built into the language or the environment.
+
+In a browser it is named window, for Node.js it is global, for other environments it may have another name.
+
+Recently, globalThis was added to the language, as a standardized name for a global object, that should be supported across all environments. It’s supported in all major browsers.
+--------------------------------------------------------------------------------------------------------------------------------
+new Function
+The syntax for creating a function:
+let func = new Function ([arg1, arg2, ...argN], functionBody);
+--------------------------------------------------------------------------------------------------------------------------------
+There are also methods that limit access to the whole object:
+
+Object.preventExtensions(obj)
+Forbids the addition of new properties to the object.
+Object.seal(obj)
+Forbids adding/removing of properties. Sets configurable: false for all existing properties.
+Object.freeze(obj)
+Forbids adding/removing/changing of properties. Sets configurable: false, writable: false for all existing properties.
+And also there are tests for them:
+
+Object.isExtensible(obj)
+Returns false if adding properties is forbidden, otherwise true.
+Object.isSealed(obj)
+Returns true if adding/removing properties is forbidden, and all existing properties have configurable: false.
+Object.isFrozen(obj)
+Returns true if adding/removing/changing properties is forbidden, and all current properties are configurable: false, writable: false.
+
+These methods are rarely used in practice.
+--------------------------------------------------------------------------------------------------------------------------------
+Getters and setters
+Accessor properties are represented by “getter” and “setter” methods. In an object literal they are denoted by get and set:
+
+let obj = {
+  get propName() {
+    // getter, the code executed on getting obj.propName
+  },
+
+  set propName(value) {
+    // setter, the code executed on setting obj.propName = value
+  }
+};
+--------------------------------------------------------------------------------------------------------------------------------
+Eval: run a code string
+The built-in eval function allows to execute a string of code.
+
+The syntax is:
+
+let result = eval(code);
+For example:
+
+let code = 'alert("Hello")';
+eval(code); // Hello
+--------------------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
-
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------------------
 
 
 

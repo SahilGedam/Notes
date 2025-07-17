@@ -1,0 +1,788 @@
+--------------------------------------------------------------------------------------------------------------------------------
+DOM (Document Object Model)
+
+The Document Object Model, or DOM for short, represents all page content as objects that can be modified.
+
+The document object is the main “entry point” to the page. We can change or create anything on the page using it.
+
+eg - // change the background color to red
+document.body.style.background = "red";
+--------------------------------------------------------------------------------------------------------------------------------
+BOM (Browser Object Model)
+The Browser Object Model (BOM) represents additional objects provided by the browser (host environment) for working with everything except the document.
+
+For instance:
+
+The navigator object provides background information about the browser and the operating system. There are many properties, but the two most widely known are: navigator.userAgent – about the current browser, and navigator.platform – about the platform (can help to differentiate between Windows/Linux/Mac etc).
+The location object allows us to read the current URL and can redirect the browser to a new one.
+
+--------------------------------------------------------------------------------------------------------------------------------
+DOM tree
+
+According to the Document Object Model (DOM), every HTML tag is an object. Nested tags are “children” of the enclosing one.
+For example, document.body is the object representing the <body> tag.
+
+----------------
+Children: childNodes, firstChild, lastChild
+There are two terms that we’ll use from now on:
+
+Child nodes (or children) – elements that are direct children. In other words, they are nested exactly in the given one. For instance, <head> and <body> are children of <html> element.
+Descendants – all elements that are nested in the given one, including children, their children and so on.
+
+--------------------------------------------------------------------------------------------------------------------------------
+document.getElementById or just id
+If an element has the id attribute, we can get the element using the method document.getElementById(id), no matter where it is.
+
+--------------------------------------------------------------------------------------------------------------------------------
+querySelectorAll
+ elem.querySelectorAll(css) returns all elements inside elem matching the given CSS selector.
+
+ <script>
+  let elements = document.querySelectorAll('ul > li:last-child');
+
+  for (let elem of elements) {
+    alert(elem.innerHTML); // "test", "passed"
+  }
+</script>
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+Attributes – is what’s written in HTML.
+Properties – is what’s in DOM objects.
+--------------------------------------------------------------------------------------------------------------------------------
+HTML attributes
+
+standard attribute for one element can be unknown for another one. For instance, "type" is standard for <input> (HTMLInputElement), but not for <body> (HTMLBodyElement). Standard attributes are described in the specification for the corresponding element class
+
+<body id="body" type="...">
+  <input id="input" type="text">
+  <script>
+    alert(input.type); // text
+    alert(body.type); // undefined: DOM property not created, because it's non-standard
+  </script>
+</body>
+
+--------------------------------------------------------------------------------------------------------------------------------
+browser events
+
+An event is a signal that something has happened. All DOM nodes generate such signals (but events are not limited to DOM).
+
+Here’s a list of the most useful DOM events, just to take a look at:
+
+Mouse events:
+
+click – when the mouse clicks on an element (touchscreen devices generate it on a tap).
+contextmenu – when the mouse right-clicks on an element.
+mouseover / mouseout – when the mouse cursor comes over / leaves an element.
+mousedown / mouseup – when the mouse button is pressed / released over an element.
+mousemove – when the mouse is moved.
+Keyboard events:
+
+keydown and keyup – when a keyboard key is pressed and released.
+Form element events:
+
+submit – when the visitor submits a <form>.
+focus – when the visitor focuses on an element, e.g. on an <input>.
+Document events:
+
+DOMContentLoaded – when the HTML is loaded and processed, DOM is fully built.
+CSS events:
+
+transitionend – when a CSS-animation finishes.
+
+
+There are many other events.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Bubbling
+
+When an event happens on an element, it first runs the handlers on it, then on its parent, then all the way up on other ancestors.
+
+--------------------------------------------------------------------------------------------------------------------------------
+event.target
+A handler on a parent element can always get the details about where it actually happened.
+
+The most deeply nested element that caused the event is called a target element, accessible as event.target.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Stopping bubbling
+A bubbling event goes from the target element straight up. Normally it goes upwards till <html>, and then to document object, and some events even reach window, calling all handlers on the path.
+
+But any handler may decide that the event has been fully processed and stop the bubbling.
+
+The method for it is event.stopPropagation().
+
+--------------------------------------------------------------------------------------------------------------------------------
+Popup
+
+window.open
+The syntax to open a popup is: window.open(url, name, params):
+
+it will open a new window with given URL. Most modern browsers are configured to open url in new tabs instead of separate windows.
+
+Browsers open a new tab by default, but if sizes are provided, then it’ll be a popup window.
+
+
+Closing a popup
+To close a window: win.close().
+
+To check if a window is closed: win.closed.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Cross-window communication
+The “Same Origin” (same site) policy limits access of windows and frames to each other.
+
+The idea is that if a user has two pages open: one from john-smith.com, and another one is gmail.com, then they wouldn’t want a script from john-smith.com to read our mail from gmail.com. So, the purpose of the “Same Origin” policy is to protect users from information theft.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Cross-window messaging
+The postMessage interface allows windows to talk to each other no matter which origin they are from.
+
+So, it’s a way around the “Same Origin” policy. It allows a window from john-smith.com to talk to gmail.com and exchange information, but only if they both agree and call corresponding JavaScript functions. That makes it safe for users.
+
+The interface has two parts.
+
+postMessage
+The window that wants to send a message calls postMessage method of the receiving window. In other words, if we want to send the message to win, we should call win.postMessage(data, targetOrigin).
+onmessage
+To receive a message, the target window should have a handler on the message event. It triggers when postMessage is called (and targetOrigin check is successful).
+
+--------------------------------------------------------------------------------------------------------------------------------
+TextDecoder and TextEncoder
+if the binary data is actually a string , eg - we received a file with textual data.
+
+The built-in TextDecoder object allows one to read the value into an actual JavaScript string, given the buffer and the encoding.
+let decoder = new TextDecoder([label], [options]);
+label – the encoding, utf-8 by default, but big5, windows-1251 and many other are also supported.
+options – optional object:
+
+then decode:
+
+let str = decoder.decode([input], [options]);
+input – BufferSource to decode.
+options – optional object:
+
+eg - let uint8Array = new Uint8Array([72, 101, 108, 108, 111]);
+
+alert( new TextDecoder().decode(uint8Array) ); // Hello
+
+
+TextEncoder
+TextEncoder does the reverse thing – converts a string into bytes.
+
+let encoder = new TextEncoder();
+
+let uint8Array = encoder.encode("Hello");
+alert(uint8Array); // 72,101,108,108,111
+
+--------------------------------------------------------------------------------------------------------------------------------
+ArrayBuffer, binary arrays
+
+In web-development we meet binary data mostly while dealing with files (create, upload, download). Another typical use case is image processing.
+
+The basic binary object is ArrayBuffer – a reference to a fixed-length contiguous memory area.
+
+let buffer = new ArrayBuffer(16); // create a buffer of length 16
+alert(buffer.byteLength); // 16
+
+
+ArrayBuffer is a memory area. What’s stored in it? It has no clue. Just a raw sequence of bytes.
+
+To manipulate an ArrayBuffer, we need to use a “view” object
+
+--------------------------------------------------------------------------------------------------------------------------------
+Blob
+While ArrayBuffer, Uint8Array and other BufferSource are “binary data”, a Blob represents “binary data with type”.
+
+That makes Blobs convenient for upload/download operations, that are so common in the browser.
+
+Methods that perform web-requests, such as XMLHttpRequest, fetch and so on, can work with Blob natively, as well as with other binary types.
+
+We can easily convert between Blob and low-level binary data types:
+
+We can make a Blob from a typed array using new Blob(...) constructor.
+We can get back ArrayBuffer from a Blob using blob.arrayBuffer(), and then create a view over it for low-level binary processing.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Blob as URL
+A Blob can be easily used as a URL for <a>, <img> or other tags,
+
+<!-- download attribute forces the browser to download instead of navigating -->
+<a download="hello.txt" href='#' id="link">Download</a>
+
+<script>
+let blob = new Blob(["Hello, world!"], {type: 'text/plain'});
+
+link.href = URL.createObjectURL(blob);
+</script>
+
+--------------------------------------------------------------------------------------------------------------------------------
+Blob to base64
+An alternative to URL.createObjectURL is to convert a Blob into a base64-encoded string.
+
+That encoding represents binary data as a string of ultra-safe “readable” characters with ASCII-codes from 0 to 64. And what’s more important – we can use this encoding in “data-urls”.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+File and FileReader
+A File object inherits from Blob and is extended with filesystem-related capabilities.
+
+There are two ways to obtain it.
+
+First, there’s a constructor, similar to Blob:
+
+new File(fileParts, fileName, [options])
+
+Second, more often we get a file from <input type="file">
+--------------------------------------------------------------------------------------------------------------------------------
+
+FileReader
+FileReader is an object with the sole purpose of reading data from Blob (and hence File too) objects.
+
+let reader = new FileReader(); // no arguments
+
+FileReader objects can read from a file or a blob, in one of three formats:
+
+String (readAsText).
+ArrayBuffer (readAsArrayBuffer).
+Data url, base-64 encoded (readAsDataURL).
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch
+JavaScript can send network requests to the server and load new information whenever it’s needed.
+
+There’s an umbrella term “AJAX” (abbreviated Asynchronous JavaScript And XML) for network requests from JavaScript. We don’t have to use XML though: the term comes from old times, that’s why that word is there.
+
+
+The basic syntax is:
+
+let promise = fetch(url, [options])
+--------------------------------------------------------------------------------------------------------------------------------
+Response headers
+The response headers are available in a Map-like headers object in response.headers.
+
+It’s not exactly a Map, but it has similar methods to get individual headers by name or iterate over them:
+
+let response = await fetch('https://api.github.com/repos/javascript-tutorial/en.javascript.info/commits');
+
+// get one header
+alert(response.headers.get('Content-Type')); // application/json; charset=utf-8
+
+// iterate over all headers
+for (let [key, value] of response.headers) {
+  alert(`${key} = ${value}`);
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+Request headers
+To set a request header in fetch, we can use the headers option. It has an object with outgoing headers, like this:
+
+let response = fetch(protectedUrl, {
+  headers: {
+    Authentication: 'secret'
+  }
+});
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch 
+
+A typical fetch request consists of two await calls:
+
+let response = await fetch(url, options); // resolves with response headers
+let result = await response.json(); // read body as json
+Or, without await:
+
+fetch(url, options)
+  .then(response => response.json())
+  .then(result => /* process result */)
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+FormData
+
+FormData objects are used to capture HTML form and submit it using fetch or another network method.
+
+We can either create new FormData(form) from an HTML form, or create an object without a form at all, and then append fields with methods:
+
+formData.append(name, value)
+formData.append(name, blob, fileName)
+formData.set(name, value)
+formData.set(name, blob, fileName)
+
+The set method removes fields with the same name, append doesn’t. That’s the only difference between them.
+To send a file, 3-argument syntax is needed, the last argument is a file name, that normally is taken from user filesystem for <input type="file">.
+
+-----------------------
+
+We can modify fields in FormData with methods:
+
+formData.append(name, value) – add a form field with the given name and value,
+formData.append(name, blob, fileName) – add a field as if it were <input type="file">, the third argument fileName sets file name (not form field name), as it were a name of the file in user’s filesystem,
+formData.delete(name) – remove the field with the given name,
+formData.get(name) – get the value of the field with the given name,
+formData.has(name) – if there exists a field with the given name, returns true, otherwise false
+---------------------
+Sending a form with a file
+The form is always sent as Content-Type: multipart/form-data, this encoding allows to send files. So, <input type="file"> fields are sent also, similar to a usual form submission.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch: Download progress
+The fetch method allows to track download progress.
+
+Please note: there’s currently no way for fetch to track upload progress. For that purpose, please use XMLHttpRequest,
+To track download progress, we can use response.body property. It’s a ReadableStream – a special object that provides body chunk-by-chunk, as it comes. 
+
+We receive response chunks in the loop, until the loading finishes, that is: until done becomes true.
+
+To log the progress, we just need for every received fragment value to add its length to the counter.
+
+Prior to reading, we can figure out the full response length from the Content-Length header.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch: Abort
+to cancel an ongoing fetch
+
+The AbortController object
+Create a controller:
+
+let controller = new AbortController();
+
+
+eg - // abort in 1 second
+let controller = new AbortController();
+setTimeout(() => controller.abort(), 1000);
+
+try {
+  let response = await fetch('/article/fetch-abort/demo/hang', {
+    signal: controller.signal
+  });
+} catch(err) {
+  if (err.name == 'AbortError') { // handle abort()
+    alert("Aborted!");
+  } else {
+    throw err;
+  }
+}
+
+--------------------------------------------------------------------------------------------------------------------------------
+Fetch: Cross-Origin Requests
+
+If we send a fetch request to another web-site, it will probably fail.
+
+Cross-origin requests – those sent to another domain (even a subdomain) or protocol or port – require special headers from the remote side.
+
+That policy is called “CORS”: Cross-Origin Resource Sharing.
+
+
+From the browser point of view, there are two kinds of cross-origin requests: “safe” and all the others.
+
+“Safe” requests must satisfy the following conditions:
+
+Method: GET, POST or HEAD.
+Headers – we can set only:
+Accept
+Accept-Language
+Content-Language
+Content-Type to the value application/x-www-form-urlencoded, multipart/form-data or text/plain.
+The essential difference is that safe requests were doable since ancient times using <form> or <script> tags, while unsafe were impossible for browsers for a long time.
+
+So, the practical difference is that safe requests are sent right away, with the Origin header, while for the other ones the browser makes a preliminary “preflight” request, asking for permission.
+
+For safe requests:
+
+→ The browser sends the Origin header with the origin.
+← For requests without credentials (not sent by default), the server should set:
+Access-Control-Allow-Origin to * or same value as Origin
+← For requests with credentials, the server should set:
+Access-Control-Allow-Origin to same value as Origin
+Access-Control-Allow-Credentials to true
+Additionally, to grant JavaScript access to any response headers except Cache-Control, Content-Language, Content-Type, Expires, Last-Modified or Pragma, the server should list the allowed ones in Access-Control-Expose-Headers header.
+
+For unsafe requests, a preliminary “preflight” request is issued before the requested one:
+
+→ The browser sends an OPTIONS request to the same URL, with the headers:
+Access-Control-Request-Method has requested method.
+Access-Control-Request-Headers lists unsafe requested headers.
+← The server should respond with status 200 and the headers:
+Access-Control-Allow-Methods with a list of allowed methods,
+Access-Control-Allow-Headers with a list of allowed headers,
+Access-Control-Max-Age with a number of seconds to cache the permissions.
+Then the actual request is sent, and the previous “safe” scheme is applied.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+URL objects
+The built-in URL class provides a convenient interface for creating and parsing URLs.
+
+There are no networking methods that require exactly a URL object, strings are good enough. So technically we don’t have to use URL.
+
+The syntax to create a new URL object:
+
+new URL(url, [base])
+
+
+--------
+URL components:
+href is the full url, same as url.toString()
+protocol ends with the colon character :
+search – a string of parameters, starts with the question mark ?
+hash starts with the hash character #
+
+--------------------------------------------------------------------------------------------------------------------------------
+XMLHttpRequest
+XMLHttpRequest is a built-in browser object that allows to make HTTP requests in JavaScript.
+
+Despite having the word “XML” in its name, it can operate on any data, not only in XML format. We can upload/download files, track progress and much more.
+
+Right now, there’s another, more modern method fetch, that somewhat deprecates XMLHttpRequest.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Resumable file upload
+fetch doesn’t allow to track upload progress, we’ll use XMLHttpRequest
+
+
+to resume upload, we need to know exactly the number of bytes received by the server. And only the server can tell that, so we’ll make an additional request.
+
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+Long polling
+Long polling is the simplest way of having persistent connection with server, that doesn’t use any specific protocol like WebSocket or Server Sent Events.
+
+
+------------------
+Regular Polling
+The simplest way to get new information from the server is periodic polling. That is, regular requests to the server: “Hello, I’m here, do you have any information for me?”. For example, once every 10 seconds.
+
+In response, the server first takes a notice to itself that the client is online, and second – sends a packet of messages it got till that moment.
+
+That works, but there are downsides:
+
+Messages are passed with a delay up to 10 seconds (between requests).
+Even if there are no messages, the server is bombed with requests every 10 seconds, even if the user switched somewhere else or is asleep. That’s quite a load to handle, speaking performance-wise.
+
+
+-----------------
+Long polling
+So-called “long polling” is a much better way to poll the server.
+
+It’s also very easy to implement, and delivers messages without delays.
+
+The flow:
+
+A request is sent to the server.
+The server doesn’t close the connection until it has a message to send.
+When a message appears – the server responds to the request with it.
+The browser makes a new request immediately.
+
+--------------
+Area of usage
+Long polling works great in situations when messages are rare.
+
+If messages come very often, then the chart of requesting-receiving messages, painted above, becomes saw-like.
+
+Every message is a separate request, supplied with headers, authentication overhead, and so on.
+
+So, in this case, another method is preferred, such as Websocket or Server Sent Events.
+--------------------------------------------------------------------------------------------------------------------------------
+WebSocket
+The WebSocket protocol, described in the specification RFC 6455, provides a way to exchange data between browser and server via a persistent connection. The data can be passed in both directions as “packets”, without breaking the connection and the need of additional HTTP-requests.
+To open a websocket connection, we need to create new WebSocket using the special protocol ws in the url:
+
+let socket = new WebSocket("ws://javascript.info");
+There’s also encrypted wss:// protocol. It’s like HTTPS for websockets.
+
+open – connection established,
+message – data received,
+error – websocket error,
+close – connection closed.
+
+
+--------------
+
+
+WebSocket .send() method can send either text or binary data.
+
+
+------------
+Rate limiting
+The socket.bufferedAmount property stores how many bytes remain buffered at this moment, waiting to be sent over the network.
+// every 100ms examine the socket and send more data
+// only if all the existing data was sent out
+setInterval(() => {
+  if (socket.bufferedAmount == 0) {
+    socket.send(moreData());
+  }
+}, 100);
+
+-------------
+Connection close
+socket.close([code], [reason]);
+--------------
+Methods:
+socket.send(data),
+socket.close([code], [reason]).
+
+Events:
+open,
+message,
+error,
+close.
+--------------------------------------------------------------------------------------------------------------------------------
+Server Sent Events
+The Server-Sent Events specification describes a built-in class EventSource, that keeps connection with the server and allows to receive events from it.
+
+Similar to WebSocket, the connection is persistent.
+
+EventSource is a less-powerful way of communicating with the server than WebSocket.
+
+-	One-directional: only server sends data
+- Only text
+- Regular HTTP
+
+---------------
+Getting messages
+To start receiving messages, we just need to create new EventSource(url).
+
+The browser will connect to url and keep the connection open, waiting for events.
+
+---------------
+EventSource object automatically establishes a persistent connection and allows the server to send messages over it.
+
+It offers:
+
+Automatic reconnect, with tunable retry timeout.
+Message ids to resume events, the last received identifier is sent in Last-Event-ID header upon reconnection.
+The current state is in the readyState property.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Cookies, document.cookie
+Cookies are small strings of data that are stored directly in the browser. They are a part of the HTTP protocol, defined by the RFC 6265 specification.
+
+Cookies are usually set by a web server using the response Set-Cookie HTTP header. Then, the browser automatically adds them to (almost) every request to the same domain using the Cookie HTTP header.
+
+
+-----------
+Writing to document.cookie
+document.cookie = "user=John"; // update only cookie named 'user'
+alert(document.cookie); // show all cookies
+
+-------------
+domain
+domain=site.com
+A domain defines where the cookie is accessible.
+
+There’s no way to let a cookie be accessible from another 2nd-level domain, so other.com will never receive a cookie set at site.com.
+
+--------------------------------------------------------------------------------------------------------------------------------
+document.cookie provides access to cookies.
+
+Write operations modify only the cookie mentioned in it.
+Name/value must be encoded.
+One cookie may not exceed 4KB in size. The number of cookies allowed on a domain is around 20+ (varies by browser).
+Cookie attributes:
+
+path=/, by default current path, makes the cookie visible only under that path.
+domain=site.com, by default a cookie is visible on the current domain only. If the domain is set explicitly, the cookie becomes visible on subdomains.
+expires or max-age sets the cookie expiration time. Without them, the cookie dies when the browser is closed.
+secure makes the cookie HTTPS-only.
+samesite forbids the browser to send the cookie with requests coming from outside the site. This helps to prevent XSRF attacks.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+LocalStorage, sessionStorage
+Web storage objects localStorage and sessionStorage allow to save key/value pairs in the browser.
+
+Unlike cookies, web storage objects are not sent to server with each request. Because of that, we can store much more. Most modern browsers allow at least 5 megabytes of data (or more) and have settings to configure that.
+Also unlike cookies, the server can’t manipulate storage objects via HTTP headers. Everything’s done in JavaScript.
+The storage is bound to the origin (domain/protocol/port triplet). That is, different protocols or subdomains infer different storage objects, they can’t access data from each other.
+
+---------
+
+Both storage objects provide the same methods and properties:
+
+setItem(key, value) – store key/value pair.
+getItem(key) – get the value by key.
+removeItem(key) – remove the key with its value.
+clear() – delete everything.
+key(index) – get the key on a given position.
+length – the number of stored items.
+
+
+------------
+The main features of localStorage are:
+
+Shared between all tabs and windows from the same origin.
+The data does not expire. It remains after the browser restart and even OS reboot.
+
+
+The localStorage is shared between all windows with the same origin, so if we set the data in one window, the change becomes visible in another one.
+
+-----------
+Object-like access
+We can also use a plain object way of getting/setting keys, like this:
+
+// set key
+localStorage.test = 2;
+
+// get key
+alert( localStorage.test ); // 2
+
+// remove key
+delete localStorage.test;
+
+----------------
+
+Strings only
+Both key and value must be strings.
+
+If they were any other type, like a number, or an object, they would get converted to a string automatically:
+--------------------------------------------------------------------------------------------------------------------------------
+sessionStorage
+The sessionStorage object is used much less often than localStorage.
+
+Properties and methods are the same, but it’s much more limited:
+
+The sessionStorage exists only within the current browser tab.
+Another tab with the same page will have a different storage.
+But it is shared between iframes in the same tab (assuming they come from the same origin).
+The data survives page refresh, but not closing/opening the tab.
+
+--------------------------------------------------------------------------------------------------------------------------------
+IndexedDB
+IndexedDB is a database that is built into a browser, much more powerful than localStorage.
+
+Stores almost any kind of values by keys, multiple key types.
+Supports transactions for reliability.
+Supports key range queries, indexes.
+Can store much bigger volumes of data than localStorage.
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+
+
