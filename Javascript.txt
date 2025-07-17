@@ -641,7 +641,21 @@ In strict mode, when a Function Declaration is within a code block, it’s visib
 
 In most cases when we need to declare a function, a Function Declaration is preferable, because it is visible prior to the declaration itself. That gives us more flexibility in code organization, and is usually more readable.
 --------------------------------------------------------------------------------------------------------------------------------
+Arrow Functions
+There’s another very simple and concise syntax for creating functions, that’s often better than Function Expressions.
+it looks like this - let func = (arg1, arg2, ..., argN) => expression;
 
+Arrow functions can be used in the same way as Function Expressions.
+
+Multiline arrow functions-
+if arrow function has more logic with multiple expressions and statements. In that case, we can enclose them in curly braces. The major difference is that curly braces require a return within them to return a value (just like a regular function does).
+
+eg - let sum = (a, b) => {  // the curly brace opens a multiline function
+  let result = a + b;
+  return result; // if we use curly braces, then we need an explicit "return"
+};
+
+alert( sum(1, 2) ); // 3
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
