@@ -64,7 +64,18 @@ ngOnDestroy( ): This hook is called just before Angular destroys the component. 
 
 --------------------------------------------------------------------------------------------------------------------------------
 What is AOT in Angular?
-In Angular, AOT stands for Ahead-Of-Time compiler. It is used to convert your Angular HTML and TypeScript code into efficient JavaScript code during the build phase before the browser downloads and runs that code. By compiling the application during the build process provides a faster rendering in the browser.
+In Angular, AOT stands for Ahead-Of-Time compiler
+. It is used to convert your Angular HTML and TypeScript code into efficient JavaScript code during the build phase before the browser downloads and runs that code.
+ By compiling the application during the build process provides a faster rendering in the browser.
+
+
+ -------------
+ In Angular, AOT (Ahead-of-Time) and JIT (Just-in-Time) are two types of compilation strategies that convert Angular HTML and TypeScript code into JavaScript that browsers can understand.
+
+
+ AOT (Ahead-of-Time) compiles Angular templates and TypeScript into JavaScript during the build process, before the app runs in the browser. It results in faster load time, smaller bundle size (since the Angular compiler is not included), and better security. It's used mainly in production builds and catches template errors at build time.
+
+JIT (Just-in-Time) compiles templates in the browser at runtime. It's mostly used in development because it allows quicker builds and easy debugging. However, it leads to slower initial load time, larger bundles (due to including the compiler), and potential runtime template errors.
 
 --------------------------------------------------------------------------------------------------------------------------------
 What is the difference between Observables and Promises in Angular?
