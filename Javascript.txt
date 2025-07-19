@@ -535,9 +535,24 @@ The value Infinity (positive infinity) is greater than any other number.
 --------------------------------------------------------------------------------------------------------------------------------
 What is an event loop in JavaScript ?
 JavaScript’s event loop is the core mechanism that enables asynchronous operations.
-An event loop is something that pulls stuff out of the queue and places it onto the function execution stack whenever the function stack becomes empty.
+An event loop is something that pulls stuff out of the queue and places it onto the function execution stack whenever the function stack (call stack / global execution context) becomes empty.
 
 The event loop continuously checks the call stack and the callback queue. If the call stack is empty, it takes the first function from the callback queue and pushes it onto the call stack for execution.
+
+We also have micro-task queue , similar to callback queue - it stores task from Promises & Dom mutation only.
+
+Microtask queue has Higher Priority than Callback queue.
+
+Event Loop will always pick up tasks from Microtask queue before callback queue
+
+
+---------
+Callback Queue - setTimeout, setInterval, DOM events, setImmediate
+
+Microtask Queue - 	Promise.then, catch, finally, queueMicrotask
+
+-----------
+For same time of execution - function of promise will be called before setTimeOut
 
 --------------------------------------------------------------------------------------------------------------------------------
 Callback Queue
