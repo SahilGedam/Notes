@@ -14,6 +14,36 @@ A cache is simply a temporary data store that holds data so that future requests
 
 Although using memoization saves time, it results in larger consumption of memory since we are storing all the computed results.
 
+
+----------------
+example -
+this fibonacchi series code can be optimized using memoization
+
+function fib(n) {
+  if (n <= 1) return n;
+  return fib(n - 1) + fib(n - 2);
+}
+
+console.log(fib(40)); // Very slow
+
+------
+
+function memoizedFib() {
+  const cache = {};
+
+  return function fib(n) {
+    if (n in cache) return cache[n];
+    if (n <= 1) return n;
+
+    cache[n] = fib(n - 1) + fib(n - 2);
+    return cache[n];
+  };
+}
+
+const fib = memoizedFib();
+console.log(fib(40)); // Much faster
+
+
 --------------------------------------------------------------------------------------------------------------------------------
 Promises
 
@@ -310,6 +340,26 @@ function add (a) {
 }
 
 add(3)(4) 
+
+------------
+implementation - 
+function add(a, b, c) {
+  return a + b + c;
+}
+
+// Call like:
+add(1)(2)(3); // 6
+ can be converted into -
+ function add(a) {
+  return function(b) {
+    return function(c) {
+      return a + b + c;
+    };
+  };
+}
+
+console.log(add(1)(2)(3)); // 6
+
 
 --------------------------------------------------------------------------------------------------------------------------------
 Explain Scope 
