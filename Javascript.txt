@@ -1021,13 +1021,25 @@ Debouncing & Throttling
 Ensures a function runs only after a certain delay has passed since the last event.
 
 Example: Search input — wait until the user stops typing to call the API.
+
+
+
 function debounce(fn, delay) {
-  let timer;
+  let timerId = null; // Step 1: Timer to keep track of pending execution
+
   return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
+    // Step 2: On each call, cancel the previous timer
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+
+    // Step 3: Set a new timer to call the function after `delay` ms
+    timerId = setTimeout(() => {
+      fn.apply(this, args); // Step 4: Execute the function
+    }, delay);
   };
 }
+
 
 -------------
 Throttling:
@@ -1035,15 +1047,19 @@ Ensures a function runs only once every X milliseconds, no matter how many times
 
 Example: Scroll listener or resize — call a function at most every 200ms.
 function throttle(fn, delay) {
-  let last = 0;
+  let lastExecutionTime = 0; // Step 1: Store timestamp of last execution
+
   return function (...args) {
-    const now = Date.now();
-    if (now - last >= delay) {
-      last = now;
-      fn.apply(this, args);
+    const now = Date.now(); // Step 2: Get current time
+
+    // Step 3: Check if enough time has passed since last execution
+    if (now - lastExecutionTime >= delay) {
+      lastExecutionTime = now; // Step 4: Update last execution time
+      fn.apply(this, args);    // Step 5: Execute the function
     }
   };
 }
+
 
 --------------------------------------------------------------------------------------------------------------------------------
 
