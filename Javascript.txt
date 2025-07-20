@@ -1015,6 +1015,36 @@ For example:
 let code = 'alert("Hello")';
 eval(code); // Hello
 --------------------------------------------------------------------------------------------------------------------------------
+Debouncing & Throttling
+
+ Debouncing:
+Ensures a function runs only after a certain delay has passed since the last event.
+
+Example: Search input — wait until the user stops typing to call the API.
+function debounce(fn, delay) {
+  let timer;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+-------------
+Throttling:
+Ensures a function runs only once every X milliseconds, no matter how many times it's triggered.
+
+Example: Scroll listener or resize — call a function at most every 200ms.
+function throttle(fn, delay) {
+  let last = 0;
+  return function (...args) {
+    const now = Date.now();
+    if (now - last >= delay) {
+      last = now;
+      fn.apply(this, args);
+    }
+  };
+}
+
 --------------------------------------------------------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------------------------------------------------------
