@@ -471,7 +471,24 @@ Internationalization - i18n - can be used to change/ translate the language
 use i18n for it
 
 --------------------------------------------------------------------------------------------------------------------------------
+Debouncing & Throttling in Angular using RXJS
 
+  this.form = this.fb.group({
+      debounceSearch: [null],
+      throttleSearch : [null]
+    });
+    this.form
+      .get('debounceSearch')!
+      .valueChanges.pipe(debounceTime(500))
+      .subscribe((value) => {
+        console.log('searched value - ', value);
+      });
+    this.form
+      .get('throttleSearch')!
+      .valueChanges.pipe(throttleTime(500))
+      .subscribe((value) => {
+        console.log('searched value - ', value);
+      });
 
 --------------------------------------------------------------------------------------------------------------------------------
 
