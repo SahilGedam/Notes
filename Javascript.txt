@@ -259,6 +259,17 @@ eg - if called from global - may return window object ,
 --------------------------------------------------------------------------------------------------------------------------------
 Explain call(), apply() and, bind() methods.
 
+'call' and 'apply' are used when you want to invoke a function immediately with a specific 'this' context. 'bind' is used when you want to create a new function with a bound this to be used later.
+
+In JavaScript, call, apply, and bind are methods used to explicitly set the value of this inside a function.
+
+call() invokes a function with a given this value and arguments passed one by one.
+
+apply() is similar to call() but takes arguments as a single array.
+
+bind() returns a new function with this bound to a specific object. It doesn’t invoke the function immediately.
+-------------------------------
+
 1. call():
 
 It’s a predefined method in javascript.
@@ -291,7 +302,7 @@ function saySomething(message){
 var person4 = {name:  "John"};     
 saySomething.call(person4, "awesome");
 // Returns "John is awesome"    
-apply()
+2. apply()
 
 The apply method is similar to the call() method. The only difference is that,
 
@@ -302,7 +313,7 @@ function saySomething(message){
 }        
 var person4 = {name:  "John"};
 saySomething.apply(person4, ["awesome"]);
-2. bind():
+3. bind():
 
 This method returns a new function, where the value of “this” keyword will be bound to the owner object, which is provided as a parameter.
 Example with arguments:
