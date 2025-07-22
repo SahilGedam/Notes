@@ -284,7 +284,7 @@ var obj = {name: "Sandy"};
 sayHello.call(obj);
         
 // Returns "Hello Sandy"	
-call() method allows an object to use the method (function) of another object.
+call() method allows an object to use the method (function) of another object. (function borrowing)
 Example 2:
 var person = {
   age: 23,
@@ -315,7 +315,7 @@ var person4 = {name:  "John"};
 saySomething.apply(person4, ["awesome"]);
 3. bind():
 
-This method returns a new function, where the value of “this” keyword will be bound to the owner object, which is provided as a parameter.
+This method returns a new function, where the value of “this” keyword will be bound to the owner object, which is provided as a parameter. ( same as call , just return function instead)
 Example with arguments:
 var bikeDetails = {
     displayDetails: function(registrationNumber,brandName){
