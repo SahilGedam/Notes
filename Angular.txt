@@ -623,29 +623,139 @@ They allow Angular to track changes to values and automatically update the UI wh
 
 A signal holds a value and notifies Angular whenever that value changes, so Angular can re-render only the parts of the DOM that depend on it — without using Zone.js or manual change detection.
 
+---------
+
+Benefits of Signals
+No need for @Input() + ngOnChanges() for reactive inputs.
+
+No need to subscribe() or use async pipe like in RxJS.
+
+Fast, lightweight, and great for performance.
+
+Works perfectly with computed() and effect() for derived values and side effects.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Angular Routing (Standalone Setup)
 
+In Angular 15+, routing is set up using provideRouter() with standalone components:
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+bootstrapApplication(AppComponent, {
+  providers: [ provideRouter(routes) ]
+});
 
+Routes are defined using a Routes[] array:
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+<router-outlet></router-outlet> is used in templates to render routed components.
+Navigation can be triggered using:
+- routerLink: <a routerLink="/login">Login</a>
+- Programmatically: router.navigate(['/dashboard'])
 
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+<base href="/"> is required in index.html
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Redirects and Wildcard Routes
 
+Redirect to another route:
+
+{ path: '', redirectTo: 'home', pathMatch: 'full' }
+
+Wildcard route for 404 pages:
+
+{ path: '**', component: NotFoundComponent }
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Route Parameters & Query Params
+
+Route with dynamic parameter:
+{ path: 'product/:id', component: ProductComponent }
+
+In component:
+constructor(private route: ActivatedRoute) {}
+ngOnInit() {
+  const id = this.route.snapshot.paramMap.get('id');
+}
+
+Query Params:
+this.router.navigate(['/products'], { queryParams: { page: 2, sort: 'price' } });
+
+this.route.queryParamMap.subscribe(params => {
+  const page = params.get('page');
+});
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CanActivate Guard
+
+Prevents access to a route based on conditions (e.g., user not logged in)
+
+export const authGuard: CanActivateFn = () => {
+  const router = inject(Router);
+  const loggedIn = localStorage.getItem('loggedIn') === 'true';
+  if (!loggedIn) {
+    router.navigate(['/login']);
+    return false;
+  }
+  return true;
+};
+
+{ path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] }
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CanDeactivate Guard
+
+Prevents leaving a route with unsaved changes
+
+export const canExitForm: CanDeactivateFn<EditComponent> = (component) => {
+  return component.hasUnsavedChanges ? confirm('Discard changes?') : true;
+};
+
+{ path: 'edit', component: EditComponent, canDeactivate: [canExitForm] }
+
+Component must implement hasUnsavedChanges: boolean or method.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CanLoad Guard
+
+Prevents loading a lazy-loaded module if condition fails
+
+export const adminGuard: CanLoadFn = () => {
+  const isAdmin = localStorage.getItem('role') === 'admin';
+  return isAdmin;
+};
+
+{ 
+  path: 'admin',
+  loadChildren: () => import('./admin.routes'),
+  canLoad: [adminGuard]
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Resolve Guard
+
+Fetches data before route activates (no flicker/loading states)
+
+export const userResolver: ResolveFn<User> = () => {
+  return inject(UserService).getUserProfile();
+};
+
+{ path: 'profile', component: ProfileComponent, resolve: { user: userResolver } }
+
+In component:
+this.route.data.subscribe(data => {
+  console.log(data['user']);
+});
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CanActivateChild Guard
+
+Applies auth check to all child routes:
+
+{
+  path: 'admin',
+  canActivateChild: [authGuard],
+  children: [
+    { path: 'users', component: UsersComponent },
+    { path: 'settings', component: SettingsComponent },
+  ]
+}
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
