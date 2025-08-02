@@ -758,36 +758,117 @@ Applies auth check to all child routes:
 }
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Reactive Forms in Angular
+· Reactive Forms are a model-driven approach to handling form inputs in Angular using FormControl, FormGroup, and FormBuilder.
+
+· The form model is defined in the TypeScript class and connected to the template using form directives.
+
+· Supports complex validation, dynamic fields, and reactive behavior via RxJS.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ FormControl vs FormGroup vs FormBuilder
+FormControl: Represents a single form field.
+
+FormGroup: Represents a group of form controls, allows nested structures.
+
+FormBuilder: Simplifies creating FormGroups and FormControls using shorthand.
+
+------------------
+this.form = new FormGroup({
+  name: new FormControl('')
+});
+
+this.form = this.fb.group({
+  name: ['']
+});
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ setValue vs patchValue
+setValue: Requires exact match with the full form structure.
+
+patchValue: Updates only provided fields, partial updates allowed.
+
+this.form.setValue({ name: 'Sahil', age: 25 }); // all fields required  
+this.form.patchValue({ name: 'Sahil' }); // partial allowed
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Validations in Reactive Forms
+- Built-in Validators:
+Validators.required, minLength, maxLength, pattern, email
+
+-Custom Validator (Sync):
+function noSpecialChars(control: AbstractControl): ValidationErrors | null {
+  return /^[a-zA-Z0-9]*$/.test(control.value) ? null : { specialChars: true };
+}
+
+-Async Validator:
+function checkUsername(control: AbstractControl): Observable<ValidationErrors | null> {
+  return api.checkUser(control.value).pipe(
+    map(exists => exists ? { usernameTaken: true } : null)
+  );
+}
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Form-Level Validation
+Apply validator to FormGroup, not just control.
+this.form = this.fb.group({
+  password: [''],
+  confirmPassword: ['']
+}, { validators: passwordMatchValidator });
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+FormArray
+· Used for dynamic list of controls.
 
+skills: this.fb.array([this.fb.control('')]);
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+this.skills.push(this.fb.control('Angular'));
 
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+valueChanges vs statusChanges
+valueChanges: Emits value whenever form/control changes.
+
+statusChanges: Emits form/control status (VALID, INVALID, PENDING, etc.)
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Enable / Disable Controls
+
+this.form.get('email')?.disable();
+this.form.get('email')?.enable();
+
+
+Disabled controls are excluded from form.value
+
+Use form.getRawValue() to get disabled control values
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Nested FormGroup
+this.form = this.fb.group({
+  name: [''],
+  address: this.fb.group({
+    city: [''],
+    state: ['']
+  })
+});
+Access with form.get('address.city')
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Validators.compose()
+· Used to combine multiple validators conditionally or dynamically.
+
+Validators.compose([Validators.required, Validators.minLength(3)])
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+markAsTouched / markAllAsTouched
+· Used to trigger validation messages manually (e.g. on submit).
+this.form.markAllAsTouched();
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
