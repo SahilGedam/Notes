@@ -872,25 +872,139 @@ this.form.markAllAsTouched();
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+RxJS in Angular
+· RxJS (Reactive Extensions for JS) is used for reactive programming (events, async data, streams).
+
+· Angular uses RxJS in forms, HTTP, routing, services, etc.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Observable
+· Core building block — emits data over time.
+
+· Can emit multiple values (like a stream), supports sync/async.
+
+const obs = new Observable(observer => {
+  observer.next('data');
+  observer.complete();
+});
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Pipe
+· Used to chain operators.
+pipe chains operators that return a new Observable transformed from the original one.
+
+· Applied on observable to transform, filter, debounce, etc.
+obs.pipe(map(val => val * 2), filter(v => v > 3))
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Subscribe
+· Triggers observable execution.
+
+· You pass observer callbacks: next, error, complete.
+obs.subscribe({
+  next: val => console.log(val),
+  error: err => console.error(err),
+  complete: () => console.log('done')
+});
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Operators
+Used inside .pipe() to transform or control data streams.
+------------
+Creation Operators:
+of() – emit static values
 
+from() – convert array/promise
+
+interval() – emit values over time
+
+timer() – like interval but delayed
+
+fromEvent() – listen to DOM events
+---------------
+Transformation:
+map() — transform values
+
+filter() — filter based on condition
+
+tap() — side effects (e.g., logging)
+
+take() — take N values
+
+takeUntil() — unsubscribe using notifier
+
+switchMap() — projects each source value to inner Observable; cancels previous inner Observable when a new value arrives. Useful in HTTP requests and typeahead search.
+
+mergeMap() — projects to inner Observable and merges results concurrently.
+
+concatMap() — projects to inner Observable and concatenates in order.
+
+exhaustMap() — ignores new source values while inner Observable is active.
+
+---------------
+Combination Operators:
+
+combineLatest() — emits latest values from multiple Observables each time any emits.
+
+forkJoin() — waits for all Observables to complete, then emits last values as array/object. Often used for parallel HTTP calls.
+
+withLatestFrom(), zip(), merge()
+
+----------------
+
+Filtering Operators:
+
+first(), last(), skip(), takeWhile(), skipWhile()
+----------------
+Utility:
+debounceTime() – wait after last emission
+
+throttleTime() – emit at regular intervals
+
+distinctUntilChanged() – skip duplicate values
+
+delay() – delay emission
+
+finalize() – run logic on completion/unsubscribe
+
+-----------------
+Error Handling Operators:
+
+catchError() — handle/recover errors
+
+retry(), retryWhen() — resubscribe on errors
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Subjects (Multicast Observables)
 
+Subjects are special types of Observables that allow manual control over emissions via their next(), error(), and complete() methods.
+
+They are multicast, meaning all subscribers share the same underlying source and receive the same emitted values simultaneously. This contrasts with regular Observables that are unicast (each subscription runs independently).
+
+Subjects act both as an Observable (to subscribers) and as an Observer (to emit values).
+
+Types of Subjects:
+
+Subject — The basic Subject type; does not hold or replay any values. Subscribers only receive values emitted after they subscribe.
+
+BehaviorSubject — Holds the latest emitted value and immediately emits that latest value to any new subscribers upon subscription. It requires an initial value on creation.
+
+ReplaySubject — Buffers a specified number of previous emitted values and replays them to new subscribers upon subscription. Useful for caching or late subscribers.
+
+AsyncSubject — Emits only the last value to its subscribers, but only when the Subject completes. Subscribers receive no values until completion.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Unsubscribe Strategies
+Manual: .unsubscribe()
 
+takeUntil() + Subject in ngOnDestroy()
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+takeUntilDestroyed() (Angular 16+)
 
+AsyncPipe in templates (auto unsubscribe)
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
