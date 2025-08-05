@@ -30,7 +30,6 @@ Syntax:
 
 2. The Angular expressions are evaluated against a local scope object. On the other hand, the JavaScript expressions are evaluated against the global window object.
 3. The Angular expressions can handle null and undefined, whereas JavaScript expressions cannot.
-4. In Angular expressions, we cannot use loops, conditionals, and exceptions. The difference which makes Angular expressions quite beneficial is the use of pipes. Angular uses pipes (known as filters in AngularJS) to format data before displaying it.
 --------------------------------------------------------------------------------------------------------------------------------
 What is the difference between an Annotation and a Decorator in Angular?
 In Angular, annotations are the "only" metadata set of the class using the Reflect Metadata library. They are used to create an "annotation" array. On the other hand, decorators are the design patterns used for separating decoration or modification of a class without actually altering the original source code.
@@ -175,7 +174,7 @@ Constructor is a default method in TypeScript classes that are normally used for
 
 --------------------------------------------------------------------------------------------------------------------------------
 What do you understand by observable and observer in Angular?
-Observable: An observable is a unique object just like a promise that that is used to manage async code. Observables are not part of the JavaScript language so the developers have to rely on a popular Observable library called RxJS. The observables are created using the new keyword.
+Observable: An observable is a unique object just like a promise that that is used to manage async code. Observables are not part of the JavaScript language so the developers have to rely on a popular Observable library called RxJS. The observables can be created using the new keyword or creation functions like of(), from(), interval(), etc..
 Observer: Any object that has to be notified when the state of another object changes is called an observer. An observer is an interface for push-based notifications delivered by an Observable.
 --------------------------------------------------------------------------------------------------------------------------------
 What are the different types of directives in Angular?
@@ -648,8 +647,9 @@ Routes are defined using a Routes[] array:
 Navigation can be triggered using:
 - routerLink: <a routerLink="/login">Login</a>
 - Programmatically: router.navigate(['/dashboard'])
-
+--------------------
 <base href="/"> is required in index.html
+It helps the router resolve paths correctly relative to the root.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Redirects and Wildcard Routes
