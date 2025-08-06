@@ -1007,9 +1007,72 @@ takeUntilDestroyed() (Angular 16+)
 AsyncPipe in templates (auto unsubscribe)
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Component Reusability in Angular
+Reusability means building generic, configurable components that can be reused across different parts of the app — improves maintainability, reduces code duplication, and supports clean architecture.
+
+------------------
+@Input() Decorator
+Used to pass data from parent to child.
+
+Declared using @Input().
+
+Supports primitives, objects, arrays, etc.
+
+@Input() title: string = '';
+
+Usage: <app-card [title]="'User Info'"></app-card>
+----------------------
+@Output() Decorator
+Used to emit events from child to parent.
+
+Declared using @Output() + EventEmitter.
+@Output() clicked = new EventEmitter<string>();
+
+Usage: <app-card (clicked)="handleClick($event)"></app-card>
+
+-----------
+Two-Way Binding (@Input() + @Output())
+Simulates [(ngModel)]-like behavior with a custom binding syntax.
+
+Naming convention:
+
+@Input() status
+
+@Output() statusChange
+
+@Input() status: boolean = false;
+@Output() statusChange = new EventEmitter<boolean>();
+
+
+Usage:<app-toggle [(status)]="isActive"></app-toggle>
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ng-content (Content Projection)
+Projects content from parent into the child component's layout.
+
+Default content slot:
+<ng-content></ng-content>
+
+Usage:
+<app-card>
+  <p>Injected paragraph</p>
+</app-card>
+----------
+Multiple ng-content Slots
+Use select="" to define multiple content slots.
+
+<ng-content select="[header]"></ng-content>
+<ng-content></ng-content>
+<ng-content select="[footer]"></ng-content>
+
+Usage:
+<app-card>
+  <div header>Header Area</div>
+  <div>Body Area</div>
+  <div footer>Footer Area</div>
+</app-card>
+
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
