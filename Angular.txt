@@ -1076,6 +1076,49 @@ Usage:
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ViewContainerRef – Dynamic Component Rendering
+
+ViewContainerRef allows you to create, insert, and remove components or templates at runtime.
+
+Like a placeholder in the DOM where Angular can render something dynamically.
+
+Used in dashboards, modals, alerts, form builders, CMS-like tools.
+
+-----------
+ViewContainerRef lets you add or remove Angular components or templates in the DOM manually — wherever and whenever you want.
+
+-------------
+ How to get ViewContainerRef?
+
+ @ViewChild('ref', { read: ViewContainerRef }) vcr!: ViewContainerRef;
+
+Or use inject(ViewContainerRef) (Angular 14+)
+
+const vcr = inject(ViewContainerRef);
+
+Or inject in structural directives (like in custom *if/*for)
+
+----------------
+ Basic APIs
+createComponent(Component) → creates & inserts a component.
+
+clear() → removes all inserted views/components.
+
+length → returns count of views inside.
+
+createEmbeddedView(templateRef) → render an <ng-template> manually.
+
+----------------
+ Example: Dynamically add component at runtime
+
+ <ng-template #container></ng-template>
+
+@ViewChild('container', { read: ViewContainerRef }) vcr!: ViewContainerRef;
+
+add() {
+  const compRef = vcr.createComponent(WidgetComponent);
+  compRef.instance.id = 1; // passing @Input()
+}
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
