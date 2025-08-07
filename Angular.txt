@@ -1122,52 +1122,251 @@ add() {
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Angular Performance Optimization
+
+Make Angular apps faster by reducing:
+
+    DOM updates
+
+    Change detection cycles
+
+    Unnecessary re-renders
+
+    Payload size
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 1. trackBy in *ngFor
+Avoids DOM re-renders for unchanged items in a list.
+
+Prevents performance drops in large lists.
+
+<li *ngFor="let item of items; trackBy: trackById">{{ item.name }}</li>
+
+trackById(index: number, item: any) {
+  return item.id;
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2. Lazy Load Routes
+Loads feature modules only when route is visited.
+
+Reduces initial bundle size.
+
+// app.routes.ts
+{
+  path: 'dashboard',
+  loadChildren: () => import('./dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
+}
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 3. Dynamic Component Loading (ViewContainerRef)
+Code Splitting via Dynamic Imports (for Components)
+Loads component only when needed, not during initial load.
+
+Useful for rarely-used dialogs, widgets, etc.
+
+@ViewChild('container', { read: ViewContainerRef }) vcr!: ViewContainerRef;
+
+loadModal() {
+  import('./modal/lazy-modal.component').then(({ LazyModalComponent }) => {
+    this.vcr.clear(); // optional
+    this.vcr.createComponent(LazyModalComponent);
+  });
+}
+
+
+<!-- Template -->
+<ng-template #container></ng-template>
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 4. ChangeDetectionStrategy.OnPush
+
+Applied at component level to avoid frequent checks.
+
+Syntax is always written inside @Component() decorator.
+
+@Component({
+  selector: 'app-user-card',
+  templateUrl: './user-card.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+Useful when working with:
+
+@Input using object references
+
+async pipe for Observables
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+5. async Pipe
+Binds Observable data in template without manually subscribing.
+
+Works well with OnPush strategy.
+
+<!-- Example with Observable -->
+<div *ngIf="user$ | async as user">
+  {{ user.name }}
+</div>
+
+user$ = this.api.getUser();
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+6. Pure vs Impure Pipes
+Defined using @Pipe({ pure: true/false }).
+
+Pure pipes: run only if input changes.
+
+Impure pipes: run on every change detection.
+
+@Pipe({ name: 'uppercasePipe', pure: true }) // default is true
+export class UppercasePipe implements PipeTransform {
+  transform(value: string) {
+    return value.toUpperCase();
+  }
+}
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+7. Avoid Logic in Templates
+Avoid inline filters or calculations.
+
+Move logic to the component for better performance.
+
+<!-- ❌ BAD -->
+{{ users.filter(u => u.isActive).length }}
+
+<!-- ✅ GOOD -->
+{{ activeUserCount }}
+
+activeUserCount = this.users.filter(u => u.isActive).length;
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+8. Unsubscribe Properly (Memory Leak Prevention)
+Use ngOnDestroy, takeUntil, or async pipe.
+
+private destroy$ = new Subject();
+
+ngOnInit() {
+  this.api.getData().pipe(takeUntil(this.destroy$)).subscribe();
+}
+
+ngOnDestroy() {
+  this.destroy$.next();
+  this.destroy$.complete();
+}
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+9. Prefer One-Way Binding
+Avoid unnecessary use of [(ngModel)] or [(value)].
+
+<!-- ❌ BAD: Triggers detection twice -->
+<input [(ngModel)]="name" />
+
+<!-- ✅ GOOD: Controlled detection -->
+<input [value]="name" (input)="name = $event.target.value" />
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+10. Use ng-container to Avoid Extra DOM
+Use ng-container to apply structural directives without adding real HTML tags.
+
+<!-- Adds no extra tag -->
+<ng-container *ngIf="isLoggedIn">
+  <button>Logout</button>
+</ng-container>
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+OnPush Change Detection Strategy in Angular
+
+A change detection strategy to optimize performance by minimizing unnecessary component checks.
+
+Angular only checks the component and its subtree when:
+
+    An input property reference changes.
+
+    An event originated from the component or its children.
+
+    markForCheck() is called manually.
+
+    An observable bound with async pipe emits a new value.
+
+
+----------
+to enable - 
+@Component({
+  selector: 'app-example',
+  templateUrl: './example.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class ExampleComponent { }
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Benefits of OnPush:
 
+Improves performance by reducing change detection cycles.
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+Best for immutable data patterns and unidirectional data flow.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+markForCheck vs detectChanges
+
+markForCheck():
+
+Marks the component and its ancestors as needing change detection.
+
+Use when you update data outside Angular's zone or change an object property without changing the reference.
+
+Triggers change detection during the next Angular change detection cycle.
+
+constructor(private cd: ChangeDetectorRef) {}
+someMethod() {
+  this.data.prop = 'new value';
+  this.cd.markForCheck();
+}
 
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+--------------
+detectChanges():
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Triggers immediate change detection on the current component and its children.
 
+Runs synchronously and immediately updates the view.
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Use cautiously to avoid excessive checks and potential side effects.
 
+constructor(private cd: ChangeDetectorRef) {}
+updateView() {
+  this.data = newData;
+  this.cd.detectChanges();
+}
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-------------------
+detach() and reattach():
 
+detach() stops change detection for the component subtree.
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+reattach() resumes change detection.
 
+Useful for manual performance tuning in complex apps.
+
+--------------------
+Immutable Objects and OnPush:
+
+OnPush relies heavily on object reference changes.
+
+Do not mutate existing objects; instead, create new references to trigger detection.
+
+eg - 
+  // NO REFERENCE CHANGE
+    this.parentData.message = '🟥 mutated message';
+
+   // REFERENCE CHANGE
+    this.parentData = { message: '🟢 replaced object with new message' };
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
