@@ -1281,9 +1281,9 @@ Use ng-container to apply structural directives without adding real HTML tags.
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 OnPush Change Detection Strategy in Angular
 
-A change detection strategy to optimize performance by minimizing unnecessary component checks.
+it is a change detection strategy to optimize performance by minimizing unnecessary component checks.
 
-Angular only checks the component and its subtree when:
+Here Angular only checks the component and its subtree when:
 
     An input property reference changes.
 
