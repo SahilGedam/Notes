@@ -44,10 +44,11 @@ StylesURL - It contains component-specific stylesheets.
 --------------------------------------------------------------------------------------------------------------------------------
 What are the different Lifecycle hooks of Angular?
 
-When the Angular components are created, they enter their lifecycle and remain when they are destroyed. Angular Lifecycle hooks are used to check the phases and trigger changes at specific phases during the entire duration.
+When the Angular components are created, they enter their lifecycle and remain when they are destroyed. 
+Angular Lifecycle hooks are special methods that allow you to tap into key moments in a component’s creation, change detection, and destruction process — letting you run custom logic at those moments
 ngOnChanges( ): This method is called when one or more input properties of the component are changed. The hook receives a SimpleChanges object containing the previous and current values of the property.
 
-ngOnInit( ): This is the second lifecycle hook. It is called once, after the ngOnChanges hook. It is used to initialize the component and sets the input properties of the component.
+ngOnInit( ): This is the second lifecycle hook. It is called once, after the ngOnChanges hook. It is used to initialize the component .
 
 ngDoCheck( ): This hook is called after ngOnChanges and ngOnInit and is used to detect and act on changes that Angular cannot detect. In this hook, we can implement our change detection algorithm.
 
@@ -60,6 +61,85 @@ ngAfterViewInit( ): This hook is called after a component's view or initializing
 ngAfterViewChecked( ): This hook is called after ngAfterViewInit. It responds after the component's view or when the child component's view is checked.
 
 ngOnDestroy( ): This hook is called just before Angular destroys the component. This is used to clean up the code and detach event handlers.
+
+Execution Order -
+ngOnChanges → ngOnInit → ngDoCheck  
+→ ngAfterContentInit → ngAfterContentChecked  
+→ ngAfterViewInit → ngAfterViewChecked  
+(Then cycles: ngDoCheck → ngAfterContentChecked → ngAfterViewChecked)  
+→ ngOnDestroy
+
+----------------------------------------
+
+ngOnChanges(changes: SimpleChanges)
+Runs before ngOnInit and whenever an @Input() value changes
+@Input() user!: User;
+ngOnChanges(changes: SimpleChanges) {
+  if (changes['user']) {
+    this.updateProfileForm(changes['user'].currentValue);
+  }
+}
+
+
+----------
+ngOnInit()
+Runs once after first ngOnChanges. Good for initialization logic.
+ngOnInit() {
+  this.loadData();
+}
+
+---------
+ngDoCheck()
+Detects deep object changes Angular won’t notice.
+ngDoCheck() {
+  if (this.settings.theme !== this.prevTheme) {
+    this.applyTheme(this.settings.theme);
+    this.prevTheme = this.settings.theme;
+  }
+}
+---------
+ngAfterViewInit()
+DOM access after template & child components are initialized.
+@ViewChild('chart') chart!: ChartComponent;
+ngAfterViewInit() {
+  this.chart.render();
+}
+----------
+ngOnDestroy()
+Cleanup: unsubscribe, remove listeners, clear timers.
+ngOnDestroy() {
+  this.resizeSub?.unsubscribe();
+  clearInterval(this.autoSaveId);
+}
+
+------------
+Diffrence between ngAfterContentInit  & ngAfterContentChecked
+
+Both are related to content projection (<ng-content>), but they fire at different times and for different purposes.
+
+ngAfterContentInit — One-time setup
+Fires only once, right after Angular inserts the projected content into your component.
+
+Good for running initialization logic that needs access to that projected content for the first time.
+
+Example: Measuring the height of a projected paragraph when it first appears.
+  @ContentChild('title') titleEl!: ElementRef;
+
+  ngAfterContentInit() {
+    console.log('Title text on first load:', this.titleEl.nativeElement.textContent);
+  }
+
+
+ngAfterContentChecked — Every change detection cycle
+Fires after ngAfterContentInit and then every time change detection runs to re-check projected content.
+
+Useful if the projected content changes dynamically and you need to respond each time.
+
+Example: Updating a counter every time projected items change.
+ngAfterContentChecked() {
+  console.log('Projected content re-checked');
+}
+
 
 --------------------------------------------------------------------------------------------------------------------------------
 What is AOT in Angular?
