@@ -1,0 +1,116 @@
+What is NgRx
+
+NgRx is a library for Angular that helps you manage application data in a single place called the store.
+Instead of each component keeping its own copy of data, the store holds the actual state,
+ and components only read from it or send requests to change it.
+These change requests are sent as actions, which are just plain objects describing what should happen.
+ Reducers listen to those actions and return a new state based on them.
+If something needs to be done outside the application before updating the state — like fetching data from an API — that’s handled by effects.
+This setup ensures that the data flow is one-way, so you can predict exactly how state changes happen,
+ making debugging and testing easier.
+---------------------------------------------------
+
+NgRx = state management for Angular apps (Redux pattern).
+
+Keeps state in a single store → predictable & testable.
+
+Data flow: Component → Action → Reducer → Store → Selector → Component.
+
+Useful for shared state between multiple components or complex state changes.
+
+--------------------------------------------------------------------
+
+Action: Describes what happened. Always an object with a type (and optional payload).
+
+Reducer: Pure function that takes current state + action → returns new state.
+
+Store: Central container for state, allows dispatch & select.
+
+Selector: Function to read specific slices of state.
+
+Effect: Handles async operations / side-effects (API calls).
+
+---------------------------------------------------------------
+
+Key Rules
+Reducers must be pure functions → no async calls, no mutations.
+
+Actions should be descriptive (type should clearly say what happened).
+
+Use selectors instead of accessing store state directly.
+
+Effects = only for side-effects (HTTP calls, timers, etc.).
+
+State is immutable → always return a new object, never modify old state.
+
+-----------------------------------------------------
+
+Example -
+
+Actions
+
+// counter.actions.ts
+import { createAction } from '@ngrx/store';
+export const increment = createAction('[Counter] Increment');
+export const decrement = createAction('[Counter] Decrement');
+export const reset = createAction('[Counter] Reset');
+
+-------------
+Reducer
+// counter.reducer.ts
+import { createReducer, on } from '@ngrx/store';
+import { increment, decrement, reset } from './counter.actions';
+
+export const initialState = 0;
+
+export const counterReducer = createReducer(
+  initialState,
+  on(increment, state => state + 1),
+  on(decrement, state => state - 1),
+  on(reset, _ => 0)
+);
+
+--------------------
+Selector
+
+// counter.selectors.ts
+import { createFeatureSelector, createSelector } from '@ngrx/store';
+export const selectCounterState = createFeatureSelector<number>('count');
+export const selectCount = createSelector(selectCounterState, state => state);
+
+-----------------------
+Store Registration
+// app.config.ts (standalone)
+import { provideStore } from '@ngrx/store';
+import { counterReducer } from './counter.reducer';
+
+export const appConfig = {
+  providers: [provideStore({ count: counterReducer })]
+};
+
+------------------
+Component
+// counter.component.ts
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { Component } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { increment, decrement, reset } from './counter.actions';
+import { selectCount } from './counter.selectors';
+import { Observable } from 'rxjs';
+
+@Component({
+  selector: 'app-counter',
+  standalone: true,
+  imports: [CommonModule, AsyncPipe],
+  templateUrl: './counter.html'
+})
+export class CounterComponent {
+  count$: Observable<number>;
+  constructor(private store: Store) {
+    this.count$ = this.store.select(selectCount);
+  }
+  inc() { this.store.dispatch(increment()); }
+  dec() { this.store.dispatch(decrement()); }
+  reset() { this.store.dispatch(reset()); }
+}
+
