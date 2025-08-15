@@ -695,14 +695,92 @@ bootstrapApplication(AppComponent, {
 --------------------------------------------------------------------------------------------------------------------------------
 Signals in Angular
 
-Signals are a new reactive state management primitive introduced in Angular 16. 
-They allow Angular to track changes to values and automatically update the UI when those values change — similar to useState in React or reactivity in SolidJS.
-
-----------
-
-A signal holds a value and notifies Angular whenever that value changes, so Angular can re-render only the parts of the DOM that depend on it — without using Zone.js or manual change detection.
-
+Signals are a way to store and track reactive values in Angular (introduced in v16).
+A signal holds a value, and whenever it changes, Angular automatically updates the parts of the UI that depend on it — without manual change detection or Zone.js.
 ---------
+
+Introduced in Angular 16 as part of the new reactivity model.
+
+A signal holds a value and re-renders only the parts of the UI that depend on it.
+
+Works without subscribe() or async pipe for local state.
+
+Angular automatically tracks dependencies — if a computed value or effect uses a signal, it will re-run when that signal changes.
+
+Signals are synchronous — reading a signal gives its current value instantly.
+
+Can store any type (number, string, array, object, custom types).
+
+State can be updated via .set() (replace), .update() (transform), or .mutate() (in-place change).
+
+Computed signals: read-only signals whose value depends on other signals.
+
+Effects: run side effects (e.g., logging, API calls) whenever a signal changes.
+
+Great for component-local state; for complex global state, NgRx or services might be more suitable.
+
+Eliminates the need for @Input() + ngOnChanges() for reactive input handling.
+
+Improves performance by skipping unnecessary change detection cycles.
+
+Integrated into Angular forms, templates, and lifecycle hooks.
+
+----------------------------------
+Creating a Signal
+import { signal } from '@angular/core';
+
+count = signal(0); // Initial value 0
+
+-----
+Reading & Writing
+count();              // read value
+count.set(5);         // set value
+count.update(v => v + 1); // update based on old value
+
+-------
+Mutating Arrays/Objects
+todos = signal<string[]>([]);
+
+todos.mutate(list => {
+  list.push('Learn Signals');
+});
+--------
+Computed Signal (derived value)
+import { computed } from '@angular/core';
+
+doubleCount = computed(() => count() * 2);
+
+------
+Effect (side effect on change)
+import { effect } from '@angular/core';
+
+constructor() {
+  effect(() => {
+    console.log('Count changed to', count());
+  });
+}
+------
+Using in Template
+<h1>{{ count() }}</h1>
+<button (click)="count.update(v => v + 1)">Increment</button>
+--------
+Passing Signals as Inputs
+// Parent Component
+count = signal(0);
+
+// Child Component
+@Input() count!: Signal<number>; // Reactive input without ngOnChanges
+
+------------
+Combining Signals with API Calls
+data = signal<any>(null);
+
+constructor(private http: HttpClient) {
+  this.http.get('/api/user').subscribe(res => this.data.set(res));
+}
+
+
+-----------------------------
 
 Benefits of Signals
 No need for @Input() + ngOnChanges() for reactive inputs.
