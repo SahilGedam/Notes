@@ -125,3 +125,60 @@ Reconnection Handling:
 Polling & Long Polling: Naturally reconnect on each request.
 
 WebSocket: Requires manual reconnection logic on network disruption.
+
+-----------------------------------------------------------------------------
+Example Setup of Websocket in Angular -
+import { Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class WebsocketService {
+  private ws!: WebSocket;
+  private messageSubject = new Subject<any>();
+
+  connect(url: string): void {
+    this.ws = new WebSocket(url);
+
+    this.ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      this.messageSubject.next(data);
+    };
+
+    this.ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+  }
+
+  sendMessage(message: any) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    }
+  }
+
+  onMessage(): Observable<any> {
+    return this.messageSubject.asObservable();
+  }
+}
+
+---------------------
+  constructor(private wsService: WebsocketService) {}
+
+  ngOnInit() {
+    this.wsService.connect('ws://localhost:3000'); // WebSocket URL
+
+    this.wsService.onMessage().subscribe((data: any) => {
+      if (data.type === 'init') {
+        this.messages = data.messages;
+      } else if (data.type === 'message') {
+        this.messages.push(data.message);
+      }
+    });
+  }
+
+  sendMessage() {
+    if (!this.username || !this.message) return;
+    this.wsService.sendMessage({ username: this.username, text: this.message });
+    this.message = '';
+  }
