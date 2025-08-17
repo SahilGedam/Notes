@@ -1,0 +1,242 @@
+What is GraphQL? Why do we use GraphQL?
+
+GraphQL is a modern API technology developed by Facebook that lets clients ask for exactly the data they need from a server,
+using a single, type-safe query language. Instead of having many endpoints like REST,
+GraphQL exposes all the data and operations through a single endpoint, 
+and clients describe their data requirements in a precise, flexible query. 
+This makes data fetching more efficient and avoids over-fetching (extra data) or under-fetching (not enough data). 
+GraphQL is strongly typed, supports nested queries, and is self-documenting, which improves development speed and API maintainability.
+-------------------------------------------------------
+GraphQL is a query language and runtime for APIs that lets you define and request the exact shape of the data you need, all via a single endpoint.
+
+It was created to solve problems with REST, like having to make multiple requests or dealing with endpoints that return too much or too little data.
+
+You use GraphQL to make apps more efficient, reduce unnecessary data transfer, simplify frontend code, and enable faster changes on both the frontend and backend.
+
+GraphQL is strongly typed, so both server and client know exactly what data is available and what’s expected.
+
+With GraphQL, the client controls the data format—not the server.
+
+----------------------------
+Note: As a frontend developer, you don’t need to memorize the GraphQL query syntax, as you can easily create and test queries using a GraphQL studio, such as the one hosted at localhost:4000/graphql.
+
+-------------------------------------------
+REST vs GraphQL
+
+Endpoints:
+
+REST: Multiple endpoints, one for each resource/type of data.
+
+GraphQL: Single endpoint for all queries and mutations.
+
+Data Fetching:
+
+REST: Each endpoint returns a fixed data structure; might fetch more or less data than needed.
+
+GraphQL: Client specifies exactly which fields and nested data it wants, preventing over-fetching or under-fetching.
+
+Multiple Requests:
+
+REST: Complex UIs may require many API calls to different endpoints.
+
+GraphQL: Fetches all related data in a single request, even deeply nested.
+
+Response Structure:
+
+REST: The shape of data is defined by the backend server.
+
+GraphQL: The client defines the desired response structure in the query.
+
+Versioning:
+
+REST: API versions (v1, v2, etc.) are common for changes.
+
+GraphQL: Schema evolves without major versions; clients request only supported fields.
+
+Documentation:
+
+REST: Requires separate documentation (Swagger, Postman, etc.).
+
+GraphQL: Schema is self-documenting and introspectable; tools like GraphQL Playground auto-generate docs.
+
+Error Handling:
+
+REST: HTTP status codes (200, 404, etc.) for errors.
+
+GraphQL: Standard HTTP response, errors returned in a structured error field.
+
+Batching and Real-Time:
+
+REST: Manual work needed for batching or real-time; REST is request-response.
+
+GraphQL: Supports batching out-of-the-box; supports subscriptions (real-time).
+
+Caching:
+
+REST: Browser/proxy caching based on endpoints.
+
+GraphQL: More complex since all requests go to one endpoint; requires custom caching solutions (Apollo, Relay, etc.).
+-------------------------
+Why use GraphQL with Angular?
+
+Fetch only the fields/components you need (minimal payloads).
+
+Perfect for component-driven UIs: Each component can declare its data needs.
+
+Single endpoint for all data (no more juggling REST endpoints).
+
+Strong types, introspection, and auto-generated documentation.
+
+Works well with Angular's async/reactive patterns (RxJS Observables).
+
+--------------------------------------------------
+
+GraphQL = declarative, flexible API queries (alternative to REST).
+
+Single endpoint → predictable networking.
+
+Data flow: Angular Component → GraphQL Query/Mutation → Server → Exact Data Response → Component.
+---------------------------------------
+Integrate using Apollo Angular.
+
+Key Concepts
+
+Schema: Describes data and operations (Query, Mutation, Subscription).
+
+Query: Read data (select fields, filter).
+
+Mutation: Write/update/delete data.
+
+Subscription: Real-time updates via WebSockets.
+
+Resolver: Server-side function for each field.
+
+Type: Strongly-typed system—objects, scalars, enums, input.
+
+
+-----------
+Sample Schema
+
+type User {
+id: ID!
+name: String!
+email: String!
+}
+
+type Query {
+users: [User]
+user(id: ID!): User
+}
+
+type Mutation {
+createUser(name: String!, email: String!): User
+}
+
+Query Example (Client Side)
+
+Fetch data using GraphQL:
+
+query {
+users {
+id
+name
+}
+}
+
+Get only the data you specify (no extra/unused fields).
+
+----------------
+Angular + GraphQL Setup
+
+Install Apollo Client:
+npm install apollo-angular apollo-angular-link-http apollo-client graphql
+
+Import ApolloModule, HttpLinkModule in AppModule.
+
+Configure Apollo in app.module.ts:
+
+import { Apollo, APOLLO_OPTIONS } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular/http';
+
+@NgModule({
+providers: [
+{
+provide: APOLLO_OPTIONS,
+useFactory: (httpLink: HttpLink) => ({
+cache: new InMemoryCache(),
+link: httpLink.create({ uri: '/graphql' }),
+}),
+deps: [HttpLink],
+},
+],
+})
+
+Writing a Query in Angular
+
+import gql from 'graphql-tag';
+import { Apollo } from 'apollo-angular';
+
+const GET_USERS = gql query { users { id name } };
+
+@Component({ ... })
+export class UsersComponent {
+users$ = this.apollo.watchQuery({ query: GET_USERS }).valueChanges;
+constructor(private apollo: Apollo) {}
+}
+
+Use AsyncPipe in template:
+
+<ul> <li *ngFor="let user of users$ | async as data"> {{ user.name }} </li> </ul>
+Running a Mutation
+
+const CREATE_USER = gql mutation($name: String!, $email: String!) { createUser(name: $name, email: $email) { id name } };
+
+this.apollo.mutate({
+mutation: CREATE_USER,
+variables: { name: 'Alice', email: 'alice@email.com' }
+}).subscribe(result => {
+// handle result
+});
+
+Variables
+
+Variables = dynamic params sent with queries/mutations for reusability.
+
+query getUser($id: ID!) {
+user(id: $id) {
+name
+email
+}
+}
+
+Pass variables as { id: 123 } with your query request.
+
+Fragments
+
+Fragment = reusable selection of fields.
+
+fragment userFields on User {
+id
+name
+}
+
+Use in queries:
+
+{
+users {
+...userFields
+}
+}
+
+Subscriptions (Real-Time Data)
+
+Use Apollo Angular’s subscribe helper.
+
+const MESSAGE_SUB = gql subscription { newMessage { id text } };
+
+this.apollo.subscribe({ query: MESSAGE_SUB })
+.subscribe(data => {
+// handle real-time messages
+});
+
+-----------------------------
