@@ -89,6 +89,48 @@ Returns a Promise object that is resolved with the given value. If the value is 
 
 Promise.withResolvers()
 Returns an object containing a new Promise object and two functions to resolve or reject it, corresponding to the two parameters passed to the executor of the Promise() constructor.
+
+--------------------------------------------------------------------------------------------------------------------------------
+Creating a Promise
+const myPromise = new Promise((resolve, reject) => {
+  // async operation
+  if (success) {
+    resolve("Success!");
+  } else {
+    reject("Error!");
+  }
+});
+
+--------------------------------------------------------------------------------------------------------------------------------
+Using .then(), .catch(), and .finally()
+myPromise
+  .then(result => {
+    // Called when resolved
+    console.log(result);
+  })
+  .catch(error => {
+    // Called when rejected
+    console.error(error);
+  })
+  .finally(() => {
+    // Always called
+    console.log("Done");
+  });
+
+--------------------------------------------------------------------------------------------------------------------------------
+Chaining Promises
+
+Each .then() returns a new promise, allowing you to chain:
+doTask1()
+  .then(result1 => doTask2(result1))
+  .then(result2 => doTask3(result2))
+  .catch(err => handleError(err));
+
+--------------------------------------------------------------------------------------------------------------------------------
+Built-in Helpers
+Promise.resolve("Done"); // creates resolved promise
+Promise.reject("Error"); // creates rejected promise
+
 --------------------------------------------------------------------------------------------------------------------------------
 setTimeOut()
 it forms closure with the function it is in -> when the timer completes-> js by pass by refrence uses the value from the function 
