@@ -1,0 +1,184 @@
+What are WebSockets?
+
+WebSockets enable real-time, two-way (bidirectional) communication between your browser (client) and the server.
+
+Unlike regular HTTP requests (request–response, stateless), WebSockets create a persistent, full-duplex connection: data can flow freely both ways.
+
+The protocol uses ws:// (or wss:// for secure connections).
+
+Great for live data, chat, notifications, multiplayer games, collaborative tools, and any dynamic UI needing instant updates.
+
+---------------------------
+How WebSockets Work in Angular
+Angular can easily utilize WebSockets, either with the native WebSocket API or RxJS libraries.
+
+Common approaches:
+
+Create a WebSocket Service: Encapsulate connection logic, manage message streams, handle send/receive methods.
+
+Use packages like rxjs/webSocket for RxJS integration and stream-like handling.
+
+Services expose observables to components—use the AsyncPipe for real-time updates in the template.
+--------------------------
+
+WebSockets Use Cases in Angular
+Chat apps: Instant messages without page reloads.
+
+Live notifications: See updates as they happen.
+
+Dashboards: Display real-time analytics or events.
+
+Collaborative apps: Shared drawing, text editors, etc.
+
+Online games: Multiplayer moves/communication.
+
+---------------------------
+Modern Alternatives & Related Technologies
+
+SSE (Server-Sent Events)
+One-way "push" from server to client via HTTP.
+
+Simpler than WebSockets, but limited to server→client communication.
+
+Not suitable for bidirectional actions (e.g., chat input).
+
+-----------
+WebRTC
+Quicker peer-to-peer connections, mainly used for media (voice/video).
+
+More complex, rarely needed for standard data updates.
+-----------
+GraphQL Subscriptions
+Built on WebSockets, lets frontend subscribe to data changes.
+
+Useful for Angular + GraphQL setups.
+-----------
+Push API
+Used for notifications sent outside your app (requires Service Workers).
+
+---------------------------------------------------------------
+Diffrencences between Websocket , Polling and Long Polling
+Connection Type:
+
+Polling: Repeated, separate HTTP requests sent at fixed intervals.
+
+Long Polling: Client sends an HTTP request; server holds it open until new data is available, then closes connection and client immediately reconnects.
+
+WebSocket: Single persistent, full-duplex TCP connection maintained continuously between client and server.
+
+Data Flow:
+
+Polling: Unidirectional; client requests data, server responds.
+
+Long Polling: Unidirectional but server delays response until data is available.
+
+WebSocket: Bidirectional; client and server can send and receive data anytime.
+
+Latency:
+
+Polling: Highest latency due to fixed request intervals regardless of new data.
+
+Long Polling: Lower latency than polling, but still has some delay waiting for server data.
+
+WebSocket: Lowest latency; real-time, instant communication.
+
+Protocol:
+
+Polling & Long Polling: Use standard HTTP.
+
+WebSocket: Uses its own protocol (ws:// or wss://).
+
+Resource and Network Efficiency:
+
+Polling: Inefficient, many HTTP requests lead to high overhead and server load.
+
+Long Polling: More efficient than polling, but each response closes connection requiring new HTTP request cycle.
+
+WebSocket: Most efficient; single connection reduces overhead and scales better under load.
+
+Complexity & Support:
+
+Polling: Simple to implement and widely supported.
+
+Long Polling: Moderate complexity; supported everywhere that HTTP is.
+
+WebSocket: More complex; requires WebSocket-capable server and client support.
+
+Use Cases:
+
+Polling: Suitable for infrequent updates or environments where WebSockets aren't available.
+
+Long Polling: Good for occasional real-time needs or unstable network environments.
+
+WebSocket: Best for highly interactive, real-time applications: gaming, chat, live analytics.
+
+Connection Maintenance:
+
+Polling: No persistent connection; new connection each request.
+
+Long Polling: Persistent until server responds, then reconnect.
+
+WebSocket: Persistent until explicitly closed by client or server.
+
+Reconnection Handling:
+
+Polling & Long Polling: Naturally reconnect on each request.
+
+WebSocket: Requires manual reconnection logic on network disruption.
+
+-----------------------------------------------------------------------------
+Example Setup of Websocket in Angular -
+import { Injectable } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class WebsocketService {
+  private ws!: WebSocket;
+  private messageSubject = new Subject<any>();
+
+  connect(url: string): void {
+    this.ws = new WebSocket(url);
+
+    this.ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      this.messageSubject.next(data);
+    };
+
+    this.ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+  }
+
+  sendMessage(message: any) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify(message));
+    }
+  }
+
+  onMessage(): Observable<any> {
+    return this.messageSubject.asObservable();
+  }
+}
+
+---------------------
+  constructor(private wsService: WebsocketService) {}
+
+  ngOnInit() {
+    this.wsService.connect('ws://localhost:3000'); // WebSocket URL
+
+    this.wsService.onMessage().subscribe((data: any) => {
+      if (data.type === 'init') {
+        this.messages = data.messages;
+      } else if (data.type === 'message') {
+        this.messages.push(data.message);
+      }
+    });
+  }
+
+  sendMessage() {
+    if (!this.username || !this.message) return;
+    this.wsService.sendMessage({ username: this.username, text: this.message });
+    this.message = '';
+  }
