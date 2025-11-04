@@ -1,0 +1,29 @@
+No of subarrays in an Aray = (n * (n + 1)) / 2;
+
+------------------
+Regex - 
+Alphanumeric - ^[a-zA-Z0-9]+$
+Alphabet only - ^[a-zA-Z]+$
+Digits only - ^\d+$
+Alphanumeric with space - ^[a-zA-Z0-9 ]+$
+Floating point number - ^-?\d+(\.\d+)?$
+Integer - ^-?\d+$
+HTML Tag - `^<([a-z]+)([^<]+)(?:>(.)</\1>
+Valid URL - ^(https?:\/\/)?[\w.-]+\.\w{2,}
+
+------------------
+
+Remove Non alphanumeric characters from string
+str.replace(/[^a-zA-Z0-9]/g, '');
+
+------------------
+Remove all except numbers
+str.replace(/[^0-9]/g, '');
+
+-----------------
+
+Remove all numbers
+str.replace(/[0-9]/g, '');
+
+------------------
+
