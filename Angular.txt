@@ -1726,6 +1726,14 @@ Config-driven lazy loading allows route configuration to come from an API or ext
 Useful for plugin-based architectures, multi-tenant apps, or dynamic enterprise dashboards.
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Tree Shaking
+Tree shaking is a build optimization technique that removes unused code from the final JavaScript bundle.
+In Angular, it works by analyzing ES module imports and keeping only the parts of the code that are actually used in the application.
+
+In Angular projects, tree shaking happens automatically during the production build (ng build --configuration production) because Angular uses the Ivy compiler along with Vite (or previously Webpack) for optimization.
+
+Make sure that - "optimization": true and "buildOptimizer": true in angular.json
+
 
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
