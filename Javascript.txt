@@ -69,26 +69,81 @@ error handling-
 Promise concurrency-
 The Promise class offers four static methods to facilitate async task 
 
-Promise.all()
+-> Promise.all()
 Fulfills when all of the promises fulfill; rejects when any of the promises rejects.
 
-Promise.allSettled()
+const p1 = Promise.resolve(1);
+const p2 = Promise.resolve(2);
+const p3 = Promise.resolve(3);
+
+Promise.all([p1, p2, p3])
+  .then(values => console.log(values))  // [1, 2, 3]
+  .catch(err => console.error(err));    // any rejection ends it
+
+
+-> Promise.allSettled()
 Fulfills when all promises settle.
+const p1 = Promise.resolve("success");
+const p2 = Promise.reject("error");
 
-Promise.any()
+Promise.allSettled([p1, p2])
+  .then(results => console.log(results));
+/*
+[
+  { status: 'fulfilled', value: 'success' },
+  { status: 'rejected', reason: 'error' }
+]
+*/
+
+
+-> Promise.any()
 Fulfills when any of the promises fulfills; rejects when all of the promises reject.
+const p1 = Promise.reject("fail 1");
+const p2 = Promise.resolve("first success");
+const p3 = Promise.resolve("second success");
 
-Promise.race()
+Promise.any([p1, p2, p3])
+  .then(value => console.log(value))    // "first success"
+  .catch(err => console.error(err));    // AggregateError if all fail
+
+
+-> Promise.race()
 Settles when any of the promises settles. In other words, fulfills when any of the promises fulfills; rejects when any of the promises rejects.
----------------
-Promise.reject()
-Returns a new Promise object that is rejected with the given reason.
+const p1 = new Promise(res => setTimeout(() => res("1 done"), 300));
+const p2 = new Promise(res => setTimeout(() => res("2 done"), 100));
 
-Promise.resolve()
+Promise.race([p1, p2])
+  .then(result => console.log(result))  // "2 done"
+  .catch(err => console.error(err));
+
+---------------
+-> Promise.reject()
+Returns a new Promise object that is rejected with the given reason.
+const errorPromise = Promise.reject("Something went wrong");
+
+errorPromise
+  .catch(err => console.error(err)); // "Something went wrong"
+
+
+-> Promise.resolve()
 Returns a Promise object that is resolved with the given value. If the value is a thenable (i.e. has a then method), the returned promise will "follow" that thenable, adopting its eventual state; otherwise, the returned promise will be fulfilled with the value.
 
-Promise.withResolvers()
+const p = Promise.resolve(42);
+
+p.then(value => console.log(value)); // 42
+
+
+-> Promise.withResolvers()
 Returns an object containing a new Promise object and two functions to resolve or reject it, corresponding to the two parameters passed to the executor of the Promise() constructor.
+
+const { promise, resolve, reject } = Promise.withResolvers();
+
+setTimeout(() => {
+  resolve("Done!");
+}, 1000);
+
+promise.then(val => console.log(val)); // "Done!" after 1 sec
+
 
 --------------------------------------------------------------------------------------------------------------------------------
 Creating a Promise
