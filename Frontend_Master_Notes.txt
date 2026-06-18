@@ -1,0 +1,381 @@
+================================================================================
+                     FRONTEND DEVELOPER MASTER INTERVIEW NOTES
+================================================================================
+
+1. BROWSER INTERNALS
+--------------------------------------------------------------------------------
+* What Happens When You Type a URL in the Browser Address Bar?
+  1. URL Parsing: The browser checks if the input is a search query or a valid URL.
+  2. DNS Lookup: The browser maps the domain name (e.g. google.com) to an IP address.
+     - Checks browser cache -> OS hosts file/cache -> Router cache -> ISP DNS cache.
+     - Queries DNS Root, TLD, and Authoritative Name Servers recursively.
+  3. TCP Connection: Once the IP is resolved, the browser opens a TCP connection 
+     via a 3-Way Handshake (SYN -> SYN-ACK -> ACK).
+  4. TLS Handshake: For HTTPS, a TLS handshake is performed to establish symmetric 
+     encryption keys and verify server identity.
+  5. HTTP Request: The browser sends an HTTP GET request containing headers, cookies, 
+     and user-agent info.
+  6. Server Processing: The server processes the request and sends back an HTTP Response 
+     (e.g., HTML content, status code 200 OK).
+  7. Browser Rendering: The browser parses the HTML response and begins the rendering pipeline.
+
+* Browser Rendering Pipeline:
+  [HTML]  --> Parse --> [ DOM Tree ]   \
+                                         --> [ Render Tree ] --> Layout --> Paint --> Composite
+  [CSS]   --> Parse --> [ CSSOM Tree ] /
+
+  - Parsing:
+    - HTML Parser generates the Document Object Model (DOM) Tree.
+    - CSS Parser parses stylesheets and style attributes to build the CSS Object Model (CSSOM) Tree.
+  - Render Tree Construction:
+    - Combines DOM and CSSOM to map visible elements. Elements with `display: none` 
+      are excluded (unlike `visibility: hidden` which is included).
+  - Layout (Reflow):
+    - Computes the geometry (size, position) of each element relative to the viewport.
+  - Paint:
+    - Fills in pixels (colors, borders, images, shadows, text styles). Done in layers.
+  - Compositing:
+    - Sends layers to the GPU to be drawn on the screen in correct order (handled by 
+      compositor thread).
+
+* Layout, Paint, and Composite:
+  - Layout: Calculations of geometry (box-model dimensions).
+  - Paint: Textures and coloring of individual nodes.
+  - Composite: Stacking layer order (e.g., elements with `z-index`, `transform`, `opacity`).
+
+* Reflow vs. Repaint:
+  - Reflow (Layout change): Triggered when changes affect the layout/geometry of elements. 
+    It forces the browser to recalculate sizes and positions of affected nodes.
+    - Examples: Changing `width`, `height`, `margin`, `padding`, resizing window, 
+      reading `offsetTop` / `getBoundingClientRect()`.
+  - Repaint (Style change): Triggered when changes affect visibility/styling but not geometry.
+    - Examples: Changing `color`, `background-color`, `visibility`, `outline`.
+  - Performance Optimization: Avoid layout thrashing (repeatedly writing and reading DOM 
+    layout properties). Batch DOM operations or use CSS properties that bypass both reflow 
+    and repaint (like `transform` and `opacity` which only trigger Composite).
+
+
+2. JAVASCRIPT FUNDAMENTALS (INTERVIEW CORE)
+--------------------------------------------------------------------------------
+* Execution Context:
+  An abstract environment where JavaScript code is evaluated and executed.
+  - Global Execution Context: Created when the script starts. Sets `globalThis` / `window`.
+  - Function Execution Context: Created whenever a function is invoked.
+  - Creation Phase:
+    - Variable Object (VO) / Lexical Environment is created.
+    - Hoisting occurs (variables declared with `var` set to `undefined`, functions registered).
+    - Scope Chain is initialized.
+    - `this` binding is established.
+  - Execution Phase: Code runs line by line; variables are assigned.
+
+* Call Stack:
+  A LIFO (Last In, First Out) stack that tracks the currently running execution contexts.
+
+* Scope and Closures:
+  - Scope: Determines visibility/accessibility of variables. (Global, Function, Block).
+  - Closure: An inner function that retains access to variables in its outer lexical 
+    environment even after the outer function has returned.
+    - Use cases: Data encapsulation (private variables), currying, memoization.
+
+* Hoisting & The Temporal Dead Zone (TDZ):
+  - Hoisting: Moving declarations to the top of their scope.
+  - `var` is hoisted and initialized to `undefined`.
+  - `let`/`const` are hoisted but remain uninitialized. The region before their declaration 
+    is the TDZ, and accessing them here throws a `ReferenceError`.
+
+* Prototypal Inheritance:
+  - Objects are linked to a prototype (`[[Prototype]]` or `__proto__`).
+  - Constructor functions have a `prototype` object.
+  - Lookups traverse the chain until the property is found or `null` is reached.
+
+* Event Loop & Asynchronous Runtime:
+  - Single-threaded JS handles async operations via the event loop.
+  - Microtasks (High Priority): `Promise` callbacks (`.then`, `.catch`, `.finally`), 
+    `queueMicrotask`, `MutationObserver`.
+  - Macrotasks/Tasks (Low Priority): `setTimeout`, `setInterval`, DOM Events, I/O.
+  - Priority Flow: Execute one macrotask -> Drain the *entire* Microtask queue -> Render page -> Repeat.
+
+* Garbage Collection (GC):
+  - Memory Management: JavaScript dynamically allocates memory on the Heap for objects. 
+    Garbage collection runs automatically to release unreachable memory.
+  - Mark-and-Sweep Algorithm: 
+    1. The garbage collector defines a set of "roots" (e.g., the global object, active local variables).
+    2. It traverses all roots, "marking" any object references found.
+    3. It recursively marks nested references.
+    4. Any memory blocks not marked (unreachable from the roots) are "swept" and reclaimed.
+  - Memory leaks occur when references to unused objects are accidentally kept in active scopes.
+
+
+3. BROWSER APIs
+--------------------------------------------------------------------------------
+* Web Storage Comparison:
+  -----------------------------------------------------------------------------
+  Feature        | LocalStorage   | SessionStorage | Cookies       | IndexedDB
+  -----------------------------------------------------------------------------
+  Capacity       | ~5-10MB        | ~5MB           | ~4KB          | Virtually unlimited
+  Lifetime       | Persistent     | Session-only   | Expire date   | Persistent
+  Server Access  | Client-only    | Client-only    | Sent with HTTP| Client-only
+  API            | Synchronous    | Synchronous    | String parsing| Asynchronous
+  -----------------------------------------------------------------------------
+
+* Service Workers vs. Web Workers:
+  - Web Workers: Running scripts in background threads to perform heavy computations 
+    without blocking the main UI thread.
+  - Service Workers: A specialized type of worker that acts as a proxy between the browser, 
+    network, and cache. Used for offline capabilities, push notifications, and background sync.
+
+* Observers:
+  - Intersection Observer: Asynchronously detects when an element enters or leaves the 
+    browser viewport. Great for lazy-loading images, infinite scroll, and tracking ad views.
+    ```javascript
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          console.log("Element visible!");
+        }
+      });
+    });
+    observer.observe(document.getElementById("target"));
+    ```
+  - Mutation Observer: Listens for changes to the DOM tree (addition/removal of nodes, 
+    attribute updates, text changes). Runs as a microtask.
+
+
+4. NETWORK & WEB FUNDAMENTALS
+--------------------------------------------------------------------------------
+* HTTP vs. HTTPS:
+  - HTTP: Transfers data in plain text (Port 80).
+  - HTTPS: Encrypts data using SSL/TLS (Port 443) to prevent eavesdropping and tampering.
+
+* HTTP Methods:
+  - `GET`: Retrieve data. Idempotent. Safe.
+  - `POST`: Create data. Non-idempotent.
+  - `PUT`: Replace/upsert data. Idempotent.
+  - `PATCH`: Partially update data. Non-idempotent.
+  - `DELETE`: Remove data. Idempotent.
+
+* REST APIs vs. GraphQL:
+  - REST: Resource-oriented (URL mappings). Can suffer from over-fetching (getting too 
+    much data) or under-fetching (requiring multiple round trips).
+  - GraphQL: Query-oriented. A single endpoint allows the client to request exactly 
+    what fields they need.
+
+* Network Stack:
+  - DNS Lookup: Resolves hostname to IP.
+  - TCP/IP: Transmission Control Protocol manages reliable, ordered packet delivery.
+  - TLS Handshake: Exchange of certificates and keys to establish a secure session.
+
+* HTTP Protocol Evolution:
+  - HTTP/1.1: Uses persistent connections but suffers from Head-of-Line Blocking 
+    (one slow request blocks subsequent ones on the same socket connection).
+  - HTTP/2: Multiplexing over a single TCP connection. Header compression (HPACK). 
+    Server Push.
+  - HTTP/3: Runs over QUIC (instead of TCP) using UDP. Eliminates Head-of-Line blocking 
+    at the transport layer and offers faster connection migration.
+
+* WebSockets:
+  A persistent, bi-directional, full-duplex TCP connection established via an HTTP handshake. 
+  Ideal for real-time applications (chat, stock feeds).
+
+
+5. BROWSER CACHING
+--------------------------------------------------------------------------------
+* Cache-Control Header:
+  - `no-store`: Do not cache anything.
+  - `no-cache`: Cache the resource, but must validate with the server before using 
+    (via ETag/Last-Modified).
+  - `public` / `private`: Indicates if intermediate CDNs/proxies can cache it or if 
+    only the browser client can.
+  - `max-age=X`: Caches the resource for X seconds.
+
+* Conditional Requests & Validation:
+  - ETag (Entity Tag): A unique hash of the resource version.
+  - Last-Modified: A timestamp of the last edit.
+  - Flow: Browser requests -> Server returns `ETag: "abc"` -> Next request contains 
+    `If-None-Match: "abc"`. If unchanged, server returns status **304 Not Modified** 
+    (no response body sent, saves bandwidth).
+
+* Content Delivery Network (CDN):
+  A distributed network of proxy servers that cache static assets close to users, 
+  reducing latency (Round Trip Time) and load on the origin server.
+
+* Browser Cache vs. Service Worker Cache:
+  - Browser Cache (HTTP Cache): Automatic browser mechanism controlled strictly by HTTP headers.
+  - Service Worker Cache (Cache API): Programmatically controlled cache using JavaScript. 
+    Allows custom offline fallback strategies (e.g. Cache First, Network First, Stale-While-Revalidate).
+
+
+6. PERFORMANCE OPTIMIZATION
+--------------------------------------------------------------------------------
+* Bundle Optimization:
+  - Lazy Loading: Deferring loading of non-critical components/assets until needed.
+  - Code Splitting: Breaking bundles into smaller chunks.
+  - Tree Shaking: Static analysis of imports to remove unused dead code during compilation.
+
+* Critical Rendering Path (CRP):
+  The sequence of steps the browser takes to convert HTML, CSS, and JS into pixels on screen.
+  - Optimization: 
+    - Minify HTML, CSS, JS.
+    - Inline critical CSS.
+    - Use `async` or `defer` for scripts to prevent DOM-parsing blocking:
+      - `async`: Download in parallel, execute immediately (blocks HTML parsing).
+      - `defer`: Download in parallel, execute only after HTML parsing is complete.
+
+* Resource Hints:
+  - `preload`: Fetch high-priority assets needed for the current page immediately.
+  - `prefetch`: Fetch low-priority assets needed for future pages during idle time.
+  - `preconnect`: Establish early connections (DNS, TCP, TLS) to a third-party origin.
+
+* Image Optimization:
+  - Use modern formats: WebP or AVIF (significantly smaller file sizes than JPEG/PNG).
+  - Implement responsive images: `<img srcset="..." sizes="...">`.
+  - Lazy loading attribute: `<img loading="lazy">`.
+
+* Memory Leaks in JavaScript:
+  - Accidental global variables.
+  - Uncleared timers (`setInterval`) or unresolved promises.
+  - Out of DOM references (retaining DOM nodes in JS memory after they are removed from DOM).
+  - Missing event listener cleanups.
+
+* Virtual Scrolling:
+  Only rendering the DOM elements that are currently visible inside the scrollable container. 
+  Recycles DOM elements as the user scrolls, allowing display of millions of rows without 
+  crashing the browser.
+
+* Core Web Vitals:
+  Google's user-centric performance metrics for measuring the user experience of a page:
+  - LCP (Largest Contentful Paint): Measures loading speed of the main/largest page content 
+    (Target: <= 2.5s).
+  - INP (Interaction to Next Paint): Measures responsiveness to user inputs (replaces legacy FID 
+    as of March 2024; Target: <= 200ms).
+  - CLS (Cumulative Layout Shift): Measures visual stability (preventing unexpected shifts in layout; 
+    Target: <= 0.1).
+
+
+7. FRONTEND DESIGN PATTERNS
+--------------------------------------------------------------------------------
+* Event Delegation:
+  Attaching one event handler to a parent to manage events on children (uses event bubbling).
+
+* Debouncing vs. Throttling:
+  - Debouncing: Delays invocation until a quiet period has elapsed.
+  - Throttling: Enforces a maximum execution frequency (once every X ms).
+
+* Publish-Subscribe (Pub/Sub) vs. Observer Pattern:
+  - Observer: Subject maintains a list of dependents (observers) and notifies them 
+    directly of state changes (tightly coupled).
+  - Pub/Sub: Publisher and Subscriber communicate via a third-party Message Broker channel, 
+    making them completely decoupled.
+
+* Module Pattern:
+  Capsules private state and reveals public API (historically via closures, modernly via 
+  ES Modules).
+
+
+8. SECURITY
+--------------------------------------------------------------------------------
+* Cross-Site Scripting (XSS):
+  Injecting malicious scripts into trusted websites.
+  - Prevention: Sanitize and encode inputs/outputs, use text-only binding (e.g. `textContent`), 
+    and implement a strict Content Security Policy (CSP).
+
+* Cross-Site Request Forgery (CSRF):
+  Forcing a logged-in user to execute unwanted actions on a web application.
+  - Prevention: Use CSRF tokens, custom request headers, and enforce `SameSite=Strict` or 
+    `SameSite=Lax` on session cookies.
+
+* Cross-Origin Resource Sharing (CORS):
+  A mechanism that uses HTTP headers to allow servers to declare which origins are 
+  permitted to read resources.
+  - Preflight Requests: For non-simple requests (e.g. using JSON payloads, custom headers 
+    like Authorization, or methods like PUT/DELETE), the browser automatically sends a 
+    pre-flight HTTP `OPTIONS` request first to verify access before sending the actual request.
+  - Simple Requests (bypass preflight): GET, POST, or HEAD with standard headers and simple 
+    content-types (`text/plain`, `application/x-www-form-urlencoded`, `multipart/form-data`).
+
+* Authentication Security:
+  - JWT (JSON Web Token): Stateless authorization token. Should be stored in memory 
+    or in an `httpOnly`, `Secure` cookie to mitigate XSS access.
+  - Session Cookies: Server-stateful. Sensitive to CSRF but can be secured using 
+    `httpOnly` (prevents JS access), `Secure` (HTTPS only), and `SameSite` flags.
+
+
+9. ACCESSIBILITY (a11y)
+--------------------------------------------------------------------------------
+* Semantic HTML:
+  Using appropriate tag meanings (e.g. `<main>`, `<nav>`, `<button>`) instead of generic 
+  `<div>` or `<span>` wrappers. Provides built-in accessibility for screen readers.
+
+* ARIA (Accessible Rich Internet Applications):
+  Attributes (e.g. `aria-label`, `aria-expanded`, `role="dialog"`) that supply screen 
+  readers with structural data when semantic HTML is not enough. Note: "No ARIA is better 
+  than bad ARIA."
+
+* Keyboard Navigation & Focus Management:
+  - Ensure all interactive elements can be focused using `Tab`.
+  - Maintain a logical tab order.
+  - Manage focus dynamically (e.g., placing focus inside a modal when it opens and 
+    trapping it, then returning focus to the trigger button upon closing).
+
+
+10. MODERN FRONTEND ARCHITECTURE
+--------------------------------------------------------------------------------
+* Rendering Architectures:
+  - SPA (Single Page Application) / CSR (Client-Side Rendering): Browser downloads 
+    blank HTML and builds UI dynamically via JS. Fast transitions, poor initial load / SEO.
+  - MPA (Multi-Page Application): Every page request fetches a new HTML page from server.
+  - SSR (Server-Side Rendering): Server renders HTML on the fly per request. Better SEO 
+    and fast initial paint, but higher server overhead.
+  - SSG (Static Site Generation): Pre-renders pages to HTML at build time. Ultra fast 
+    loading via CDN, but poor for dynamic/real-time content.
+
+* Hydration:
+  The process where client-side JavaScript reads server-rendered HTML and attaches event 
+  listeners to turn static markup into an interactive application.
+
+* Monorepos vs. Micro Frontends:
+  - Monorepo: Storing multiple projects/libraries in a single repository, sharing tooling 
+    and dependencies.
+  - Micro Frontends: Breaking a frontend application down into independent, separately 
+    deployable micro-applications compiled together at runtime.
+
+
+11. FRONTEND SYSTEM DESIGN
+--------------------------------------------------------------------------------
+* Designing an Infinite Scroll Feature:
+  - Layout: Virtual Scroll Container to reuse DOM elements.
+  - Data Fetching: Intersection Observer detects when the user approaches the bottom 
+    of the container, prompting a paginated API request.
+  - Performance: Throttle scroll events, cancel active pending requests if the user 
+    navigates away, and cache previous pages in memory.
+
+* Designing a Dashboard with Thousands of Records:
+  - Performance: Use Web Workers to handle calculations/sorting in a background thread 
+    to prevent UI freezes.
+  - Rendering: Implement OnPush change detection (in Angular), use pure computed values, 
+    and paginate/virtualize list views.
+  - Real-Time Updates: Use WebSockets for live data stream feeding. Throttle incoming 
+    socket updates to batch DOM refreshes rather than rendering on every single message.
+
+* Caching Strategies & Performance Tradeoffs:
+  - Stale-While-Revalidate: Serve cached content immediately (instant response), then 
+    fetch update in the background. Excellent for user experience but user might briefly 
+    see stale data.
+  - Offline First: Read cache first, fallback to network. Ideal for unstable connections.
+
+12. CSS & STYLING
+--------------------------------------------------------------------------------
+* Specificity:
+  The weight applied to a given CSS declaration. The browser determines which styles 
+  to apply based on specificity calculations:
+  - Calculation Hierarchy: `Inline styles (1000) > IDs (100) > Classes, Attributes, and Pseudo-classes (10) > Elements and Pseudo-elements (1) > Universal selector (*, 0)`.
+  - Note: `!important` overrides normal specificity entirely but should be used sparingly 
+    as it makes styling hard to maintain.
+
+* Layout Engines: Flexbox vs. Grid:
+  - Flexbox (One-Dimensional): Aligns elements along a single axis (either row or column). 
+    Best for content-first layouts, menus, and simple item alignments.
+  - CSS Grid (Two-Dimensional): Aligns elements in rows and columns simultaneously. 
+    Best for layout-first designs, full-page structures, and complex card grids.
+
+================================================================================

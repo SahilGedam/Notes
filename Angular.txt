@@ -1,2180 +1,754 @@
-What is Angular? / What do you know about Angular?
-Angular is one of the most popular JavaScript frameworks developed and maintained by Google. It is an open-source front-end web framework based on TypeScript. It is most suited for developing enterprise web applications because its code is reusable and maintainable.
---------------------------------------------------------------------------------------------------------------------------------
-What are some powerful features integrated into Angular?
-Angular integrates some powerful features like declarative templates, end to end tooling, dependency injection and various other best practices that smoothens the development path.
---------------------------------------------------------------------------------------------------------------------------------
-What is the main purpose of Angular?
-he main purpose of using Angular is to create fast, dynamic and scalable web applications. We can create these applications very easily with Angular using components and directives.
+================================================================================
+                           ANGULAR MASTER NOTES (v2 to v20)
+================================================================================
 
-Angular was started as a SPA (Single-Page-Application) framework, and now it supports dynamic content based on different users through dependency injection. It provides a platform for easy development of web-based applications and empowers the front end developers in curating cross-platform applications. YouTubeTV is the most popular example that uses Angular.
---------------------------------------------------------------------------------------------------------------------------------
-What are the biggest advantages of using Angular?
-Angular supports two-way data-binding.
-It follows MVC pattern architecture.
-It supports static templates and Angular template.
-It facilitates you to add a custom directive.
-It also supports RESTfull services.
-Validations are supported in Angular.
-Angular provides client and server communication.
-It provides support for dependency injection.
-It provides powerful features like Event Handlers, Animation, etc.
---------------------------------------------------------------------------------------------------------------------------------
-What do you understand by Angular expressions? How are Angular expressions different from JavaScript expressions?
-Angular expressions are code snippets that are used to bind application data to HTML. Angular resolves the expressions, and the result is returned to where the expression is written. Angular expressions are usually written in double braces: {{ expression }} similar to JavaScript.
+1. ANGULAR BASICS & ARCHITECTURE
+--------------------------------------------------------------------------------
+* What is Angular?
+  Angular is an open-source, front-end web framework developed and maintained by 
+  Google. Based on TypeScript, it is highly suited for enterprise-grade web 
+  applications due to its modularity, reusability, and maintainability.
 
-Syntax:
+* Architecture Paradigm:
+  Modern Angular (v2+) uses a Component-Based Architecture. It has moved away 
+  from the traditional MVC (Model-View-Controller) / MVVM pattern used in 
+  legacy AngularJS (v1.x).
 
-{{ expression }}
-1. The most crucial difference between Angular expressions and JavaScript expressions is that the Angular expressions allow us to write JavaScript in HTML. On the other hand, the JavaScript expressions don't allow.
+* Powerful Core Features:
+  - Component-based structure.
+  - Built-in Dependency Injection (DI).
+  - Declarative templates with modern control flow.
+  - Native client-server communication via HttpClient.
+  - End-to-end tooling (Angular CLI).
+  - Built-in animation, form validation, and routing.
+  - Standardized state management primitives (Signals).
 
-2. The Angular expressions are evaluated against a local scope object. On the other hand, the JavaScript expressions are evaluated against the global window object.
-3. The Angular expressions can handle null and undefined, whereas JavaScript expressions cannot.
---------------------------------------------------------------------------------------------------------------------------------
-What is the difference between an Annotation and a Decorator in Angular?
-In Angular, annotations are the "only" metadata set of the class using the Reflect Metadata library. They are used to create an "annotation" array. On the other hand, decorators are the design patterns used for separating decoration or modification of a class without actually altering the original source code.
+* Modules (NgModule) vs. Standalone Components (Angular 15+):
+  - NgModule (Traditional): A container to declare and group related components, 
+    directives, pipes, and configure providers. Every app traditionally had at 
+    least one root module (AppModule).
+  - Standalone Components (Modern): Starting in Angular 15, components can be 
+    declared with `standalone: true`. They import their dependencies directly in 
+    their `@Component` decorator, making NgModules entirely optional. Apps can now 
+    be bootstrapped directly using `bootstrapApplication(AppComponent)`.
 
---------------------------------------------------------------------------------------------------------------------------------
-Each component is declared with three properties:
+* Bootstrapping a Standalone Application:
+  ```typescript
+  // main.ts
+  import { bootstrapApplication } from '@angular/platform-browser';
+  import { AppComponent } from './app/app.component';
+  import { provideRouter } from '@angular/router';
+  import { routes } from './app/app.routes';
+  import { provideHttpClient } from '@angular/common/http';
 
-Selector - It is used to access the component. ( unique key for each component)
-Template/TemplateURL - It contains HTML of the component. 
-StylesURL - It contains component-specific stylesheets.
+  bootstrapApplication(AppComponent, {
+    providers: [
+      provideRouter(routes),
+      provideHttpClient()
+    ]
+  }).catch(err => console.error(err));
+  ```
 
---------------------------------------------------------------------------------------------------------------------------------
-What are the different Lifecycle hooks of Angular?
 
-When the Angular components are created, they enter their lifecycle and remain when they are destroyed. 
-Angular Lifecycle hooks are special methods that allow you to tap into key moments in a component’s creation, change detection, and destruction process — letting you run custom logic at those moments
-ngOnChanges( ): This method is called when one or more input properties of the component are changed. The hook receives a SimpleChanges object containing the previous and current values of the property.
+2. DIRECTIVES & PIPES
+--------------------------------------------------------------------------------
+* Directives:
+  Directives are classes that add custom behavior to elements in the DOM.
+  There are three main types of directives in Angular:
 
-ngOnInit( ): This is the second lifecycle hook. It is called once, after the ngOnChanges hook. It is used to initialize the component .
+  1. Component Directives: Directives with a template. They are declared using 
+     the `@Component` decorator (which inherits from `@Directive`).
+  2. Structural Directives: Manipulate the layout of the DOM by adding, removing, 
+     or replacing elements. Identified by a leading asterisk (`*`), such as 
+     `*ngIf` and `*ngFor` (or legacy custom structural directives).
+  3. Attribute Directives: Modify the appearance or behavior of an existing DOM 
+     element (e.g. `ngStyle`, `ngClass`).
 
-ngDoCheck( ): This hook is called after ngOnChanges and ngOnInit and is used to detect and act on changes that Angular cannot detect. In this hook, we can implement our change detection algorithm.
+* Structural Directives Code Examples:
+  - `*ngIf`:
+    ```html
+    <div *ngIf="isReady" class="display_name">  
+      {{name}}  
+    </div>  
+    ```
+  - `*ngFor`:
+    ```html
+    <div class="details" *ngFor="let x of details" >  
+      <p>{{x.name}}</p>  
+      <p>{{x.address}}</p>  
+      <p>{{x.age}}</p>  
+    </div>  
+    ```
 
-ngAfterContentInit( ): This hook is called after the first ngDoCheck hook. This hook responds after the content gets projected inside the component.
-
-ngAfterContentChecked( ): This hook is called after ngAfterContentInit and every subsequent ngDoCheck. It responds after the projected content is checked.
-
-ngAfterViewInit( ): This hook is called after a component's view or initializing a child component's view.
-
-ngAfterViewChecked( ): This hook is called after ngAfterViewInit. It responds after the component's view or when the child component's view is checked.
-
-ngOnDestroy( ): This hook is called just before Angular destroys the component. This is used to clean up the code and detach event handlers.
-
-Execution Order -
-ngOnChanges → ngOnInit → ngDoCheck  
-→ ngAfterContentInit → ngAfterContentChecked  
-→ ngAfterViewInit → ngAfterViewChecked  
-(Then cycles: ngDoCheck → ngAfterContentChecked → ngAfterViewChecked)  
-→ ngOnDestroy
-
-----------------------------------------
-
-ngOnChanges(changes: SimpleChanges)
-Runs before ngOnInit and whenever an @Input() value changes
-@Input() user!: User;
-ngOnChanges(changes: SimpleChanges) {
-  if (changes['user']) {
-    this.updateProfileForm(changes['user'].currentValue);
+* Custom Attribute Directive Example:
+  You can generate a directive via the CLI: `ng g directive yellowBackground`
+  
+  ```typescript
+  // yellow-background.directive.ts
+  import { Directive, ElementRef } from '@angular/core';
+  
+  @Directive({  
+    selector: '[appYellowBackground]',
+    standalone: true
+  })  
+  export class YellowBackgroundDirective {  
+    constructor(el: ElementRef) {  
+      el.nativeElement.style.backgroundColor = 'yellow';  
+    }  
   }
-}
-
-
-----------
-ngOnInit()
-Runs once after first ngOnChanges. Good for initialization logic.
-ngOnInit() {
-  this.loadData();
-}
-
----------
-ngDoCheck()
-Detects deep object changes Angular won’t notice.
-ngDoCheck() {
-  if (this.settings.theme !== this.prevTheme) {
-    this.applyTheme(this.settings.theme);
-    this.prevTheme = this.settings.theme;
-  }
-}
----------
-ngAfterViewInit()
-DOM access after template & child components are initialized.
-@ViewChild('chart') chart!: ChartComponent;
-ngAfterViewInit() {
-  this.chart.render();
-}
-----------
-ngOnDestroy()
-Cleanup: unsubscribe, remove listeners, clear timers.
-ngOnDestroy() {
-  this.resizeSub?.unsubscribe();
-  clearInterval(this.autoSaveId);
-}
-
-------------
-Diffrence between ngAfterContentInit  & ngAfterContentChecked
-
-Both are related to content projection (<ng-content>), but they fire at different times and for different purposes.
-
-ngAfterContentInit — One-time setup
-Fires only once, right after Angular inserts the projected content into your component.
-
-Good for running initialization logic that needs access to that projected content for the first time.
-
-Example: Measuring the height of a projected paragraph when it first appears.
-  @ContentChild('title') titleEl!: ElementRef;
-
-  ngAfterContentInit() {
-    console.log('Title text on first load:', this.titleEl.nativeElement.textContent);
-  }
-
-
-ngAfterContentChecked — Every change detection cycle
-Fires after ngAfterContentInit and then every time change detection runs to re-check projected content.
-
-Useful if the projected content changes dynamically and you need to respond each time.
-
-Example: Updating a counter every time projected items change.
-ngAfterContentChecked() {
-  console.log('Projected content re-checked');
-}
-
-
---------------------------------------------------------------------------------------------------------------------------------
-What is AOT in Angular?
-In Angular, AOT stands for Ahead-Of-Time compiler
-. It is used to convert your Angular HTML and TypeScript code into efficient JavaScript code during the build phase before the browser downloads and runs that code.
- By compiling the application during the build process provides a faster rendering in the browser.
-
-
- -------------
- In Angular, AOT (Ahead-of-Time) and JIT (Just-in-Time) are two types of compilation strategies that convert Angular HTML and TypeScript code into JavaScript that browsers can understand.
-
-
- AOT (Ahead-of-Time) compiles Angular templates and TypeScript into JavaScript during the build process, before the app runs in the browser. It results in faster load time, smaller bundle size (since the Angular compiler is not included), and better security. It's used mainly in production builds and catches template errors at build time.
-
-JIT (Just-in-Time) compiles templates in the browser at runtime. It's mostly used in development because it allows quicker builds and easy debugging. However, it leads to slower initial load time, larger bundles (due to including the compiler), and potential runtime template errors.
-
---------------------------------------------------------------------------------------------------------------------------------
-What is the difference between Observables and Promises in Angular?
-
-Promise
-It emits a single value.
-Not Lazy
-We can not cancel
-it.
-
-Observable
-It emits multiple values over a period of time.
-Lazy. An observable is not called until we subscribe to the observable.
-We can cancel it by using the unsubscribe() method.
-Observable provides operators like map, forEach, filter, reduce, retry, retryWhen etc.
-
-
---------------------------------------------------------------------------------------------------------------------------------
-What are directives in Angular?
-A directive is a class in Angular that is declared with a @Directive decorator. Every directive has its own behavior, and you can import them into various components of an application.
-
---------------------------------------------------------------------------------------------------------------------------------
-What is lazy loading in Angular?
-
-Lazy loading is one of the most powerful and useful concepts of Angular Routing. It makes the web pages easy to download by downloading them in chunks instead of downloading everything in a big bundle. Lazy loading facilitates asynchronously loading the feature module for routing whenever required using the property loadChildren.
-
-eg-
-const routes: Routes = [  
-  {  
-    path: 'employees',  
-    loadChildren: () => import('./employees/employees.module').then(module => module.EmployeesModule)  
-  },  ]
---------------------------------------------------------------------------------------------------------------------------------
-What is Angular Router?
-Angular Router is a mechanism that facilitates users to navigate from one view to the next as users perform application tasks. It follows the concept model of browser's application navigation.
-
---------------------------------------------------------------------------------------------------------------------------------
-What do you understand by RouterOutlet and RouterLink?
-
-A RouterOutlet is a directive from the router library that acts as a placeholder. It marks the spot in the template where the Router should display the components for that outlet. Router outlet is used as a component.
-<router-outlet></router-outlet>  
-
-On the other hand, a RouterLink is a directive on the anchor tags that gives the router control over those elements. Since the navigation paths are fixed, you can assign string values to router-link directive as below,
-
- <a routerLink="/todosList" >List of todos</a>  
---------------------------------------------------------------------------------------------------------------------------------
-The RouterLinkActive is a directive used to toggle CSS classes for active RouterLink bindings based on the current RouterState. i.e., the Router will add CSS classes when this link is active and remove them when the link is inactive.
-
-  <a routerLink="/todosList" routerLinkActive="active">List of todos</a>  
-
---------------------------------------------------------------------------------------------------------------------------------
-What is HttpClient, and what are the advantages of it?
-Most front-end applications use either XMLHttpRequest interface or the fetch() API to communicate with backend services over HTTP protocol. For the same purpose, Angular provides a simplified client HTTP API known as HttpClient. This is based on top of XMLHttpRequest interface. This HttpClient is available in the @angular/common/http package, which you can import in your root module as follows:
-import { HttpClientModule } from '@angular/common/http';  
-
-Following are some of the crucial advantages of HttpClient:
-
-HttpClient contains testability features.
-It provides typed request and response objects.
-It can intercept requests and responses.
-It supports Observalbe APIs.
-HttpClient also supports streamlined error handling.
-
---------------------------------------------------------------------------------------------------------------------------------
-What is the best way to perform Error handling in Angular?
-Error is when the request fails on the server or fails to reach the server due to network issues. In this condition, HttpClient returns an error object instead of a successful response. To resolve this issue, we must handle the component by passing the error object as a second callback to the subscribe() method.
-
-eg -
-fetchUser() {  
-  this.userService.getProfile()  
-    .subscribe(  
-      (data: User) => this.userProfile = { ...data }, // success path  
-      error => this.error = error // error path  
-    );  
-}  
-
---------------------------------------------------------------------------------------------------------------------------------
-What do you understand by Angular bootstrapping?
-Angular bootstrapping is nothing but to allow developers to initialize or start the Angular application. Angular supports two types of bootstrapping:
-
-Manual bootstrapping
-Automatic bootstrapping
-
---------------------------------------------------------------------------------------------------------------------------------
-What is the purpose of AsyncPipe in Angular?
-The AsyncPipe is used to subscribe to an observable or promise and return the latest value it has emitted. When a new value is emitted, the pipe marks the component that has been checked for changes.
-
---------------------------------------------------------------------------------------------------------------------------------
-What do you understand by services in Angular?
-In Angular, services are singleton objects that get instantiated only once during the lifetime of an application. An Angular service contains methods that are used to maintain the data throughout the life of an application. Angular services are used to organize as well as share business logic, models, or data and functions with various components of an Angular application.
-
-Angular services offer some functions that can be invoked from an Angular component, such as a controller or directive
-
---------------------------------------------------------------------------------------------------------------------------------
-What is the key difference between a constructor and ngOnInit?
-Constructor is a default method in TypeScript classes that are normally used for the initialization purpose. On the other hand, the ngOnInit is specifically an Angular method and is used to define Angular bindings. Even though constructors are getting called first, it is always preferred to move all of your Angular bindings to the ngOnInit method.
-
---------------------------------------------------------------------------------------------------------------------------------
-What do you understand by observable and observer in Angular?
-Observable: An observable is a unique object just like a promise that that is used to manage async code. Observables are not part of the JavaScript language so the developers have to rely on a popular Observable library called RxJS. The observables can be created using the new keyword or creation functions like of(), from(), interval(), etc..
-Observer: Any object that has to be notified when the state of another object changes is called an observer. An observer is an interface for push-based notifications delivered by an Observable.
---------------------------------------------------------------------------------------------------------------------------------
-What are the different types of directives in Angular?
-There are mainly three types of directives in Angular:
-
-Component Directives: The component directives are used to form the main class in directives. To declare these directives, we have to use the @Component decorator instead of @Directive decorator. These directives have a view, a stylesheet and a selector property.
-
-Structural directives: These directives are generally used to manipulate DOM elements. The structural directive has a ' * ' sign before them. We can apply these directives to any DOM element.
-
-Following are some example of built-in structural directives:
-
-*ngIf Structural Directive: *ngIf is used to check a Boolean value and if it's truthy, the div element will be displayed.
-
-<div *ngIf="isReady" class="display_name">  
-          {{name}}  
-      </div>  
-*ngFor Structural Directive: *ngFor is used to iterate over a list and display each item of the list.
-
-<div class="details" *ngFor="let x of details" >  
-    <p>{{x.name}}</p>  
-    <p> {{x.address}}</p>  
-    <p>{{x.age}}</p>  
-</div>  
-Attribute Directives: The attribute directives are used to change the look and behavior of a DOM element. Let's create an attribute directive to understand it well:
-
-This is how we can create a custom directive:
-
-Go to the command terminal, navigate to the directory of the angular app and type the following command to generate a directive:
-
-ng g directive yellowBackground   
-This will generate the following directive. Manipulate the directive to look like this:
-
-import { Directive, ElementRef } from '@angular/core';  
-@Directive({  
- selector: '[appYellowBackground]'  
-})  
-export class YellowBackgroundDirective {  
- constructor(el:ElementRef) {  
-   el.nativeElement.style.backgroundColor = "yellow";  
- }  
-}  
-Now, you can easily apply the above directive to any DOM element:
-
-<p appYellowBackground>Hello JavaTpoint</p>  
-
---------------------------------------------------------------------------------------------------------------------------------
-What are string interpolation and property binding in Angular?
-String interpolation and property binding are parts of data-binding in Angular. Data-binding is a feature of Angular, which is used to provide a way to communicate between the component (Model) and its view (HTML template). There are two ways of data-binding, one-way data binding and two-way data binding. In Angular, data from the component can be inserted inside the HTML template. Any changes in the component will directly reflect inside the HTML template in one-way binding, but vice-versa is not possible. On the other hand, it is possible in two-way binding.
-
-String interpolation and property binding both are examples of one-way data binding. They allow only one-way data binding.
-
-String Interpolation: String interpolation uses the double curly braces {{ }} to display data from the component. Angular automatically runs the expression written inside the curly braces. For example, {{ 5+5 }} will be evaluated by Angular, and the output will be 10. This output will be displayed inside the HTML template.
-
-Property Binding: Property binding is used to bind the DOM properties of an HTML element to a component's property. In property binding, we use the square brackets [ ] syntax.
-
---------------------------------------------------------------------------------------------------------------------------------
-What is Dependency Injection in Angular?
-Dependency injection is an application design pattern that is implemented by Angular. It is used to form the core concepts of Angular. Dependencies are services in Angular which have some specific functionality. Various components and directives in an application can need these functionalities of the service. Angular provides a smooth mechanism by which these dependencies are injected into components and directives.
-
-dependencies are declared as providers in and angular module , and the injector then creates an instance of the dependancy , when a component requests a dependency the injector provides the dependency
-
-benifits -
-loose coupling of the  service and component
-reusability
-testability
-maintainability
-scalablilty
-
---------------------------------------------------------------------------------------------------------------------------------
-What is data binding?
-In Angular, data binding is one of the most powerful and important features that allow you to define the communication between the component and DOM(Document Object Model). It basically simplifies the process of defining interactive applications without having to worry about pushing and pulling data between your view or template and component. In Angular, there are four forms of data binding:
-
- String Interpolation
-Property Binding
-Event Binding
-Two-Way Data Binding
-
---------------------------------------------------------------------------------------------------------------------------------
-
-How does one share data between components in Angular?
-Data Sharing Between Angular Components
-Parent to Child: via Input
-Child to Parent: via Output() and EventEmitter
-Child to Parent: via ViewChild
-Unrelated Components: via a Service
---------------------------------------------------------------------------------------------------------------------------------
-What is Eager and Lazy Loading?
-The application module i.e. AppModule is loaded eagerly before application starts. Whereas there is something called feature modules which holds all the features of each module which can be loaded in two ways namely eagerly or lazily or even preloaded in some cases.
-
-Eager loading:
-To load a feature module eagerly we need to import it into an application module using imports metadata of @NgModule decorator. Eager loading is highly used in small size applications. In eager loading, all the feature modules will be loaded before the application starts.This is the reason the subsequent request to the application will always be faster.
-
-Lazy loading:
-To load a feature module lazily we need to load it using loadChildren property in route configuration and that feature module must not be imported in the application module. Lazy loading generally is useful when the application is growing in size. In lazy loading, feature modules will be loaded on demand and hence application start will be faster.
-
---------------------------------------------------------------------------------------------------------------------------------
-Explain Components, Modules and Services in Angular
-Modules, components and services are classes that use decorators. These decorators mark their type and provide metadata that tells Angular how to use them. The metadata for a component class associates it with a template that defines a view.
-
-Components:
-We have one or more components at the heart of every Angular App. In fact, in the real world, we create complicated apps that contain tens of components. The data, HTML markup, and logic for a view behind the view are all encapsulated in a Component. Component-based design is embraced by Angular, allowing us to work on smaller, more maintainable portions that may also be reused in different places.
-Every application must have at least one component, referred to as the appcomponent or root component. Starting with the appcomponent, a real-world Angular app is effectively a tree of components.
-Modules:
-A module is a container that holds a collection of connected components. Every angular app contains at least one module, which we refer to as the app module. We may want to divide our modules into smaller, more maintainable modules as our application expands. As the programme expands, we will need to subdivide our app module into smaller modules, each of which will be responsible for a different section. It has components that are connected.
-Module is declared with @NgModule Decorator
-In Import of Module we can import other modules and use its services
-Service:
-Angular services are singleton objects that are instantiated only once during an application’s lifetime. They include methods for preserving data during the life of an application, i.e., data is not refreshed and is always available.
-
---------------------------------------------------------------------------------------------------------------------------------
-Explain the @Component Decorator
-A component decorator(@Component) lets you mark a class as an Angular component and add metadata that controls how the component is processed, instantiated, and used at runtime. Components are the most fundamental building blocks of an Angular application’s user interface
-
---------------------------------------------------------------------------------------------------------------------------------
-On which types of the component can we create a custom directive?
-Angular provides support to create custom directives for the following:
-
-Element directives − Directive activates when a matching element is encountered.
-Attribute − Directive activates when a matching attribute is encountered.
-CSS − Directive activates when a matching CSS style is encountered.
-Comment − Directive activates when a matching comment is encountered
-
---------------------------------------------------------------------------------------------------------------------------------
-What are the different types of filters in Angular?
-Below are the various filters supported by Angular:
-
-currency: Format a number to a currency format.
-date: Format a date to a specified format.
-filter: Select a subset of items from an array.
-json: Format an object to a JSON string.
-limit: To Limits an array/string, into a specified number of elements/characters.
-lowercase: Format a string to lower case.
-number: Format a number to a string.
-orderBy: Orders an array by an expression.
-uppercase: Format a string to upper case.
-
---------------------------------------------------------------------------------------------------------------------------------
-What do you understand by REST in Angular?
-REST stands for REpresentational State Transfer. REST is an API (Application Programming Interface) style that works on the HTTP request. In this, the requested URL pinpoints the data that needs to be processed. Further ahead, an HTTP method then identifies the specific operation that needs to be performed on that requested data. Thus, the APIs which follows this approach are known as RESTful APIs.
-
---------------------------------------------------------------------------------------------------------------------------------
-What are Angular directives?
-Directives are classes in Angular that add custom behavior to elements and components. They enable developers to create reusable components that can be utilized across different parts of an application.
-
-In Angular, there are three different kinds of directives:
-
-Component directives: These are directives that define new custom elements, which can be used as UI components in an Angular application.
-
-Attribute directives: These are directives that modify the behavior or appearance of an existing element by changing the appearance of attributes.
-
-Structural directives: These are directives that change the template's structure by adding, removing, or modifying DOM elements.
-
---------------------------------------------------------------------------------------------------------------------------------
-Explain two-way data binding in Angular
-Two-way data binding in Angular is a feature that enables automatic data synchronization between the view and the model. It allows data to flow in both directions between the component class and the template. This implies that any changes made to the view (user interface) are mirrored instantly in the underlying model (data source), and vice versa.
-
-We can achieve two-way data binding in Angular via a combination of property binding and event binding. The [(ngModel)] directive, imported from the FormsModule, is utilized to bind the value of an input element in the template to a property in the component class.
-
---------------------------------------------------------------------------------------------------------------------------------
-How would you define a Single Page Application (SPA)?
-A Single Page Application (SPA) is a web application that dynamically updates the current web page without requiring a full page reload. We create a SPA in Angular using the Angular framework and it consists of a single HTML page, which is dynamically updated with new data from the server as the user engages with the system.
-
-This approach ensures a seamless and smooth user experience akin to a desktop application. The navigation and data exchange between components occurs without page reloading, translating into faster and more responsive web applications.
-
---------------------------------------------------------------------------------------------------------------------------------
-What are annotations?
-Annotations are ways of adding metadata to a class or its members using decorators. The decorators are a TypeScript feature — the language used to write Angular applications.
-
-Annotations are specifically used to supply information to the Angular compiler on how to process a class and/or its members. We may use them to specify various things, such as the class's dependencies, how it should be injected, and how it can be used in templates.
-
-To add annotations to classes, methods, and properties, we use the @ symbol followed by the decorator name
-
---------------------------------------------------------------------------------------------------------------------------------
-What is a service in Angular and how is it used?
-A service in Angular is a TypeScript class that is used to share data and functionality among many components, directives, or other services in an application. We can utilize services to encapsulate logic for handling data caching, making API calls, or executing other tasks that require sharing across multiple components.
-
-Services are injected into components via a dependency injection — which is a design pattern that allows loose coupling between components. 
-
-To use a service in Angular, you must first define it by creating a class that implements the service's functionality. Then, you have to register the service with the Angular injector by adding it to the provider's array of the module that will utilize it. After service registration, you can inject it into any component or other service that needs it.
-
---------------------------------------------------------------------------------------------------------------------------------
-
-What is the purpose of the ngForOf directive?
-The shorthand form ngFor is commonly used for the ngForOf directive in Angular. It is used to iterate over a collection of data and create a template for each item in the collection. The ngFor directive is mainly utilized to display a list of items, such as a list of products, shopping items, or comments.
---------------------------------------------------------------------------------------------------------------------------------
-What is RxJS
-
-RxJS is a library for reactive programming using observables that makes it easier to compose asynchronous or event-based programs by providing a set of powerful operators. It’s a popular library for reactive programming in Angular development because Angular makes use of it extensively for dealing with events, streams of data, and async operations.
-
-RxJS provides a wide range of operators, and some of the most commonly used operators include:
-
-Map: This operator is used to transform the values emitted by an observable by applying a function to each value.
-Filter: This operator is used to filter the values emitted by an observable based on a condition.
-Merge: This operator is used to combine multiple observables into a single observable that emits all the values from each observable.
-DebounceTime: This operator is used to throttle the values emitted by an observable by waiting for a specified time before emitting the latest value.
-SwitchMap: This operator is used to transform an observable into another observable, and it cancels the previous observable when a new value is emitted.
-CombineLatest: This operator is used to combine multiple observables into a single observable that emits an array of the latest values from each observable.
-Retry: This operator is used to resubscribe to an observable when it encounters an error, and it can be used to handle retry logic when making HTTP requests.
-
---------------------------------------------------------------------------------------------------------------------------------
-RxJS Subjects
-
-Subjects are observable in RxJS that allow for multiple subscribers to receive the same values.
-
-There are four types of subjects in RxJS:
-
-BehaviorSubject: This subject stores the latest value emitted and emits that value immediately to new subscribers.
-ReplaySubject: This subject stores a buffer of previous values emitted and emits those values immediately to new subscribers.
-AsyncSubject: This subject only emits the last value when the complete() method is called, making it useful for scenarios where only the final value is needed.
-Subject: This is a basic subject that does not have any special behavior.
-
-
-Subjects can be used in a wide variety of scenarios, including:
-
-Communication between components: Subjects can be used to communicate between components in an Angular application, allowing multiple components to subscribe to the same values.
-Caching data: Subjects can be used to cache data that is frequently used in an application, improving performance and reducing the number of HTTP requests.
-State management: Subjects can be used to manage the state of an application, allowing multiple components to subscribe to changes in the application’s state.
-
---------------------------------------------------------------------------------------------------------------------------------
-Difference between Observable and Subject
-
-· In Angular, Observables are part of the Reactive Extensions for JavaScript (RxJS) library.
-
-· Observables provide support for passing messages between parts of your application.
-
-· Observables are a powerful feature used extensively in reactive programming to handle asynchronous operations and data streams.
-
-· Observables provide a way to subscribe to and receive notifications when new data or events are emitted, enabling you to react to changes in real-time.
-              ---------------------
-
-· An RxJS Subject is a special type of Observable that allows values to be multicast to many Observers. While plain Observables are unicast (each subscribed Observer owns an independent execution of the Observable), Subjects are multicast.
-
-· A Subject is like an observable but can be multicast to many Observers. Subjects are like Event Emitters: they maintain a registry of many listeners.
-
-· It is a part of the Reactive Extensions for JavaScript (RxJS) library, which is included by default in Angular projects.
-
---------------------------------------------------------------------------------------------------------------------------------
-BehaviorSubject
-· The behavior subject is another type of subject in RxJS.
-
-· It has an initial value and will immediately emit the initial value to any subscriber as soon as they subscribe, even if no values have been emitted yet using the next() method.
-
-· After the initial value is emitted, it behaves like a regular Subject and notifies subscribers about new values emitted using next().
-
-· This is useful when you want to provide the last known value to new subscribers, such as the current state of an application or the latest data fetched from an API.
-
---------------------------------------------------------------------------------------------------------------------------------
-What is a cli tool ?
-COmmand line interface - we use it to developed the angular application from terminal
-
---------------------------------------------------------------------------------------------------------------------------------
-Change Detection In Angular
-2 types
-1- default - angular checks for changes in all components and thier child components whenever an event occurs or data is updated
-this approach is not reccomended for larger applications as may affect the performance
-2- on push change detection - angular only checks for changes in componet's data and its input properties - if no change is detected angular skips the change detection for the component and the child components , reccomended for larger applications
-
-to use on push change detection use changeDetection property of the component as changeDetection: ChangeDetectionStrategy.OnPush
-
-while using changeDetection: ChangeDetectionStrategy.OnPush you can use ChangeDetectorRef in methods to execute change detection
-
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-In Authentication - you can use the Angular HTTP Interceptor which will automatically add access token to the outgoing request
---------------------------------------------------------------------------------------------------------------------------------
-
-Explain NgModule ?
-NgModule is a core building block in the Angular application. It is used to organize and configure application . NgModule is container that groups together related components , directives and serices
-
-purpose - way to organise and modularise the Angular application into smaller and managebale pieces , also can be used to load on demand (lazy loading)
-
---------------------------------------------------------------------------------------------------------------------------------
-How to communicate with the Angular components which are not parent child
-
-1 - Services
-2 - Event Bus - object that act as centralised communication hub 
-3 - RXJS - Observable which can be subscribed from any component
-4 - Message Service 
-
---------------------------------------------------------------------------------------------------------------------------------
-Error handling in Angular
-1- Error handling Service - 
-2 - Global Error Handling - use Angular 'ErrorHandler' 
-3 - Observable Error Handling - can be used while making HTTP requests
-4 - Form Validations
-5 - Logging - console.logic
-6 - Error Interceptor - Can be used to intercept the error requests
-
---------------------------------------------------------------------------------------------------------------------------------
-Internationalization - i18n - can be used to change/ translate the language 
-use i18n for it
-
---------------------------------------------------------------------------------------------------------------------------------
-Debouncing & Throttling in Angular using RXJS
-
-  this.form = this.fb.group({
-      debounceSearch: [null],
-      throttleSearch : [null]
-    });
-    this.form
-      .get('debounceSearch')!
-      .valueChanges.pipe(debounceTime(500))
-      .subscribe((value) => {
-        console.log('searched value - ', value);
-      });
-    this.form
-      .get('throttleSearch')!
-      .valueChanges.pipe(throttleTime(500))
-      .subscribe((value) => {
-        console.log('searched value - ', value);
-      });
-
---------------------------------------------------------------------------------------------------------------------------------
-Angular 15-20 
-
-After Angular 14, the framework underwent major modernization. Key features include:
-
-Angular 15:
-
-    Full support for standalone components (no need for NgModules).
-
-    Directive composition API.
-
-    Improved router support for standalone components.
-
-Angular 16:
-
-    Introduction of Signals (reactive primitives for state management).
-
-    Required inputs via @Input({ required: true }).
-
-    DestroyRef, takeUntilDestroyed() for cleaner lifecycle management.
-
-    Improved hydration for SSR.
-
-Angular 17:
-
-    Brand-new Control Flow syntax: @if, @for, @switch.
-
-    Deferred views for lazy-loading components inside templates.
-
-    ESBuild-based build pipeline (faster builds).
-
-    SSR with hydration support out-of-the-box.
-
-Angular 18–20:
-
-    Ongoing improvements to zoneless change detection.
-
-    Expansion of Signals (signal inputs, computed signals).
-
-    More performance optimization around SSR, hydration, and the compiler.
-
-    Move towards module-less apps, enhanced developer ergonomics.
-
---------------------------------------------------------------------------------------------------------------------------------
-Standalone Components
-Standalone components let you build Angular apps without NgModules. 
-Instead of declaring components in a module, you declare them as standalone: true.
-
-Benefits:
-    Simplifies project structure.
-    Better lazy loading.
-    Easier reuse across libraries.
---------------------------------------------------------------------------------------------------------------------------------
-Signals in Angular
-Signals are a new reactive primitive that help manage state reactively without RxJS.
-
-Push-based reactivity (like SolidJS).
-They automatically track dependencies and re-render views.
-Great for fine-grained UI updates, better than using BehaviorSubject or @Input() in many cases.
-
---------------------------------------------------------------------------------------------------------------------------------
-New Control Flow Syntax (@if, @for)
-Angular 17 introduced block-based control flow syntax using @if, @for, @switch, replacing *ngIf, *ngFor:
-
-@for (user of users; track user.id) {
-  <div>{{ user.name }}</div>
-} @empty {
-  <p>No users</p>
-}
-
-@if (isLoggedIn) {
-  <p>Welcome back!</p>
-} @else {
-  <p>Please log in</p>
-}
-
-
---------------------------------------------------------------------------------------------------------------------------------
-Required Inputs
-In Angular 16, you can mark an input as required like this:
-
-@Input({ required: true }) productId!: string;
-
-Angular will throw an error at runtime if the parent doesn’t provide the input.
-Improves developer experience by catching errors early.
-
---------------------------------------------------------------------------------------------------------------------------------
-Deferred Views (Angular 17+)
-
-@defer lets you lazy-load a component or template block only when needed (e.g., when visible on screen)
-
-@defer (when isReady) {
-  <heavy-component />
-} @placeholder {
-  <loading-spinner />
-}
-
-Saves bundle size.
-
-Improves app performance and time-to-interactive.
---------------------------------------------------------------------------------------------------------------------------------
-inject() vs Constructor Injection
-
-Both are DI methods in Angular:
-
-constructor(private http: HttpClient) {}
-const http = inject(HttpClient);
-
-
---------------------------------------------------------------------------------------------------------------------------------
-Routing in Standalone Components
-
-Routing now uses provideRouter() instead of RouterModule.forRoot():
-
-bootstrapApplication(AppComponent, {
-  providers: [
-    provideRouter([
-      { path: '', component: HomeComponent },
-      { path: 'about', component: AboutComponent },
-    ])
-  ]
-});
-
---------------------------------------------------------------------------------------------------------------------------------
-Signals in Angular
-
-Signals are a way to store and track reactive values in Angular (introduced in v16).
-A signal holds a value, and whenever it changes, Angular automatically updates the parts of the UI that depend on it — without manual change detection or Zone.js.
----------
-
-Introduced in Angular 16 as part of the new reactivity model.
-
-A signal holds a value and re-renders only the parts of the UI that depend on it.
-
-Works without subscribe() or async pipe for local state.
-
-Angular automatically tracks dependencies — if a computed value or effect uses a signal, it will re-run when that signal changes.
-
-Signals are synchronous — reading a signal gives its current value instantly.
-
-Can store any type (number, string, array, object, custom types).
-
-State can be updated via .set() (replace), .update() (transform), or .mutate() (in-place change).
-
-Computed signals: read-only signals whose value depends on other signals.
-
-Effects: run side effects (e.g., logging, API calls) whenever a signal changes.
-
-Great for component-local state; for complex global state, NgRx or services might be more suitable.
-
-Eliminates the need for @Input() + ngOnChanges() for reactive input handling.
-
-Improves performance by skipping unnecessary change detection cycles.
-
-Integrated into Angular forms, templates, and lifecycle hooks.
-
-----------------------------------
-Creating a Signal
-import { signal } from '@angular/core';
-
-count = signal(0); // Initial value 0
-
------
-Reading & Writing
-count();              // read value
-count.set(5);         // set value
-count.update(v => v + 1); // update based on old value
-
--------
-Mutating Arrays/Objects
-todos = signal<string[]>([]);
-
-todos.mutate(list => {
-  list.push('Learn Signals');
-});
---------
-Computed Signal (derived value)
-import { computed } from '@angular/core';
-
-doubleCount = computed(() => count() * 2);
-
-------
-Effect (side effect on change)
-import { effect } from '@angular/core';
-
-constructor() {
-  effect(() => {
-    console.log('Count changed to', count());
-  });
-}
-------
-Using in Template
-<h1>{{ count() }}</h1>
-<button (click)="count.update(v => v + 1)">Increment</button>
---------
-Passing Signals as Inputs
-// Parent Component
-count = signal(0);
-
-// Child Component
-@Input() count!: Signal<number>; // Reactive input without ngOnChanges
-
-------------
-Combining Signals with API Calls
-data = signal<any>(null);
-
-constructor(private http: HttpClient) {
-  this.http.get('/api/user').subscribe(res => this.data.set(res));
-}
-
-
------------------------------
-
-Benefits of Signals
-No need for @Input() + ngOnChanges() for reactive inputs.
-
-No need to subscribe() or use async pipe like in RxJS.
-
-Fast, lightweight, and great for performance.
-
-Works perfectly with computed() and effect() for derived values and side effects.
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Angular Routing (Standalone Setup)
-
-In Angular 15+, routing is set up using provideRouter() with standalone components:
-
-bootstrapApplication(AppComponent, {
-  providers: [ provideRouter(routes) ]
-});
-
-Routes are defined using a Routes[] array:
-
-<router-outlet></router-outlet> is used in templates to render routed components.
-Navigation can be triggered using:
-- routerLink: <a routerLink="/login">Login</a>
-- Programmatically: router.navigate(['/dashboard'])
---------------------
-<base href="/"> is required in index.html
-It helps the router resolve paths correctly relative to the root.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Redirects and Wildcard Routes
-
-Redirect to another route:
-
-{ path: '', redirectTo: 'home', pathMatch: 'full' }
-
-Wildcard route for 404 pages:
-
-{ path: '**', component: NotFoundComponent }
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Route Parameters & Query Params
-
-Route with dynamic parameter:
-{ path: 'product/:id', component: ProductComponent }
-
-In component:
-constructor(private route: ActivatedRoute) {}
-ngOnInit() {
-  const id = this.route.snapshot.paramMap.get('id');
-}
-
-Query Params:
-this.router.navigate(['/products'], { queryParams: { page: 2, sort: 'price' } });
-
-this.route.queryParamMap.subscribe(params => {
-  const page = params.get('page');
-});
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-CanActivate Guard
-
-Prevents access to a route based on conditions (e.g., user not logged in)
-
-export const authGuard: CanActivateFn = () => {
-  const router = inject(Router);
-  const loggedIn = localStorage.getItem('loggedIn') === 'true';
-  if (!loggedIn) {
-    router.navigate(['/login']);
-    return false;
-  }
-  return true;
-};
-
-{ path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] }
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-CanDeactivate Guard
-
-Prevents leaving a route with unsaved changes
-
-export const canExitForm: CanDeactivateFn<EditComponent> = (component) => {
-  return component.hasUnsavedChanges ? confirm('Discard changes?') : true;
-};
-
-{ path: 'edit', component: EditComponent, canDeactivate: [canExitForm] }
-
-Component must implement hasUnsavedChanges: boolean or method.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-CanLoad Guard
-
-Prevents loading a lazy-loaded module if condition fails
-
-export const adminGuard: CanLoadFn = () => {
-  const isAdmin = localStorage.getItem('role') === 'admin';
-  return isAdmin;
-};
-
-{ 
-  path: 'admin',
-  loadChildren: () => import('./admin.routes'),
-  canLoad: [adminGuard]
-}
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Resolve Guard
-
-Fetches data before route activates (no flicker/loading states)
-
-export const userResolver: ResolveFn<User> = () => {
-  return inject(UserService).getUserProfile();
-};
-
-{ path: 'profile', component: ProfileComponent, resolve: { user: userResolver } }
-
-In component:
-this.route.data.subscribe(data => {
-  console.log(data['user']);
-});
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-CanActivateChild Guard
-
-Applies auth check to all child routes:
-
-{
-  path: 'admin',
-  canActivateChild: [authGuard],
-  children: [
-    { path: 'users', component: UsersComponent },
-    { path: 'settings', component: SettingsComponent },
-  ]
-}
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Reactive Forms in Angular
-· Reactive Forms are a model-driven approach to handling form inputs in Angular using FormControl, FormGroup, and FormBuilder.
-
-· The form model is defined in the TypeScript class and connected to the template using form directives.
-
-· Supports complex validation, dynamic fields, and reactive behavior via RxJS.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- FormControl vs FormGroup vs FormBuilder
-FormControl: Represents a single form field.
-
-FormGroup: Represents a group of form controls, allows nested structures.
-
-FormBuilder: Simplifies creating FormGroups and FormControls using shorthand.
-
-------------------
-this.form = new FormGroup({
-  name: new FormControl('')
-});
-
-this.form = this.fb.group({
-  name: ['']
-});
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- setValue vs patchValue
-setValue: Requires exact match with the full form structure.
-
-patchValue: Updates only provided fields, partial updates allowed.
-
-this.form.setValue({ name: 'Sahil', age: 25 }); // all fields required  
-this.form.patchValue({ name: 'Sahil' }); // partial allowed
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Validations in Reactive Forms
-- Built-in Validators:
-Validators.required, minLength, maxLength, pattern, email
-
--Custom Validator (Sync):
-function noSpecialChars(control: AbstractControl): ValidationErrors | null {
-  return /^[a-zA-Z0-9]*$/.test(control.value) ? null : { specialChars: true };
-}
-
--Async Validator:
-function checkUsername(control: AbstractControl): Observable<ValidationErrors | null> {
-  return api.checkUser(control.value).pipe(
-    map(exists => exists ? { usernameTaken: true } : null)
-  );
-}
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Form-Level Validation
-Apply validator to FormGroup, not just control.
-this.form = this.fb.group({
-  password: [''],
-  confirmPassword: ['']
-}, { validators: passwordMatchValidator });
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-FormArray
-· Used for dynamic list of controls.
-
-skills: this.fb.array([this.fb.control('')]);
-
-this.skills.push(this.fb.control('Angular'));
-
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-valueChanges vs statusChanges
-valueChanges: Emits value whenever form/control changes.
-
-statusChanges: Emits form/control status (VALID, INVALID, PENDING, etc.)
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Enable / Disable Controls
-
-this.form.get('email')?.disable();
-this.form.get('email')?.enable();
-
-
-Disabled controls are excluded from form.value
-
-Use form.getRawValue() to get disabled control values
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Nested FormGroup
-this.form = this.fb.group({
-  name: [''],
-  address: this.fb.group({
-    city: [''],
-    state: ['']
+  ```
+  Usage in template:
+  ```html
+  <p appYellowBackground>Hello JavaTpoint</p>  
+  ```
+
+* What can Custom Directives be applied to?
+  - Element directives: Directive activates when a matching element is encountered.
+  - Attribute: Directive activates when a matching attribute is found on an element (most common).
+  - CSS: Directive activates when a matching CSS style is encountered.
+  - Comment: Directive activates when a matching HTML comment is encountered.
+
+* Pipes (formerly Filters in AngularJS):
+  Pipes are used to transform template data before rendering it.
+  
+  - Built-in Pipes:
+    - `currency`: Formats numbers to currency. E.g., `{{ price | currency }}`
+    - `date`: Formats date strings/objects. E.g., `{{ today | date:'medium' }}`
+    - `json`: Formats an object into a JSON string. E.g., `<pre>{{ user | json }}</pre>`
+    - `slice`: Selects a subset of an array or string. E.g., `{{ text | slice:0:10 }}`
+    - `lowercase` / `uppercase`: Formats text casing.
+    - `number`: Formats decimal/integer numbers.
+  
+  - Note on Filtering/Sorting: Modern Angular does not include built-in `filter` 
+    or `orderBy` pipes because they are performance anti-patterns. They re-evaluate 
+    on every change detection cycle, slowing down the UI. Logic for sorting and 
+    filtering lists should be handled in the component class instead.
+
+* Pure vs. Impure Pipes:
+  - Pure Pipes (Default, `{ pure: true }`): Run only when the input reference changes.
+    ```typescript
+    @Pipe({ name: 'uppercasePipe', pure: true })
+    export class UppercasePipe implements PipeTransform {
+      transform(value: string): string {
+        return value.toUpperCase();
+      }
+    }
+    ```
+  - Impure Pipes (`{ pure: false }`): Run on every change detection cycle (can be 
+    expensive).
+
+
+3. DATA BINDING & COMPONENT COMMUNICATION
+--------------------------------------------------------------------------------
+* Data Binding Types:
+  - String Interpolation (`{{ value }}`): One-way from Component to View.
+  - Property Binding (`[property]="value"`): One-way from Component to DOM property.
+  - Event Binding (`(event)="handler()"`): One-way from View to Component.
+  - Two-Way Data Binding (`[(ngModel)]="value"`): Bidirectional synchronization. 
+    Requires `FormsModule`.
+
+* Sharing Data Between Components:
+  1. Parent to Child (Inputs):
+     - Legacy: `@Input() title: string = '';`
+     - Modern (Signal-based): `title = input<string>('');` (Read-only signal)
+     - Usage: `<app-card [title]="'User Info'"></app-card>`
+
+  2. Child to Parent (Outputs):
+     - Legacy: `@Output() clicked = new EventEmitter<string>();`
+     - Modern: `clicked = output<string>();`
+     - Usage: `<app-card (clicked)="handleClick($event)"></app-card>`
+
+  3. Custom Two-Way Binding (Inputs + Outputs):
+     - Naming convention: An input property `status` paired with an output 
+       `statusChange` lets the parent bind via `[(status)]="isActive"`.
+     ```typescript
+     @Input() status: boolean = false;
+     @Output() statusChange = new EventEmitter<boolean>();
+     ```
+     - Usage: `<app-toggle [(status)]="isActive"></app-toggle>`
+
+  4. Child to Parent via ViewChild:
+     - Access child instances or elements directly:
+     ```typescript
+     @ViewChild('chart') chart!: ChartComponent;
+     
+     ngAfterViewInit() {
+       this.chart.render();
+     }
+     ```
+
+  5. Unrelated Components:
+     - Sharing via a shared Service (using RxJS Subjects/BehaviorSubjects or Signals).
+     - Global State Management libraries (e.g. NgRx).
+     - Event Bus pattern (centralized event hub using an RxJS Subject).
+
+
+4. LIFECYCLE HOOKS
+--------------------------------------------------------------------------------
+* When a component is created, Angular runs it through a series of lifecycle phases:
+
+  1. `ngOnChanges()`: Called before `ngOnInit()` and whenever `@Input()` references 
+     change. Receives a `SimpleChanges` object mapping changed properties.
+     ```typescript
+     @Input() user!: User;
+     
+     ngOnChanges(changes: SimpleChanges) {
+       if (changes['user']) {
+         this.updateProfileForm(changes['user'].currentValue);
+       }
+     }
+     ```
+  2. `ngOnInit()`: Called once after the first `ngOnChanges()`. Ideal for 
+     initialization logic and loading initial API data.
+     ```typescript
+     ngOnInit() {
+       this.loadData();
+     }
+     ```
+  3. `ngDoCheck()`: Called during every change detection cycle. Used to detect 
+     changes that Angular's default algorithm misses.
+     ```typescript
+     ngDoCheck() {
+       if (this.settings.theme !== this.prevTheme) {
+         this.applyTheme(this.settings.theme);
+         this.prevTheme = this.settings.theme;
+       }
+     }
+     ```
+  4. `ngAfterContentInit()`: Called once after projected content (`<ng-content>`) 
+     is projected into the component.
+     ```typescript
+     @ContentChild('title') titleEl!: ElementRef;
+     
+     ngAfterContentInit() {
+       console.log('Title text on first load:', this.titleEl.nativeElement.textContent);
+     }
+     ```
+  5. `ngAfterContentChecked()`: Called after `ngAfterContentInit` and every 
+     subsequent `ngDoCheck()`. Responds after projected content is checked.
+     ```typescript
+     ngAfterContentChecked() {
+       console.log('Projected content re-checked');
+     }
+     ```
+  6. `ngAfterViewInit()`: Called once after the component's view and child 
+     views are fully initialized. Crucial for direct DOM queries.
+     ```typescript
+     @ViewChild('chart') chart!: ChartComponent;
+     
+     ngAfterViewInit() {
+       this.chart.render();
+     }
+     ```
+  7. `ngAfterViewChecked()`: Called after `ngAfterViewInit` and subsequent 
+     `ngDoCheck()` cycles. Responds after child views are checked.
+  8. `ngOnDestroy()`: Called just before Angular destroys the component. Used to 
+     clean up subscriptions, timers, and prevent memory leaks.
+     ```typescript
+     ngOnDestroy() {
+       this.resizeSub?.unsubscribe();
+       clearInterval(this.autoSaveId);
+     }
+     ```
+
+* Execution Order:
+  `ngOnChanges` → `ngOnInit` → `ngDoCheck` → `ngAfterContentInit` → 
+  `ngAfterContentChecked` → `ngAfterViewInit` → `ngAfterViewChecked` → `ngOnDestroy`
+
+* Constructor vs. ngOnInit:
+  - Constructor: A native TypeScript class feature. Only use it for Dependency Injection.
+  - ngOnInit: An Angular-specific hook. Use it for data initialization and binding logic, 
+    as inputs are not yet available in the constructor.
+
+
+5. CHANGE DETECTION & PERFORMANCE OPTIMIZATION
+--------------------------------------------------------------------------------
+* Change Detection Strategies:
+  1. Default Strategy: Angular checks every component in the tree from top to bottom 
+     whenever an asynchronous event (DOM event, HTTP response, timer) occurs.
+  2. OnPush Strategy (`ChangeDetectionStrategy.OnPush`): Angular only checks the 
+     component and its subtree when:
+     - An `@Input()` reference changes.
+     - An event originates from the component or its children.
+     - An Observable bound with the `async` pipe emits a new value.
+     - `markForCheck()` is called manually on `ChangeDetectorRef`.
+
+* Enabling OnPush:
+  ```typescript
+  @Component({
+    selector: 'app-user-card',
+    templateUrl: './user-card.component.html',
+    changeDetection: ChangeDetectionStrategy.OnPush
   })
-});
-Access with form.get('address.city')
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Validators.compose()
-· Used to combine multiple validators conditionally or dynamically.
-
-Validators.compose([Validators.required, Validators.minLength(3)])
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-markAsTouched / markAllAsTouched
-· Used to trigger validation messages manually (e.g. on submit).
-this.form.markAllAsTouched();
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-RxJS in Angular
-· RxJS (Reactive Extensions for JS) is used for reactive programming (events, async data, streams).
-
-· Angular uses RxJS in forms, HTTP, routing, services, etc.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Observable
-· Core building block — emits data over time.
-
-· Can emit multiple values (like a stream), supports sync/async.
-
-const obs = new Observable(observer => {
-  observer.next('data');
-  observer.complete();
-});
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Pipe
-· Used to chain operators.
-pipe chains operators that return a new Observable transformed from the original one.
-
-· Applied on observable to transform, filter, debounce, etc.
-obs.pipe(map(val => val * 2), filter(v => v > 3))
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Subscribe
-· Triggers observable execution.
-
-· You pass observer callbacks: next, error, complete.
-obs.subscribe({
-  next: val => console.log(val),
-  error: err => console.error(err),
-  complete: () => console.log('done')
-});
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Operators
-Used inside .pipe() to transform or control data streams.
-------------
-Creation Operators:
-of() – emit static values
-
-from() – convert array/promise
-
-interval() – emit values over time
-
-timer() – like interval but delayed
-
-fromEvent() – listen to DOM events
----------------
-Transformation:
-map() — transform values
-
-filter() — filter based on condition
-
-tap() — side effects (e.g., logging)
-
-take() — take N values
-
-takeUntil() — unsubscribe using notifier
-
-switchMap() — projects each source value to inner Observable; cancels previous inner Observable when a new value arrives. Useful in HTTP requests and typeahead search.
-
-mergeMap() — projects to inner Observable and merges results concurrently.
-
-concatMap() — projects to inner Observable and concatenates in order.
-
-exhaustMap() — ignores new source values while inner Observable is active.
-
----------------
-Combination Operators:
-
-combineLatest() — emits latest values from multiple Observables each time any emits.
-
-forkJoin() — waits for all Observables to complete, then emits last values as array/object. Often used for parallel HTTP calls.
-
-withLatestFrom(), zip(), merge()
-
-----------------
-
-Filtering Operators:
-
-first(), last(), skip(), takeWhile(), skipWhile()
-----------------
-Utility:
-debounceTime() – wait after last emission
-
-throttleTime() – emit at regular intervals
-
-distinctUntilChanged() – skip duplicate values
-
-delay() – delay emission
-
-finalize() – run logic on completion/unsubscribe
-
------------------
-Error Handling Operators:
-
-catchError() — handle/recover errors
-
-retry(), retryWhen() — resubscribe on errors
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Subjects (Multicast Observables)
-
-Subjects are special types of Observables that allow manual control over emissions via their next(), error(), and complete() methods.
-
-They are multicast, meaning all subscribers share the same underlying source and receive the same emitted values simultaneously. This contrasts with regular Observables that are unicast (each subscription runs independently).
-
-Subjects act both as an Observable (to subscribers) and as an Observer (to emit values).
-
-Types of Subjects:
-
-Subject — The basic Subject type; does not hold or replay any values. Subscribers only receive values emitted after they subscribe.
-
-BehaviorSubject — Holds the latest emitted value and immediately emits that latest value to any new subscribers upon subscription. It requires an initial value on creation.
-
-ReplaySubject — Buffers a specified number of previous emitted values and replays them to new subscribers upon subscription. Useful for caching or late subscribers.
-
-AsyncSubject — Emits only the last value to its subscribers, but only when the Subject completes. Subscribers receive no values until completion.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Unsubscribe Strategies
-Manual: .unsubscribe()
-
-takeUntil() + Subject in ngOnDestroy()
-
-takeUntilDestroyed() (Angular 16+)
-
-AsyncPipe in templates (auto unsubscribe)
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Component Reusability in Angular
-Reusability means building generic, configurable components that can be reused across different parts of the app — improves maintainability, reduces code duplication, and supports clean architecture.
-
-------------------
-@Input() Decorator
-Used to pass data from parent to child.
-
-Declared using @Input().
-
-Supports primitives, objects, arrays, etc.
-
-@Input() title: string = '';
-
-Usage: <app-card [title]="'User Info'"></app-card>
-----------------------
-@Output() Decorator
-Used to emit events from child to parent.
-
-Declared using @Output() + EventEmitter.
-@Output() clicked = new EventEmitter<string>();
-
-Usage: <app-card (clicked)="handleClick($event)"></app-card>
-
------------
-Two-Way Binding (@Input() + @Output())
-Simulates [(ngModel)]-like behavior with a custom binding syntax.
-
-Naming convention:
-
-@Input() status
-
-@Output() statusChange
-
-@Input() status: boolean = false;
-@Output() statusChange = new EventEmitter<boolean>();
-
-
-Usage:<app-toggle [(status)]="isActive"></app-toggle>
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-ng-content (Content Projection)
-Projects content from parent into the child component's layout.
-
-Default content slot:
-<ng-content></ng-content>
-
-Usage:
-<app-card>
-  <p>Injected paragraph</p>
-</app-card>
-----------
-Multiple ng-content Slots
-Use select="" to define multiple content slots.
-
-<ng-content select="[header]"></ng-content>
-<ng-content></ng-content>
-<ng-content select="[footer]"></ng-content>
-
-Usage:
-<app-card>
-  <div header>Header Area</div>
-  <div>Body Area</div>
-  <div footer>Footer Area</div>
-</app-card>
-
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-ViewContainerRef – Dynamic Component Rendering
-
-ViewContainerRef allows you to create, insert, and remove components or templates at runtime.
-
-Like a placeholder in the DOM where Angular can render something dynamically.
-
-Used in dashboards, modals, alerts, form builders, CMS-like tools.
-
------------
-ViewContainerRef lets you add or remove Angular components or templates in the DOM manually — wherever and whenever you want.
-
--------------
- How to get ViewContainerRef?
-
- @ViewChild('ref', { read: ViewContainerRef }) vcr!: ViewContainerRef;
-
-Or use inject(ViewContainerRef) (Angular 14+)
-
-const vcr = inject(ViewContainerRef);
-
-Or inject in structural directives (like in custom *if/*for)
-
-----------------
- Basic APIs
-createComponent(Component) → creates & inserts a component.
-
-clear() → removes all inserted views/components.
-
-length → returns count of views inside.
-
-createEmbeddedView(templateRef) → render an <ng-template> manually.
-
-----------------
- Example: Dynamically add component at runtime
-
- <ng-template #container></ng-template>
-
-@ViewChild('container', { read: ViewContainerRef }) vcr!: ViewContainerRef;
-
-add() {
-  const compRef = vcr.createComponent(WidgetComponent);
-  compRef.instance.id = 1; // passing @Input()
-}
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Angular Performance Optimization
-
-Make Angular apps faster by reducing:
-
-    DOM updates
-
-    Change detection cycles
-
-    Unnecessary re-renders
-
-    Payload size
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 1. trackBy in *ngFor
-Avoids DOM re-renders for unchanged items in a list.
-
-Prevents performance drops in large lists.
-
-<li *ngFor="let item of items; trackBy: trackById">{{ item.name }}</li>
-
-trackById(index: number, item: any) {
-  return item.id;
-}
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 2. Lazy Load Routes
-Loads feature modules only when route is visited.
-
-Reduces initial bundle size.
-
-// app.routes.ts
-{
-  path: 'dashboard',
-  loadChildren: () => import('./dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
-}
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 3. Dynamic Component Loading (ViewContainerRef)
-Code Splitting via Dynamic Imports (for Components)
-Loads component only when needed, not during initial load.
-
-Useful for rarely-used dialogs, widgets, etc.
-
-@ViewChild('container', { read: ViewContainerRef }) vcr!: ViewContainerRef;
-
-loadModal() {
-  import('./modal/lazy-modal.component').then(({ LazyModalComponent }) => {
-    this.vcr.clear(); // optional
-    this.vcr.createComponent(LazyModalComponent);
+  export class UserCardComponent {}
+  ```
+
+* markForCheck() vs. detectChanges():
+  - `markForCheck()`: Marks the component and its ancestors as needing change 
+    detection. It will run during the next normal cycle.
+    ```typescript
+    constructor(private cd: ChangeDetectorRef) {}
+    someMethod() {
+      this.data.prop = 'new value'; // Mutating property without reference change
+      this.cd.markForCheck();
+    }
+    ```
+  - `detectChanges()`: Synchronously forces change detection on the current component 
+    and its children immediately. Use with caution.
+    ```typescript
+    constructor(private cd: ChangeDetectorRef) {}
+    updateView() {
+      this.data = newData;
+      this.cd.detectChanges();
+    }
+    ```
+  - `detach()` and `reattach()`: Can be used to disable and resume change detection 
+    manually for custom performance tuning.
+
+* Immutable Objects and OnPush:
+  OnPush relies heavily on object reference changes. Do not mutate existing objects.
+  ```typescript
+  // ❌ BAD: No reference change (Will not trigger OnPush CD)
+  this.parentData.message = 'mutated';
+
+  // ✅ GOOD: Reference change (Will trigger OnPush CD)
+  this.parentData = { message: 'new message object' };
+  ```
+
+* Performance Optimization Checklist:
+  1. trackBy in *ngFor: Avoids full DOM re-renders when list data changes.
+     ```html
+     <li *ngFor="let item of items; trackBy: trackById">{{ item.name }}</li>
+     ```
+     ```typescript
+     trackById(index: number, item: any) {
+       return item.id;
+     }
+     ```
+  2. Avoid Logic in Templates: Inline template calculations execute on every single 
+     change detection cycle.
+     ```html
+     <!-- ❌ BAD -->
+     {{ users.filter(u => u.isActive).length }}
+     
+     <!-- ✅ GOOD -->
+     {{ activeUserCount }}
+     ```
+  3. Use ng-container to Avoid Extra DOM Elements:
+     ```html
+     <ng-container *ngIf="isLoggedIn">
+       <button>Logout</button>
+     </ng-container>
+     ```
+  4. Prefer One-Way Binding: Avoid unnecessary double-binding if a one-way binding 
+     is enough.
+     ```html
+     <!-- ❌ BAD: Triggers change detection twice -->
+     <input [(ngModel)]="name" />
+     
+     <!-- ✅ GOOD -->
+     <input [value]="name" (input)="name = $event.target.value" />
+     ```
+
+
+6. ROUTING & NAVIGATION
+--------------------------------------------------------------------------------
+* Routing Setup:
+  ```typescript
+  const routes: Routes = [
+    { path: '', redirectTo: 'home', pathMatch: 'full' },
+    { path: 'home', component: HomeComponent },
+    { path: '**', component: NotFoundComponent } // Wildcard route for 404
+  ];
+  ```
+
+* Template Navigation:
+  - Using Directives: `<a routerLink="/login" routerLinkActive="active">Login</a>`
+  - Programmatic Navigation:
+    ```typescript
+    constructor(private router: Router) {}
+    goToDashboard() {
+      this.router.navigate(['/dashboard']);
+    }
+    ```
+
+* Route Parameters & Query Params:
+  - Dynamic parameters: `{ path: 'product/:id', component: ProductComponent }`
+    ```typescript
+    constructor(private route: ActivatedRoute) {}
+    ngOnInit() {
+      const id = this.route.snapshot.paramMap.get('id');
+    }
+    ```
+  - Query Parameters:
+    ```typescript
+    // Navigating: /products?page=2&sort=price
+    this.router.navigate(['/products'], { queryParams: { page: 2, sort: 'price' } });
+    
+    // Reading:
+    this.route.queryParamMap.subscribe(params => {
+      const page = params.get('page');
+    });
+    ```
+
+* Route Guards (Modern Functional Guards):
+  - `CanActivateFn`: Prevents entering a route.
+    ```typescript
+    export const authGuard: CanActivateFn = () => {
+      const router = inject(Router);
+      const loggedIn = localStorage.getItem('loggedIn') === 'true';
+      return loggedIn ? true : router.createUrlTree(['/login']);
+    };
+    ```
+  - `CanDeactivateFn`: Prevents leaving a route (e.g. check unsaved changes).
+    ```typescript
+    export const canExitForm: CanDeactivateFn<EditComponent> = (component) => {
+      return component.hasUnsavedChanges ? confirm('Discard changes?') : true;
+    };
+    ```
+  - `CanMatchFn` (Modern replacement for `CanLoadFn`):
+    ```typescript
+    export const adminGuard: CanMatchFn = () => {
+      return localStorage.getItem('role') === 'admin';
+    };
+    ```
+  - `ResolveFn`: Pre-fetches data before component activates.
+    ```typescript
+    export const userResolver: ResolveFn<User> = () => {
+      return inject(UserService).getUserProfile();
+    };
+    ```
+    Accessing resolved data in the component:
+    ```typescript
+    this.route.data.subscribe(data => {
+      console.log(data['user']);
+    });
+    ```
+  - `CanActivateChild`: Applies check to all child routes.
+    ```typescript
+    {
+      path: 'admin',
+      canActivateChild: [authGuard],
+      children: [
+        { path: 'users', component: UsersComponent }
+      ]
+    }
+    ```
+
+
+7. DEPENDENCY INJECTION (DI)
+--------------------------------------------------------------------------------
+* DI Pattern:
+  Angular uses dependency injection to supply components, directives, and services 
+  with the dependencies they need. Services are registered with providers (typically 
+  instantiated once as singletons during the lifetime of the application).
+
+* Injection Methods:
+  1. Constructor Injection (Traditional):
+     ```typescript
+     constructor(private http: HttpClient) {}
+     ```
+  2. `inject()` Function (Modern - Angular 14+):
+     Allows injection directly in class property declarations, functional guards, 
+     and custom functions:
+     ```typescript
+     http = inject(HttpClient);
+     ```
+
+
+8. HTTP CLIENT & ERROR HANDLING
+--------------------------------------------------------------------------------
+* HttpClient:
+  The reactive HTTP client from `@angular/common/http` that wraps request APIs and 
+  returns RxJS Observables.
+
+* Best Practices for Error Handling:
+  1. Local Error Handling: Pass an observer object to `.subscribe()` containing 
+     `next` and `error` handlers:
+     ```typescript
+     this.userService.getProfile().subscribe({
+       next: (data) => this.profile = data,
+       error: (err) => this.error = err
+     });
+     ```
+  2. Global Error Handling: Create a custom class that implements Angular's `ErrorHandler` 
+     to capture uncaught runtime exceptions globally.
+  3. Http Interceptors: Intercept requests/responses globally (e.g. to attach auth tokens 
+     or catch specific status code errors like 401/403).
+
+
+9. FORMS IN ANGULAR
+--------------------------------------------------------------------------------
+* Reactive Forms:
+  Model-driven forms where the form structure is built in TypeScript and mapped to the template.
+
+* Basic Setup Example:
+  ```typescript
+  // Using FormBuilder shorthand:
+  this.form = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(3)]],
+    email: ['', [Validators.required, Validators.email]]
   });
-}
+  ```
 
+* setValue vs. patchValue:
+  - `setValue()`: Updates values of all form controls. Requires full form structure.
+    ```typescript
+    this.form.setValue({ name: 'Sahil', email: 'sahil@example.com' });
+    ```
+  - `patchValue()`: Updates only provided fields.
+    ```typescript
+    this.form.patchValue({ name: 'Sahil' });
+    ```
 
-<!-- Template -->
-<ng-template #container></ng-template>
+* Custom Validators:
+  - Sync Custom Validator:
+    ```typescript
+    function noSpecialChars(control: AbstractControl): ValidationErrors | null {
+      return /^[a-zA-Z0-9]*$/.test(control.value) ? null : { specialChars: true };
+    }
+    ```
+  - Async Custom Validator:
+    ```typescript
+    function checkUsername(control: AbstractControl): Observable<ValidationErrors | null> {
+      return api.checkUser(control.value).pipe(
+        map(exists => exists ? { usernameTaken: true } : null)
+      );
+    }
+    ```
+  - Form-Level Validator (e.g. comparing two fields):
+    ```typescript
+    this.form = this.fb.group({
+      password: [''],
+      confirmPassword: ['']
+    }, { validators: passwordMatchValidator });
+    ```
 
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 4. ChangeDetectionStrategy.OnPush
-
-Applied at component level to avoid frequent checks.
-
-Syntax is always written inside @Component() decorator.
-
-@Component({
-  selector: 'app-user-card',
-  templateUrl: './user-card.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-Useful when working with:
-
-@Input using object references
-
-async pipe for Observables
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-5. async Pipe
-Binds Observable data in template without manually subscribing.
-
-Works well with OnPush strategy.
-
-<!-- Example with Observable -->
-<div *ngIf="user$ | async as user">
-  {{ user.name }}
-</div>
-
-user$ = this.api.getUser();
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-6. Pure vs Impure Pipes
-Defined using @Pipe({ pure: true/false }).
-
-Pure pipes: run only if input changes.
-
-Impure pipes: run on every change detection.
-
-@Pipe({ name: 'uppercasePipe', pure: true }) // default is true
-export class UppercasePipe implements PipeTransform {
-  transform(value: string) {
-    return value.toUpperCase();
+* FormArray (Dynamic Lists):
+  Used to handle dynamically sized lists of controls.
+  ```typescript
+  skills: this.fb.array([this.fb.control('')]);
+  
+  addSkill() {
+    this.skills.push(this.fb.control('Angular'));
   }
-}
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-7. Avoid Logic in Templates
-Avoid inline filters or calculations.
-
-Move logic to the component for better performance.
-
-<!-- ❌ BAD -->
-{{ users.filter(u => u.isActive).length }}
-
-<!-- ✅ GOOD -->
-{{ activeUserCount }}
-
-activeUserCount = this.users.filter(u => u.isActive).length;
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-8. Unsubscribe Properly (Memory Leak Prevention)
-Use ngOnDestroy, takeUntil, or async pipe.
-
-private destroy$ = new Subject();
-
-ngOnInit() {
-  this.api.getData().pipe(takeUntil(this.destroy$)).subscribe();
-}
-
-ngOnDestroy() {
-  this.destroy$.next();
-  this.destroy$.complete();
-}
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-9. Prefer One-Way Binding
-Avoid unnecessary use of [(ngModel)] or [(value)].
-
-<!-- ❌ BAD: Triggers detection twice -->
-<input [(ngModel)]="name" />
-
-<!-- ✅ GOOD: Controlled detection -->
-<input [value]="name" (input)="name = $event.target.value" />
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-10. Use ng-container to Avoid Extra DOM
-Use ng-container to apply structural directives without adding real HTML tags.
-
-<!-- Adds no extra tag -->
-<ng-container *ngIf="isLoggedIn">
-  <button>Logout</button>
-</ng-container>
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-OnPush Change Detection Strategy in Angular
-
-it is a change detection strategy to optimize performance by minimizing unnecessary component checks.
-
-Here Angular only checks the component and its subtree when:
-
-    An input property reference changes.
-
-    An event originated from the component or its children.
-
-    markForCheck() is called manually.
-
-    An observable bound with async pipe emits a new value.
-
-
-----------
-to enable - 
-@Component({
-  selector: 'app-example',
-  templateUrl: './example.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush
-})
-export class ExampleComponent { }
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Benefits of OnPush:
-
-Improves performance by reducing change detection cycles.
-
-Best for immutable data patterns and unidirectional data flow.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-markForCheck vs detectChanges
-
-markForCheck():
-
-Marks the component and its ancestors as needing change detection.
-
-Use when you update data outside Angular's zone or change an object property without changing the reference.
-
-Triggers change detection during the next Angular change detection cycle.
-
-constructor(private cd: ChangeDetectorRef) {}
-someMethod() {
-  this.data.prop = 'new value';
-  this.cd.markForCheck();
-}
-
-
-
---------------
-detectChanges():
-
-Triggers immediate change detection on the current component and its children.
-
-Runs synchronously and immediately updates the view.
-
-Use cautiously to avoid excessive checks and potential side effects.
-
-constructor(private cd: ChangeDetectorRef) {}
-updateView() {
-  this.data = newData;
-  this.cd.detectChanges();
-}
-
--------------------
-detach() and reattach():
-
-detach() stops change detection for the component subtree.
-
-reattach() resumes change detection.
-
-Useful for manual performance tuning in complex apps.
-
---------------------
-Immutable Objects and OnPush:
-
-OnPush relies heavily on object reference changes.
-
-Do not mutate existing objects; instead, create new references to trigger detection.
-
-eg - 
-  // NO REFERENCE CHANGE
-    this.parentData.message = '🟥 mutated message';
-
-   // REFERENCE CHANGE
-    this.parentData = { message: '🟢 replaced object with new message' };
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-What is Code Splitting?
-
-Code splitting is a technique where Angular divides the application’s JavaScript into multiple smaller files (chunks) rather than a single large bundle.
-
-It helps improve performance by loading only the code that is needed for a specific route or action.
-
-Angular uses Webpack under the hood to analyze the app’s dependency graph and split the code accordingly during build time.
-
-These chunks are loaded on demand using dynamic import() syntax or through Angular’s routing mechanisms.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-🔹 What is Lazy Loading?
-
-Lazy loading is a way to defer the loading of a module or component until it is actually needed (e.g., when a user navigates to a route).
-
-It helps reduce the initial bundle size and speeds up application startup time.
-
-In Angular, lazy loading is implemented using the loadChildren or loadComponent properties in route configurations.
-
-Lazy loading can be applied to both NgModules and standalone components starting Angular 14.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-What is Eager Loading?
-
-Eager loading means all modules and components are bundled and loaded at the start of the application.
-
-This is the default behavior when you import a module directly in AppModule or any other eagerly-loaded module.
-
-Eager loading is suitable for core modules like shared utilities, authentication, navigation bar, etc., that are used across the app.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-What is Preloading?
-
-Preloading is a strategy where Angular begins loading lazy modules in the background after the app has initialized.
-
-It combines the benefits of lazy loading (smaller initial load) and eager loading (quick access to routes).
-
-Angular supports PreloadAllModules strategy out-of-the-box which preloads all lazy-loaded modules after the app is stable.
-
-You can also write custom preloading strategies to selectively preload specific routes based on custom logic or metadata.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-How Angular Code Splitting Works
-
-Webpack splits the code whenever it encounters a dynamic import() statement or a route configured with loadChildren or loadComponent.
-
-Each lazily loaded module or component becomes its own separate chunk.
-
-Angular CLI automatically manages the Webpack configuration, so developers only need to use the routing APIs properly.
-
-Shared dependencies across lazy modules are extracted by Webpack into shared chunks to avoid duplication and improve caching.
-
-Standalone components that are not eagerly imported elsewhere and are lazy loaded via loadComponent will result in their own chunks.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Lazy Loading NgModules
-
-Lazy loading of NgModules is done using the loadChildren property in the route config.
-
-The syntax uses a dynamic import which returns a promise of the module.
-
-{ path: 'admin', loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) }
-
-Lazy-loaded NgModules can have their own routing and can even lazy load their child modules.
-
-Angular supports deeply nested lazy modules, and each one will result in a separate Webpack chunk.
-
-Lazy-loaded modules must not be imported into any eagerly loaded module, otherwise they will be eagerly included in the main bundle.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Lazy Loading Standalone Components
-Angular 14+ allows lazy loading of standalone components using loadComponent in the routing config.
-
-The syntax uses dynamic import and returns a promise of the component.
-{ path: 'about', loadComponent: () => import('./about/about.component').then(m => m.AboutComponent) }
-Standalone components do not require NgModules and can be loaded directly.
-
-Webpack creates a chunk for each lazy-loaded standalone component if they are not eagerly used elsewhere.
-
-Reusable components or dependencies imported inside a standalone component will also be bundled in its chunk unless shared elsewhere.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Dynamic Lazy Loading (Outside of Routing)
-
-Components can also be lazy-loaded dynamically using await import() in the component logic.
-
-This is useful for loading modal content, tab content, or any component that is not associated with a route.
-
-Once imported, the component can be created using ViewContainerRef or passed to a modal/dialog service
-
-const { MyModalComponent } = await import('./my-modal/my-modal.component');
-This allows fine-grained control over code loading and helps in reducing the initial bundle even further.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Preloading Strategies in Angular
-
-Preloading strategies allow modules configured with loadChildren to be downloaded in the background after the app has initialized.
-
-Angular provides two built-in strategies: NoPreloading (default) and PreloadAllModules.
-
-Custom strategies can be written by implementing the PreloadingStrategy interface and checking route.data or any other logic to conditionally preload.
-
-Useful for preloading modules that users are likely to visit soon, without blocking the initial app load.
-
-Preloading happens after Angular detects that the app is stable (i.e., initial load and change detection are complete).
-
-How to setup Custom Preloading Strategy -
-1. Define metadata in your route configuration
-// app-routing.module.ts (routes array)
-const routes: Routes = [
-  {
-    path: 'dashboard',
-    loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
-    data: { preload: true } // will be preloaded
-  },
-  {
-    path: 'admin',
-    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),
-    data: { preload: false } // will NOT be preloaded
+  ```
+
+* valueChanges vs. statusChanges:
+  - `valueChanges`: Emits whenever a form value changes.
+  - `statusChanges`: Emits the validation status (VALID, INVALID, PENDING, DISABLED).
+
+* Enable/Disable Form Fields:
+  ```typescript
+  this.form.get('email')?.disable();
+  this.form.get('email')?.enable();
+  ```
+  Note: Disabled controls are excluded from `form.value`. To fetch all fields, 
+  including disabled ones, use: `this.form.getRawValue()`.
+
+* Validators.compose():
+  Used to combine multiple validator functions conditionally or dynamically:
+  ```typescript
+  Validators.compose([Validators.required, Validators.minLength(3)])
+  ```
+
+* Programmatic Validation Triggering:
+  ```typescript
+  this.form.markAllAsTouched(); // Triggers UI validation errors
+  ```
+
+
+10. RxJS & REACTIVE PROGRAMMING
+--------------------------------------------------------------------------------
+* Promises vs. Observables:
+  - Promise: Emits a single value, execution starts immediately (not lazy), 
+    and cannot be cancelled natively.
+  - Observable: Emits multiple values over time, lazy (does not execute until 
+    subscribed), and can be cancelled by unsubscribing.
+
+* Debouncing & Throttling in Angular using RxJS:
+  ```typescript
+  this.form = this.fb.group({
+    debounceSearch: [null],
+    throttleSearch : [null]
+  });
+
+  this.form.get('debounceSearch')!.valueChanges
+    .pipe(debounceTime(500))
+    .subscribe(value => console.log('Debounced:', value));
+
+  this.form.get('throttleSearch')!.valueChanges
+    .pipe(throttleTime(500))
+    .subscribe(value => console.log('Throttled:', value));
+  ```
+
+* Subjects (Multicast Observables):
+  Subjects act as both an Observable and an Observer:
+  - `Subject`: Standard multicast stream. Late subscribers miss previously emitted values.
+  - `BehaviorSubject`: Requires an initial value and replays the last emitted value 
+    to new subscribers immediately.
+  - `ReplaySubject`: Buffers a history of values and replays them to new subscribers.
+  - `AsyncSubject`: Emits only the final value of the stream upon completion.
+
+* Unsubscribe Strategies:
+  1. Manual unsubscription: `this.sub.unsubscribe();`
+  2. `takeUntil()` with Subject:
+     ```typescript
+     private destroy$ = new Subject<void>();
+     ngOnInit() {
+       this.api.getData().pipe(takeUntil(this.destroy$)).subscribe();
+     }
+     ngOnDestroy() {
+       this.destroy$.next();
+       this.destroy$.complete();
+     }
+     ```
+  3. `takeUntilDestroyed()` (v16+):
+     ```typescript
+     constructor() {
+       this.api.getData().pipe(takeUntilDestroyed()).subscribe();
+     }
+     ```
+  4. `AsyncPipe` in templates: Handles subscription and unsubscription automatically.
+
+
+11. CODE SPLITTING & LAZY LOADING
+--------------------------------------------------------------------------------
+* Code Splitting:
+  Dividing JavaScript code into smaller chunks (modules/components) so that the 
+  browser only downloads what is needed for the active route.
+
+* Lazy Loading:
+  Loads features on demand rather than eagerly on application startup.
+  - Lazy Loading NgModules:
+    ```typescript
+    { path: 'admin', loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule) }
+    ```
+  - Lazy Loading Standalone Components (v14+):
+    ```typescript
+    { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent) }
+    ```
+
+* Dynamic Lazy Loading (Outside of Routing):
+  You can load components on the fly (e.g. for modals or dialogs) inside your TypeScript logic:
+  ```typescript
+  @ViewChild('container', { read: ViewContainerRef }) vcr!: ViewContainerRef;
+
+  async loadModal() {
+    const { LazyModalComponent } = await import('./modal/lazy-modal.component');
+    this.vcr.clear();
+    const compRef = this.vcr.createComponent(LazyModalComponent);
+    compRef.instance.id = 1; // Pass inputs manually
   }
-];
-2. Create the custom strategy service
-// selective-preloading.strategy.ts
-import { Injectable } from '@angular/core';
-import {
-  Route,
-  PreloadingStrategy
-} from '@angular/router';
-import { Observable, of } from 'rxjs';
+  ```
 
-@Injectable({ providedIn: 'root' })
-export class SelectivePreloadingStrategy implements PreloadingStrategy {
-  preload(route: Route, load: () => Observable<any>): Observable<any> {
-    // Check for route metadata
-    return route.data?.['preload'] ? load() : of(null);
+* Selective Preloading Strategy:
+  Downloads lazy-loaded code in the background after the initial app is stable.
+  
+  1. Define metadata in route configuration:
+     ```typescript
+     const routes: Routes = [
+       {
+         path: 'dashboard',
+         loadChildren: () => import('./dashboard/dashboard.module').then(m => m.DashboardModule),
+         data: { preload: true } // should preload
+       }
+     ];
+     ```
+  2. Create the custom strategy service:
+     ```typescript
+     import { Injectable } from '@angular/core';
+     import { Route, PreloadingStrategy } from '@angular/router';
+     import { Observable, of } from 'rxjs';
+
+     @Injectable({ providedIn: 'root' })
+     export class SelectivePreloadingStrategy implements PreloadingStrategy {
+       preload(route: Route, load: () => Observable<any>): Observable<any> {
+         return route.data?.['preload'] ? load() : of(null);
+       }
+     }
+     ```
+  3. Register the strategy in AppRoutingModule:
+     ```typescript
+     @NgModule({
+       imports: [
+         RouterModule.forRoot(routes, {
+           preloadingStrategy: SelectivePreloadingStrategy
+         })
+       ]
+     })
+     export class AppRoutingModule {}
+     ```
+
+
+12. MODERN ANGULAR (v16 - v20) ADDITIONS
+--------------------------------------------------------------------------------
+* Angular Signals:
+  A fine-grained reactivity system introduced in v16. Updates only the specific DOM 
+  nodes that depend on the changed signal, bypassing global Zone.js checks.
+  
+  ```typescript
+  count = signal(0);
+  doubleCount = computed(() => this.count() * 2);
+  
+  increment() {
+    this.count.update(c => c + 1);
   }
-}
-3. Register the strategy in your RouterModule
-// app-routing.module.ts
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { SelectivePreloadingStrategy } from './selective-preloading.strategy';
-
-@NgModule({
-  imports: [
-    RouterModule.forRoot(routes, {
-      preloadingStrategy: SelectivePreloadingStrategy
-    })
-  ],
-  exports: [RouterModule]
-})
-export class AppRoutingModule {}
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-When Not to Use Lazy Loading (Anti-Patterns)
-
-Do not lazy load components or modules that are used on almost every page, like shared layout, navbar, or auth services.
-
-Avoid lazy loading very small modules (e.g., modules with 1–2 small components), as the overhead of extra network requests may outweigh the benefit.
-
-Avoid overusing lazy loading — too many lazy-loaded modules can increase code complexity and maintenance burden.
-
-Do not lazy load modules that are needed immediately on login or at the top of the page.
-
-Be cautious of lazy loading deeply nested modules unless there’s a real performance gain.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Shared Module Dependencies in Lazy Loaded Modules
-
-When multiple lazy-loaded modules depend on a common component, service, or directive, those shared dependencies should be placed in a shared module.
-
-Angular and Webpack will automatically extract those into a shared chunk so it’s loaded once and reused.
-
-Services provided in root are singletons across the app, even in lazy-loaded modules.
-
-Avoid declaring a component or directive in multiple modules — instead, export it from a shared module.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Can Lazy Loaded Modules Have Child Lazy Modules?
-
-Yes, lazy-loaded modules can lazy load their own child modules using the same loadChildren pattern inside their routing config.
-
-This results in multiple levels of chunking, and Angular will handle loading the parent and child chunks as needed.
-
-Useful for large features like admin panels, dashboards, etc., where sub-features are separated cleanly.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Micro Frontends and Config-Driven Lazy Loading
-
-Micro-frontends allow an Angular app to be broken into independently developed and deployed modules or sub-apps.
-
-Each micro frontend can be lazy loaded using loadChildren, often combined with Webpack Module Federation.
-
-Config-driven lazy loading allows route configuration to come from an API or external config and be dynamically added using router.resetConfig().
-
-Useful for plugin-based architectures, multi-tenant apps, or dynamic enterprise dashboards.
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Tree Shaking
-Tree shaking is a build optimization technique that removes unused code from the final JavaScript bundle.
-In Angular, it works by analyzing ES module imports and keeping only the parts of the code that are actually used in the application.
-
-In Angular projects, tree shaking happens automatically during the production build (ng build --configuration production) because Angular uses the Ivy compiler along with Vite (or previously Webpack) for optimization.
-
-Make sure that - "optimization": true and "buildOptimizer": true in angular.json
-
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-
---------------------------------------------------------------------------------------------------------------------------------
+  ```
+
+* Signal Inputs, Model, & Outputs:
+  - Read-only Signal Inputs (v17.1+):
+    ```typescript
+    username = input<string>('Guest'); // Read-only Signal<string>
+    userId = input.required<string>(); // Required input signal
+    ```
+  - Model Inputs (v17.2+): Support signal-based two-way data binding.
+    ```typescript
+    volume = model<number>(50); // Bind in parent using [(volume)]="currentVolume"
+    ```
+  - Signal Outputs (v17.3+):
+    ```typescript
+    clicked = output<string>();
+    this.clicked.emit('data');
+    ```
+
+* Signal Queries (v17.2+):
+  Modern alternatives to ViewChild/ContentChild.
+  ```typescript
+  box = viewChild<ElementRef>('boxEl'); // returns Signal<ElementRef | undefined>
+  boxes = viewChildren('boxEl');       // returns Signal<readonly ElementRef[]>
+  ```
+
+* Block-Based Control Flow (v17+):
+  Provides structured HTML controls without using directive imports:
+  
+  ```html
+  @if (isLoggedIn) {
+    <p>Welcome!</p>
+  } @else {
+    <button>Log In</button>
+  }
+
+  @for (user of users; track user.id) {
+    <div>{{ user.name }}</div>
+  } @empty {
+    <p>No users found.</p>
+  }
+  ```
+
+* Deferred Views (`@defer` - v17+):
+  Lazy-loads sections of a template automatically based on trigger conditions:
+  ```html
+  @defer (on viewport) {
+    <app-heavy-chart />
+  } @placeholder {
+    <div>Chart placeholder...</div>
+  }
+  ```
+
+* Zoneless Change Detection (v18+):
+  Reduces bundle size and improves performance by running without `Zone.js`. 
+  Enable by adding `provideExperimentalZonelessChangeDetection()` inside the 
+  `bootstrapApplication` config in `main.ts`.
+
+================================================================================

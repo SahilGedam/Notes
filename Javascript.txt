@@ -1,1332 +1,706 @@
-
-What is JavaScript ?
-JavaScript is a lightweight, cross-platform, single-threaded, and interpreted compiled programming language. It is also known as the scripting language for webpages. It is well-known for the development of web pages, and many non-browser environments also use it.
-
-JavaScript is a weakly typed language (dynamically typed). JavaScript can be used for Client-side developments as well as Server-side developments. JavaScript is both an imperative and declarative type of language. JavaScript contains a standard library of objects, like Array, Date, and Math, and a core set of language elements like operators, control structures, and statements. 
---------------------------------------------------------------------------------------------------------------------------------
-
-What is Memoization?
-In programming, memoization is an optimization technique that makes applications more efficient and hence faster. It does this by storing computation results in cache, and retrieving that same information from the cache the next time it's needed instead of computing it again.
-
-In simpler words, it consists of storing in cache the output of a function, and making the function check if each required computation is in the cache before computing it.
-
-A cache is simply a temporary data store that holds data so that future requests for that data can be served faster.
-
-Although using memoization saves time, it results in larger consumption of memory since we are storing all the computed results.
-
-
-----------------
-example -
-this fibonacchi series code can be optimized using memoization
-
-function fib(n) {
-  if (n <= 1) return n;
-  return fib(n - 1) + fib(n - 2);
-}
-
-console.log(fib(40)); // Very slow
-
-------
-
-function memoizedFib() {
-  const cache = {};
-
-  return function fib(n) {
-    if (n in cache) return cache[n];
-    if (n <= 1) return n;
-
-    cache[n] = fib(n - 1) + fib(n - 2);
-    return cache[n];
-  };
-}
-
-const fib = memoizedFib();
-console.log(fib(40)); // Much faster
-
-
---------------------------------------------------------------------------------------------------------------------------------
-Promises
-
-promise is an object representing eventual completion or failure of an asynchronous operation. ( defination from mdn docs)
-
-A Promise is in one of these states:
-
-pending: initial state, neither fulfilled nor rejected.
-fulfilled: meaning that the operation was completed successfully.
-rejected: meaning that the operation failed.
-
-- promise objects are immutable - can never be changed/updated 
-
-
-Chained Promises
-The methods Promise.prototype.then(), Promise.prototype.catch(), and Promise.prototype.finally() are used to associate further action with a promise that becomes settled. As these methods return promises, they can be chained.
-
-The .then() method takes up to two arguments; the first argument is a callback function for the fulfilled case of the promise, and the second argument is a callback function for the rejected case. Each .then() returns a newly generated promise object, which can optionally be used for chaining;
-
-error handling-
-.catch() is really just a .then() without a slot for a callback function for the case when the promise is fulfilled.
-----------------------------------------------------------------
-Promise concurrency-
-The Promise class offers four static methods to facilitate async task 
-
--> Promise.all()
-Fulfills when all of the promises fulfill; rejects when any of the promises rejects.
-
-const p1 = Promise.resolve(1);
-const p2 = Promise.resolve(2);
-const p3 = Promise.resolve(3);
-
-Promise.all([p1, p2, p3])
-  .then(values => console.log(values))  // [1, 2, 3]
-  .catch(err => console.error(err));    // any rejection ends it
-
-
--> Promise.allSettled()
-Fulfills when all promises settle.
-const p1 = Promise.resolve("success");
-const p2 = Promise.reject("error");
-
-Promise.allSettled([p1, p2])
-  .then(results => console.log(results));
-/*
-[
-  { status: 'fulfilled', value: 'success' },
-  { status: 'rejected', reason: 'error' }
-]
-*/
-
-
--> Promise.any()
-Fulfills when any of the promises fulfills; rejects when all of the promises reject.
-const p1 = Promise.reject("fail 1");
-const p2 = Promise.resolve("first success");
-const p3 = Promise.resolve("second success");
-
-Promise.any([p1, p2, p3])
-  .then(value => console.log(value))    // "first success"
-  .catch(err => console.error(err));    // AggregateError if all fail
-
-
--> Promise.race()
-Settles when any of the promises settles. In other words, fulfills when any of the promises fulfills; rejects when any of the promises rejects.
-const p1 = new Promise(res => setTimeout(() => res("1 done"), 300));
-const p2 = new Promise(res => setTimeout(() => res("2 done"), 100));
-
-Promise.race([p1, p2])
-  .then(result => console.log(result))  // "2 done"
-  .catch(err => console.error(err));
-
----------------
--> Promise.reject()
-Returns a new Promise object that is rejected with the given reason.
-const errorPromise = Promise.reject("Something went wrong");
-
-errorPromise
-  .catch(err => console.error(err)); // "Something went wrong"
-
-
--> Promise.resolve()
-Returns a Promise object that is resolved with the given value. If the value is a thenable (i.e. has a then method), the returned promise will "follow" that thenable, adopting its eventual state; otherwise, the returned promise will be fulfilled with the value.
-
-const p = Promise.resolve(42);
-
-p.then(value => console.log(value)); // 42
-
-
--> Promise.withResolvers()
-Returns an object containing a new Promise object and two functions to resolve or reject it, corresponding to the two parameters passed to the executor of the Promise() constructor.
-
-const { promise, resolve, reject } = Promise.withResolvers();
-
-setTimeout(() => {
-  resolve("Done!");
-}, 1000);
-
-promise.then(val => console.log(val)); // "Done!" after 1 sec
-
-
---------------------------------------------------------------------------------------------------------------------------------
-Creating a Promise
-const myPromise = new Promise((resolve, reject) => {
-  // async operation
-  if (success) {
-    resolve("Success!");
-  } else {
-    reject("Error!");
-  }
-});
-
---------------------------------------------------------------------------------------------------------------------------------
-Using .then(), .catch(), and .finally()
-myPromise
-  .then(result => {
-    // Called when resolved
-    console.log(result);
-  })
-  .catch(error => {
-    // Called when rejected
-    console.error(error);
-  })
-  .finally(() => {
-    // Always called
-    console.log("Done");
-  });
-
---------------------------------------------------------------------------------------------------------------------------------
-Chaining Promises
-
-Each .then() returns a new promise, allowing you to chain:
-doTask1()
-  .then(result1 => doTask2(result1))
-  .then(result2 => doTask3(result2))
-  .catch(err => handleError(err));
-
---------------------------------------------------------------------------------------------------------------------------------
-Built-in Helpers
-Promise.resolve("Done"); // creates resolved promise
-Promise.reject("Error"); // creates rejected promise
-
---------------------------------------------------------------------------------------------------------------------------------
-setTimeOut()
-it forms closure with the function it is in -> when the timer completes-> js by pass by refrence uses the value from the function 
-
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-What are diffrent data types in JavaScript ?
-
-To know the type of a JavaScript variable, we can use the typeof operator.
-
-1. Primitive type - String , Number , Boolean, BigInt , Undefined , Null , Symbol 
-
-        typeof of primitive types :
-        typeof "John Doe" // Returns "string"
-        typeof 3.14 // Returns "number"
-        typeof true // Returns "boolean"
-        typeof 234567890123456789012345678901234567890n // Returns bigint
-        typeof undefined // Returns "undefined"
-        typeof null // Returns "object" (kind of a bug in JavaScript)
-        typeof Symbol('symbol') // Returns Symbol
-
-2.Non-primitive types 
-    Primitive data types can store only a single value. To store multiple and complex values, non-primitive data types are used.
-    Object - Used to store collection of data.
-
---------------------------------------------------------------------------------------------------------------------------------
-Hoisting 
-
-JavaScript Hoisting refers to the process whereby the interpreter appears to move the declaration of functions, variables, classes, or imports to the top of their scope, prior to execution of the code.
-
-Features of Hoisting
-Declarations are hoisted, not initializations.
-Allows calling functions before their declarations.
-All variable and function declarations are processed before any code execution.
-Undeclared variables are implicitly created as global variables when assigned a value.
-
---------------------------------------------------------------------------------------------------------------------------------
-
-Difference between “ == “ and “ === “ operators.
-
-Both are comparison operators. The difference between both the operators is that “==” is used to compare values whereas, “ === “ is used to compare both values and types.
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-Difference between var and let in JavaScript
-
-Var
-The variables that are defined with var statement have function scope. 
-We can declare a variable again even if it has been defined previously in the same scope.
-Hoisting is allowed with var. 
-
-Let
-The variables that are defined with let statement have blocks as well as functions scope.
-We cannot declare a variable more than once if we defined that previously in the same scope.
-Hoisting is not allowed with let. (temporal dead zone)
-
-
---------------------
-let begins declarations, not statements. That means you cannot use a lone let declaration as the body of a block (which makes sense, since there's no way to access the variable).
-if (true) let a = 1; // SyntaxError: Lexical declaration cannot appear in a single-statement context
-
-----------------------
-
-const 
-The const keyword has all the properties that are the same as the let keyword, except the user cannot update it and have to assign it with a value at the time of declaration.
-
---------------------------------------------------------------------------------------------------------------------------------
-
-Temporal dead zone (TDZ)
-
-A variable declared with let, const, or class is said to be in a "temporal dead zone" (TDZ) from the start of the block until code execution reaches the place where the variable is declared and initialized.
-
-While inside the TDZ, the variable has not been initialized with a value, and any attempt to access it will result in a ReferenceError. The variable is initialized with a value when execution reaches the place in the code where it was declared. If no initial value was specified with the variable declaration, it will be initialized with a value of undefined.
-
-This differs from var variables, which will return a value of undefined if they are accessed before they are declared
-
-
-
---------------------------------------------------------------------------------------------------------------------------------
-Implicit Type Coercion in javascript.
-
-Implicit type coercion in javascript is the automatic conversion of value from one data type to another. It takes place when the operands of an expression are of different data types.
-	String coercion -String coercion takes place while using the ‘ + ‘ operator. When a number is added to a string, the number type is always converted to the string type.
-	Boolean Coercion -Boolean coercion takes place when using logical operators, ternary operators, if statements, and loop checks. , All values except false, 0, 0n, -0, “”, null, undefined, and NaN are truthy values.
-	Logical operators -OR ( | | ) operator, AND ( && ) operator 
-	Equality Coercion -Equality coercion takes place when using ‘ == ‘ operator.
-
-
---------------------------------------------------------------------------------------------------------------------------------
-
-Is javascript a statically typed or a dynamically typed language?
-
-JavaScript is a dynamically typed language. In a dynamically typed language, the type of a variable is checked during run-time in contrast to a statically typed language, where the type of a variable is checked during compile-time.
-
---------------------------------------------------------------------------------------------------------------------------------
-What is NaN property in JavaScript?
-
-NaN property represents the “Not-a-Number” value. It indicates a value that is not a legal number.
-typeof of NaN will return a Number.
-To check if a value is NaN, we use the isNaN() function
-isNaN() function converts the given value to a Number type, and then equates to NaN.
-
-
-
---------------------------------------------------------------------------------------------------------------------------------
- Explain passed by value and passed by reference.
- 
- In JavaScript, primitive data types are passed by value and non-primitive data types are passed by reference.
-
-Pass By Value
-	In Pass by value, the function is called by directly passing the value of the variable as an argument. So any changes made inside the function do not affect the original value.
-	In Pass by value, parameters passed as arguments create their own copy. So any changes made inside the function are made to the copied value not to the original value
-
-Pass by Reference
-	In Pass by Reference, Function is called by directly passing the reference/address of the variable as an argument. So changing the value inside the function also change the original value. In JavaScript array and Object follows pass by reference property.
-	In Pass by reference, parameters passed as an arguments does not create its own copy, it refers to the original value so changes made inside function affect the original value. 
-
---------------------------------------------------------------------------------------------------------------------------------
-What is an Immediately Invoked Function in JavaScript?
-An Immediately Invoked Function ( known as IIFE and pronounced as IIFY) is a function that runs as soon as it is defined.
-
-(function(){ 
-  // Do something;
-})();
---------------------------------------------------------------------------------------------------------------------------------
-What do you mean by strict mode in javascript and characteristics of javascript strict-mode?
-
-In ECMAScript 5, a new feature called JavaScript Strict Mode allows you to write a code or a function in a "strict" operational environment. In most cases, this language is 'not particularly severe' when it comes to throwing errors. In 'Strict mode,' however, all forms of errors, including silent errors, will be thrown. As a result, debugging becomes a lot simpler.  Thus programmer's chances of making an error are lowered.
-
-Characteristics of strict mode in javascript
-
-Duplicate arguments are not allowed by developers.
-In strict mode, you won't be able to use the JavaScript keyword as a parameter or function name.
-The 'use strict' keyword is used to define strict mode at the start of the script. Strict mode is supported by all browsers.
-Engineers will not be allowed to create global variables in 'Strict Mode.
---------------------------------------------------------------------------------------------------------------------------------
-Explain Higher Order Functions in javascript.
-
-Functions that operate on other functions, either by taking them as arguments or by returning them, are called higher-order functions.
-
-Higher-order functions are a result of functions being first-class citizens in javascript.
-
-Examples of higher-order functions:---
-------- 
-function higherOrder(fn) {
-  fn();
-}
-higherOrder(function() { console.log("Hello world") });
--------  
-function higherOrder2() {
-  return function() {
-    return "Do something";
-  }
-}      
-var x = higherOrder2();
-x()   // Returns "Do something"
---------------------------------------------------------------------------------------------------------------------------------
-Explain “this” keyword.
-
-The “this” keyword refers to the object that the function is a property of.
-The value of the “this” keyword will always depend on the object that is invoking the function.
-
-eg - if called from global - may return window object ,
-	 if called from inside an object - return property of that object
---------------------------------------------------------------------------------------------------------------------------------
-Explain call(), apply() and, bind() methods.
-
-'call' and 'apply' are used when you want to invoke a function immediately with a specific 'this' context. 'bind' is used when you want to create a new function with a bound 'this' to be used later.
-
-In JavaScript, call, apply, and bind are methods used to explicitly set the value of this inside a function.
-
-call() invokes a function with a given this value and arguments passed one by one.
-
-apply() is similar to call() but takes arguments as a single array.
-
-bind() returns a new function with this bound to a specific object. It doesn’t invoke the function immediately.
------------------------
-Shortest Example to demonstrate in Interview - 
-let person1 = {
-    name:'Sahil'
-}
-function printDetails (age,food_choice){
-    console.log(this.name, " is",age,'years old and is',food_choice)
-}
-printDetails.call(person1,28,'vegetarian') //call
-printDetails.apply(person1,[28,'vegetarian']) // apply
-let func = printDetails.bind(person1,28 ,'Vegetarian') // bind
-func()
--------------------------------
-Detail Explaination - 
-1. call():
-
-It’s a predefined method in javascript.
-This method invokes a method (function) by specifying the owner object.
-Example 1:
-function sayHello(){
-  return "Hello " + this.name;
-}
-        
-var obj = {name: "Sandy"};
-        
-sayHello.call(obj);
-        
-// Returns "Hello Sandy"	
-call() method allows an object to use the method (function) of another object. (function borrowing)
-Example 2:
-var person = {
-  age: 23,
-  getAge: function(){
-    return this.age;
-  }
-}        
-var person2 = {age:  54};
-person.getAge.call(person2);      
-// Returns 54  
-call() accepts arguments:
-function saySomething(message){
-  return this.name + " is " + message;
-}     
-var person4 = {name:  "John"};     
-saySomething.call(person4, "awesome");
-// Returns "John is awesome"    
-2. apply()
-
-The apply method is similar to the call() method. The only difference is that,
-
-call() method takes arguments separately whereas, apply() method takes arguments as an array.
-
-function saySomething(message){
-  return this.name + " is " + message;
-}        
-var person4 = {name:  "John"};
-saySomething.apply(person4, ["awesome"]);
-3. bind():
-
-This method returns a new function, where the value of “this” keyword will be bound to the owner object, which is provided as a parameter. ( same as call , just return function instead)
-Example with arguments:
-var bikeDetails = {
-    displayDetails: function(registrationNumber,brandName){
-    return this.name+ " , "+ "bike details: "+ registrationNumber + " , " + brandName;
-  }
-}
-   
-var person1 = {name:  "Vivek"};
-     
-var detailsOfPerson1 = bikeDetails.displayDetails.bind(person1, "TS0122", "Bullet");
+================================================================================
+                           JAVASCRIPT MASTER NOTES
+================================================================================
+
+1. JAVASCRIPT BASICS & EXECUTION CONTEXT
+--------------------------------------------------------------------------------
+* What is JavaScript?
+  JavaScript is a lightweight, cross-platform, single-threaded, and just-in-time 
+  (JIT) compiled programming language. It is traditionally known as the scripting 
+  language for webpages, but it is now widely used in many non-browser environments 
+  (e.g., Node.js).
+  - It is weakly (dynamically) typed.
+  - It supports both imperative and declarative paradigms.
+  - Contains a standard library of built-in objects (Array, Date, Math) and core 
+    language elements (operators, control structures, statements).
+
+* Strict Mode:
+  Introduced in ECMAScript 5, strict mode is a way to opt into a restricted variant 
+  of JavaScript that throws errors for silent failure cases.
+  - Enabled by adding the `'use strict'` directive at the top of a script or function.
+  - Characteristics:
+    - Prevents duplicate parameter names (e.g. `function x(a, a) {}` is a SyntaxError).
+    - Restricts naming variables/parameters after reserved words (like `eval`, `arguments`).
+    - Prevents implicit creation of global variables (assigning to an undeclared 
+      variable throws a `ReferenceError`).
+    - In strict mode, `this` in global function calls evaluates to `undefined` 
+      instead of the `window`/global object.
+
+* Transpilers & Polyfills:
+  Tools used to ensure modern JavaScript features run on older browser engines.
+  - Transpilers (e.g. Babel): Source-to-source compilers that translate new syntax 
+    into equivalent older syntax.
+    - Example: Transpiling the nullish coalescing operator:
+      ```javascript
+      // Modern input:
+      height = height ?? 100;
       
-// Binds the displayDetails function to the person1 object
-        
-      
-detailsOfPerson1();
-//Returns Vivek, bike details: TS0122, Bullet
+      // Transpiled output:
+      height = (height !== undefined && height !== null) ? height : 100;
+      ```
+  - Polyfills (e.g. core-js): Scripts that add missing built-in functions/methods.
+    - Example: Fills in `Math.trunc(1.23)` for engines lacking it.
+
+* Global Object:
+  Provides variables and functions available anywhere in the scope.
+  - Browser: `window`
+  - Node.js: `global`
+  - Standardized (across all environments): `globalThis`
+
+* Eval Function:
+  Allows execution of code represented as a string:
+  ```javascript
+  let result = eval('2 + 2'); // Returns 4
+  ```
+  Note: Avoid using `eval` in production as it poses severe security risks and 
+  degrades execution performance.
+
+* Types of Errors in JavaScript:
+  - Syntax Error: Mistakes or spelling/structure problems in the code that cause the 
+    program to fail parsing and not execute at all (or stop running).
+  - Logical Error: Program logic is incorrect, but the syntax is valid. The application 
+    runs without throwing browser errors, but produces incorrect results. These are often 
+    harder to debug.
 
 
---------------------------------------------------------------------------------------------------------------------------------
+2. DATA TYPES & COERCION
+--------------------------------------------------------------------------------
+* Categories of Data Types:
+  1. Primitive Types: Stored directly in the execution stack. They are immutable and 
+     copied by value.
+     - `String`, `Number`, `Boolean`, `BigInt`, `Undefined`, `Null`, `Symbol`
+  2. Non-Primitive Types (Objects): Stored in the memory heap. They are mutable and 
+     references to them are copied by value (sharing).
+     - `Object` (includes Arrays, Functions, Dates, etc.)
 
---------------------------------------------------------------------------------------------------------------------------------
-What is the difference between exec () and test () methods in javascript?
+* `typeof` Operator Output Examples:
+  ```javascript
+  typeof "John Doe" // "string"
+  typeof 3.14       // "number"
+  typeof true       // "boolean"
+  typeof 42n        // "bigint"
+  typeof undefined  // "undefined"
+  typeof null       // "object" (acknowledged legacy bug in JS)
+  typeof Symbol()   // "symbol"
+  typeof {}         // "object"
+  typeof function(){} // "function"
+  ```
 
-test () and exec () are RegExp expression methods used in javascript. 
-We'll use exec () to search a string for a specific pattern, and if it finds it, it'll return the pattern directly; else, it'll return an 'empty' result.
-We will use a test () to find a string for a specific pattern. It will return the Boolean value 'true' on finding the given text otherwise, it will return 'false'.
---------------------------------------------------------------------------------------------------------------------------------
-What is currying in JavaScript?
-Currying is an advanced technique to transform a function of arguments n, to n functions of one or fewer arguments.
+* Implicit Type Coercion:
+  Automatic conversion of values from one data type to another during operations.
+  - String Coercion: Triggered by the binary `+` operator when one operand is a string.
+    ```javascript
+    "3" + 4 // "34" (number 4 is coerced to "4")
+    ```
+  - Boolean Coercion: Occurs in logical checks (loops, `if` statements).
+    - Falsy values: `false`, `0`, `-0`, `0n`, `""`, `null`, `undefined`, and `NaN`.
+    - Everything else is truthy.
+  - Equality Coercion: Occurs during loose equality comparisons (`==`).
 
-function add (a) {
-  return function(b){
-    return a + b;
+* Loose (`==`) vs. Strict (`===`) Equality:
+  - `==` (Loose): Compares values after performing type coercion.
+    ```javascript
+    "5" == 5 // true
+    ```
+  - `===` (Strict): Compares both values and types without coercion.
+    ```javascript
+    "5" === 5 // false
+    ```
+  - Classic Interview Question: Why does `[] == ![]` evaluate to `true`?
+    1. `!` has higher precedence than `==`. So `![]` is evaluated first. Since arrays are truthy, `![]` becomes `false`.
+    2. The expression is now `[] == false`.
+    3. Loose equality (`==`) with a boolean coerces both to numbers: `false` becomes `0`.
+    4. The expression is now `[] == 0`.
+    5. The array `[]` is coerced to a primitive. `[].toString()` is `""` (empty string).
+    6. The expression is now `"" == 0`.
+    7. Empty string `""` coerced to a number is `0`.
+    8. The expression becomes `0 == 0`, which is `true`.
+
+* NaN Property (Not-a-Number):
+  Represents an invalid or unrepresentable numerical calculation.
+  - `typeof NaN` returns `"number"`.
+  - Use global `isNaN()` or `Number.isNaN()` to check. Note that `isNaN()` coerces 
+    its input to a number before checking, while `Number.isNaN()` does not.
+    ```javascript
+    isNaN("hello")        // true (coerces "hello" to NaN)
+    Number.isNaN("hello") // false (type is string, not NaN number)
+    ```
+
+* Infinity:
+  A numeric property representing positive infinity (greater than any number).
+  `typeof Infinity` returns `"number"`.
+
+* Symbols:
+  A primitive type representing unique, immutable identifiers.
+  ```javascript
+  let id1 = Symbol("id");
+  let id2 = Symbol("id");
+  console.log(id1 === id2); // false (always unique)
+  ```
+  - Auto-conversion: Symbols do not auto-convert to string. Direct string output 
+    throws a TypeError; call `.toString()` explicitly.
+  - Object Properties: Symbols are skipped by `for..in` loops and `Object.keys()`, 
+    but are copied by `Object.assign()`.
+  - Global Registry: Use `Symbol.for(key)` to retrieve or create a global symbol. 
+    `Symbol.keyFor(sym)` returns its key name.
+
+* Object to Primitive Conversion (Hints):
+  JavaScript uses three internal "hints" when converting objects to primitives:
+  - `"string"`: Used when an operation expects a string (e.g. `alert(obj)`).
+  - `"number"`: Used when math is performed (e.g. `+obj`, `obj1 - obj2`).
+  - `"default"`: Used when the operator is unsure (e.g. binary `+` or loose equality `==`).
+
+
+3. VARIABLES & SCOPING
+--------------------------------------------------------------------------------
+* Scope Types:
+  1. Global Scope: Variables declared outside any function or block, accessible 
+     anywhere in the code.
+  2. Local / Function Scope: Variables declared inside a function, accessible only 
+     within that function.
+  3. Block Scope: Variables declared using `let` and `const` inside `{}` blocks, 
+     inaccessible outside that block. Note: `var` is NOT block-scoped.
+
+* var vs. let vs. const:
+  - `var`: Function-scoped. Can be redeclared. Hoisted and initialized to `undefined`.
+  - `let`: Block-scoped. Cannot be redeclared. Hoisted but not initialized (TDZ).
+  - `const`: Same scoping and hoisting properties as `let`, but cannot be reassigned 
+    and must be initialized during declaration.
+  - Single-Statement Context Restriction:
+    `let` begins declarations, not statements. You cannot use a lone `let` declaration 
+    as the body of a block:
+    ```javascript
+    if (true) let a = 1; // SyntaxError: Lexical declaration cannot appear in a single-statement context
+    ```
+
+* Hoisting:
+  The process whereby the JavaScript interpreter processes declarations of functions, 
+  variables, classes, and imports before executing the code.
+  - Declarations are hoisted, not initializations.
+  - Function declarations are fully hoisted (can be called before defined).
+  - `var` declarations are hoisted and initialized to `undefined`.
+  - `let` and `const` declarations are hoisted but remain uninitialized.
+
+* Temporal Dead Zone (TDZ):
+  The period from the start of the block until the execution reaches the declaration line. 
+  Accessing a variable in the TDZ throws a `ReferenceError`.
+  ```javascript
+  {
+    // TDZ for variable 'a' starts here
+    console.log(a); // ReferenceError
+    let a = 10;     // TDZ ends
   }
-}
+  ```
 
-add(3)(4) 
+* Scope Chain:
+  If a variable is not found in the local scope, the JS engine searches the outer 
+  lexical scopes sequentially until it reaches the global scope. If it is still not 
+  found, a `ReferenceError` is thrown.
 
-------------
-implementation - 
-function add(a, b, c) {
-  return a + b + c;
-}
 
-// Call like:
-add(1)(2)(3); // 6
- can be converted into -
- function add(a) {
-  return function(b) {
-    return function(c) {
-      return a + b + c;
+4. FUNCTIONS & CLOSURES
+--------------------------------------------------------------------------------
+* Function Declarations vs. Expressions:
+  - Function Declaration: Declared as a standalone statement. Hoisted.
+    ```javascript
+    function greet() { return "Hello"; }
+    ```
+  - Function Expression: Created inside an expression. Not hoisted.
+    ```javascript
+    const greet = function() { return "Hello"; };
+    ```
+  - Scope in Block: In strict mode, function declarations in blocks are block-scoped.
+
+* Arrow Functions:
+  A concise syntax introduced in ES6.
+  ```javascript
+  const arrowAdd = (a, b) => a + b;
+  ```
+  - Multiline: Braces `{}` require an explicit `return` statement.
+  - Lexical `this`: Arrow functions do not bind their own `this`. They inherit `this` 
+    from the enclosing lexical environment in which they are defined.
+
+* Immediately Invoked Function Expressions (IIFE):
+  Functions that run immediately after definition (pronounced "Iffy").
+  ```javascript
+  (function() {
+    // Executed immediately
+  })();
+  ```
+
+* new Function Syntax:
+  Allows dynamically creating a function from strings:
+  ```javascript
+  let sum = new Function('a', 'b', 'return a + b');
+  console.log(sum(1, 2)); // 3
+  ```
+
+* Callbacks:
+  Passing a function as an argument to another function.
+  ```javascript
+  function multiplyBy2(sum) {
+    console.log(sum * 2);
+  }
+
+  function operationOnSum(num1, num2, callback) {
+    let sum = num1 + num2;
+    callback(sum);
+  }
+
+  operationOnSum(5, 5, multiplyBy2); // Outputs 20
+  ```
+
+* Higher-Order Functions:
+  Functions that take other functions as arguments, return them, or both (due to 
+  functions being first-class citizens).
+  ```javascript
+  function higherOrder2() {
+    return function() { return "Result"; };
+  }
+  let x = higherOrder2();
+  x(); // Returns "Result"
+  ```
+
+* Closures:
+  A closure is the combination of a function bundled together with references to 
+  its surrounding state (its lexical environment). This gives an inner function 
+  access to an outer function's variables even after the outer function has finished 
+  executing.
+  ```javascript
+  function randomFunc() {
+    var obj1 = { name: "Vivian", age: 45 };
+    return function() {
+      console.log(obj1.name + " is awesome"); // Accesses obj1 from lexical env
     };
-  };
-}
-
-console.log(add(1)(2)(3)); // 6
-
-
---------------------------------------------------------------------------------------------------------------------------------
-Explain Scope 
-
-Scope in JS determines the accessibility of variables and functions at various parts of one’s code.
-In general terms, the scope will let us know at a given part of code, what are variables and functions we can or cannot access.
-
-There are three types of scopes in JS:
-Global Scope
-Local or Function Scope
-Block Scope
-
-Global Scope: Variables or functions declared in the global namespace have global scope, which means all the variables and functions having global scope can be accessed from anywhere inside the code.
-
-Function Scope: Any variables or functions declared inside a function have local/function scope, which means that all the variables and functions declared inside a function, can be accessed from within the function and not outside of it.
-
-Block Scope: Block scope is related to the variables declared using let and const. Variables declared with var do not have block scope. Block scope tells us that any variable declared inside a block { }, can be accessed only inside that block and cannot be accessed outside of it.
-
---------------------------------------------------------------------------------------------------------------------------------
-Scope Chain
-
-JavaScript engine also uses Scope to find variables. 
-if the javascript engine does not find the variable in local scope, it tries to check for the variable in the outer scope. If the variable does not exist in the outer scope, it tries to find the variable in the global scope.
-If the variable is not found in the global space as well, a reference error is thrown
-
---------------------------------------------------------------------------------------------------------------------------------
-Closures
-
-(function along with its lexical environment)
-A closure is the combination of a function bundled together (enclosed) with references to its surrounding state (the lexical environment). In other words, a closure gives you access to an outer function's scope from an inner function. In JavaScript, closures are created every time a function is created, at function creation time.
-
-This ability of a function to store a variable for further reference even after it is executed is called Closure
-
-eg -
-function randomFunc(){
-  var obj1 = {name:"Vivian", age:45};
-  return function(){
-    console.log(obj1.name + " is "+ "awesome"); // Has access to obj1 even when the randomFunc function is executed
   }
-}
 
-var initialiseClosure = randomFunc(); // Returns a function
-initialiseClosure(); 
-
------------------
-Lexical Environment
-In JavaScript, every running function, code block {...}, and the script as a whole have an internal (hidden) associated object known as the Lexical Environment.
-
-The Lexical Environment object consists of two parts:
-
-Environment Record – an object that stores all local variables as its properties (and some other information like the value of this).
-A reference to the outer lexical environment, the one associated with the outer code.
-A “variable” is just a property of the special internal object, Environment Record. “To get or change a variable” means “to get or change a property of that object”.
-
---------------------------------------------------------------------------------------------------------------------------------
-What are callbacks?
-
-Functions that are used as an argument to another function are called callback functions
-
-function multiplyBy2(sum){
-  console.log(sum * 2);
-}
-
-function operationOnSum(num1,num2,operation){
-  var sum = num1 + num2;
-  operation(sum);
-}
-
-operationOnSum(5, 5, multiplyBy2); // Outputs 20
-
-
-
-
---------------------------------------------------------------------------------------------------------------------------------
-What are the types of errors in javascript?
-
-There are two types of errors in javascript.
-
-Syntax error: Syntax errors are mistakes or spelling problems in the code that cause the program to not execute at all or to stop running halfway through. Error messages are usually supplied as well.
-Logical error: Reasoning mistakes occur when the syntax is proper but the logic or program is incorrect. The application executes without problems in this case. However, the output findings are inaccurate. These are sometimes more difficult to correct than syntax issues since these applications do not display error signals for logic faults
-
-
---------------------------------------------------------------------------------------------------------------------------------
-What is recursion
-
-Recursion is a technique to iterate over an operation by having a function call itself repeatedly until it arrives at a result.
-
---------------------------------------------------------------------------------------------------------------------------------
-What is the use of a constructor function in javascript?
-
-Constructor functions are used to create objects in javascript.
-If we want to create multiple objects having similar properties and methods, constructor functions are used.
-
-The name of a constructor function should always be written in Pascal Notation: every word should start with a capital letter.
-
-
---------------------------------------------------------------------------------------------------------------------------------
-Which method is used to retrieve a character from a certain index?
-
-The charAt() function of the JavaScript string finds a char element at the supplied index
---------------------------------------------------------------------------------------------------------------------------------
-What are arrow functions?
-
-Arrow functions were introduced in the ES6 version of javascript. They provide us with a new and shorter syntax for declaring functions. Arrow functions can only be used as a function expression.
-
-eg - var arrowAdd = (a,b) => a + b;
-
-
---------------------------------------------------------------------------------------------------------------------------------
-What is the rest parameter and spread operator?
-
-Rest parameter ( … ):
-
-It provides an improved way of handling the parameters of a function.
-Using the rest parameter syntax, we can create functions that can take a variable number of arguments.
-Any number of arguments will be converted into an array using the rest parameter.
-It also helps in extracting all or some parts of the arguments.
-Rest parameters can be used by applying three dots (...) before the parameters.
-
-Note- Rest parameter should always be used at the last parameter of a function:
-
-
-Spread operator (…): Although the syntax of the spread operator is exactly the same as the rest parameter, the spread operator is used to spreading an array, and object literals. We also use spread operators where one or more arguments are expected in a function call.
-
-Key differences between rest parameter and spread operator:
-
-Rest parameter is used to take a variable number of arguments and turns them into an array while the spread operator takes an array or an object and spreads it
-Rest parameter is used in function declaration whereas the spread operator is used in function calls.
-
---------------------------------------------------------------------------------------------------------------------------------
-
-Classes
-
-Classes are a template for creating objects. They encapsulate data with code to work on that data. Classes in JS are built on prototypes but also have some syntax and semantics that are unique to classes.
-
-Unlike functions, classes are not hoisted. A class cannot be used before it is declared.
-A class can inherit properties and methods from other classes by using the extend keyword.
-All the syntaxes inside the class must follow the strict mode(‘use strict’) of javascript. An error will be thrown if the strict mode rules are not followed
-
-Class body
-The body of a class is the part that is in curly braces {}. This is where you define class members, such as methods or constructor.
-
---------------------------------------------------------------------------------------------------------------------------------
-Constructor
-The constructor method is a special method for creating and initializing an object created with a class. There can only be one special method with the name "constructor" in a class — a SyntaxError is thrown if the class contains more than one occurrence of a constructor method.
-
-A constructor can use the super keyword to call the constructor of the super class.
-
-You can create instance properties inside the constructor:
-
-A class method called constructor cannot be a getter, setter, async, or generator.
-
---------------------------------------------------------------------------------------------------------------------------------
-Generator
-
-Generators generate value on the fly which means whenever there is a need for that value then only it will be generated. It means the value is generated but not stored in memory so it takes less time to execute. It uses asterick (*) symbol after the keyword function i.e. function* to tell javaScript it is a generator function. The generator function returns the object.
-
-Use cases:
-
-It uses in infinite loop and does not stop computer or freeze your program.
-It uses as iterator.
-It has special type of return keyword i.e. Yield. The purpose yield is to run some code then return value, run some more code and return value like that.
---------------------------------------------------------------------------------------------------------------------------------
-JavaScript WeakSet
-
-JavaScript WeakSet is used to store a collection of objects. It adapts the same properties of that of a set i.e. does not store duplicates. The major difference of a WeakSet with a set is that a WeakSet is a collection of objects and not values of some particular type. 
---------------------------------------------------------------------------------------------------------------------------------
-What is a WeakMap?
-
-A WeakMap is a collection of key/value pairs where the keys are objects and values are any JavaScript object.
-
-It is similar to Map with some differences:
-
-It is not enumerable and the keys are private in nature.
-Allows garbage collection of any values if keys are not referenced from somewhere other than a WeakMap.
-Only objects are allowed as keys.
-It depends on garbage collection, introducing non-determinism.
-Note: Keys cannot be Primitive data type (E.g. a string cannot be a WeakMap key).
---------------------------------------------------------------------------------------------------------------------------------
-What is Object Destructuring?
-
-Object destructuring is a new way to extract elements from an object or an array.
-eg - syntax
-const classDetails = {
-  strength: 78,
-  benches: 39,
-  blackBoard:1
-}
-
-const {strength:classStrength, benches:classBenches,blackBoard:classBlackBoard} = classDetails;
-
-console.log(classStrength); // Outputs 78
-console.log(classBenches); // Outputs 39
-console.log(classBlackBoard); // Outputs 1
-
-Array destructuring
-
-const arr = [1, 2, 3, 4];
-const [first,second,third,fourth] = arr;
-console.log(first); // Outputs 1
-console.log(second); // Outputs 2
-console.log(third); // Outputs 3
-console.log(fourth); // Outputs 4
-
---------------------------------------------------------------------------------------------------------------------------------
- Difference between Async/Await and Generators usage to achieve the same functionality.
- 
-Generator functions are run by their generator yield by yield which means one output at a time, whereas Async-await functions are executed sequentially one after another.
-Async/await provides a certain use case for Generators easier to execute.
-The output result of the Generator function is always value: X, done: Boolean, but the return value of the Async function is always an assurance or throws an error
---------------------------------------------------------------------------------------------------------------------------------
-Debouncing in JavaScript
-
-Debouncing is a programming practice used to ensure that time-consuming tasks do not fire so often, that it stalls the performance of the web page. In other words, it limits the rate at which a function gets invoked.
-
-Debouncing in JavaScript is a practice used to improve browser performance. There might be some functionality in a web page that requires time-consuming computations. If such a method is invoked frequently, it might greatly affect the performance of the browser, as JavaScript is a single-threaded language. 
---------------------------------------------------------------------------------------------------------------------------------
-Infinity
-
-Infinity is a property of the global object. In other words, it is a variable in global scope.
-
-The value Infinity (positive infinity) is greater than any other number.
---------------------------------------------------------------------------------------------------------------------------------
-What is an event loop in JavaScript ?
-JavaScript’s event loop is the core mechanism that enables asynchronous operations.
-An event loop is something that pulls stuff out of the queue and places it onto the function execution stack whenever the function stack (call stack / global execution context) becomes empty.
-
-The event loop continuously checks the call stack and the callback queue. If the call stack is empty, it takes the first function from the callback queue and pushes it onto the call stack for execution.
-
-We also have micro-task queue , similar to callback queue - it stores task from Promises & Dom mutation only.
-
-Microtask queue has Higher Priority than Callback queue.
-
-Event Loop will always pick up tasks from Microtask queue before callback queue
-
-
----------
-Callback Queue - setTimeout, setInterval, DOM events, setImmediate
-
-Microtask Queue - 	Promise.then, catch, finally, queueMicrotask
-
------------
-For same time of execution - function of promise will be called before setTimeOut
-
---------------------------------------------------------------------------------------------------------------------------------
-Callback Queue
-Asynchronous operations, such as I/O operations or timers, are handled by the browser or Node.js runtime. When these operations are complete, corresponding functions (callbacks) are placed in the callback queue.
---------------------------------------------------------------------------------------------------------------------------------
-Map
-The map() method is used for creating a new array from an existing one, applying a function to each one of the elements of the first array.
-
-Syntax
-var new_array = arr.map(function callback(element, index, array) {
-    // Return value for new_array
-}[, thisArg])
---------------------------------------------------------------------------------------------------------------------------------
-Filter
-The filter() method takes each element in an array and it applies a conditional statement against it. If this conditional returns true, the element gets pushed to the output array. If the condition returns false, the element does not get pushed to the output array.
-
-Syntax
-var new_array = arr.filter(function callback(element, index, array) {
-    // Return true or false
-}[, thisArg])
---------------------------------------------------------------------------------------------------------------------------------
-Reduce
-The reduce() method reduces an array of values down to just one value. To get the output value, it runs a reducer function on each element of the array.
-
-Syntax
-arr.reduce(callback[, initialValue])
-
-eg -
-const numbers = [1, 2, 3, 4];
-const sum = numbers.reduce(function (result, item) {
-  return result + item;
-}, 0);
-console.log(sum); // 10
---------------------------------------------------------------------------------------------------------------------------------
-async function
-The async function declaration creates a binding of a new async function to a given name. The await keyword is permitted within the function body, enabling asynchronous, promise-based behavior to be written in a cleaner style and avoiding the need to explicitly configure promise chains.
-
-An async function declaration creates an AsyncFunction object. Each time when an async function is called, it returns a new Promise which will be resolved with the value returned by the async function, or rejected with an exception uncaught within the async function.
---------------------------------------------------------------------------------------------------------------------------------
-await
-The await operator is used to wait for a Promise and get its fulfillment value. It can only be used inside an async function or at the top level of a module.
-
-await is usually used to unwrap promises by passing a Promise as the expression. Using await pauses the execution of its surrounding async function until the promise is settled (that is, fulfilled or rejected). When execution resumes, the value of the await expression becomes that of the fulfilled promise.
---------------------------------------------------------------------------------------------------------------------------------
-this in arrow function always refers to global scope , and in normal function this refers to the object
---------------------------------------------------------------------------------------------------------------------------------
-Nullish coalescing operator '??'
-
-it is exactly same as '||' but diffrence is
-|| returns the first truthy value.
-?? returns the first defined value.
-
-?? returns the first argument if it’s not null/undefined. Otherwise, the second one.
-
-In other words, || doesn’t distinguish between false, 0, an empty string "" and null/undefined. They are all the same – falsy values. If any of these is the first argument of ||, then we’ll get the second argument as the result.
-
-simply saying - || return false for all false values , but ?? returns false only for null and undefined 
-
-It’s forbidden to use it with || or && without explicit parentheses.
-
---------------------------------------------------------------------------------------------------------------------------------
-Functions-
-
-Functions are the main “building blocks” of the program. They allow the code to be called many times without repetition.
-
-Function Declaration-
-To create a function we can use a function declaration.
-eg - function showMessage() {
-  alert( 'Hello everyone!' );
-}
---------------------------------------------------------------------------------------------------------------------------------
-Function expressions-
-another syntax for creating a function that is called a Function Expression.
-It allows us to create a new function in the middle of any expression.
-
-eg - let sayHi = function() {
-  alert( "Hello" );
-};
-function creation happens in the context of the assignment expression (to the right side of =), this is a Function Expression.
---------------------------------------------------------------------------------------------------------------------------------
-Callback functions-
-passing functions as values and using function expressions.
-
-eg-function ask(question, yes, no) {
-  if (confirm(question)) yes()
-  else no();
-}
-
-function showOk() {
-  alert( "You agreed." );
-}
-
-function showCancel() {
-  alert( "You canceled the execution." );
-}
-
-// usage: functions showOk, showCancel are passed as arguments to ask
-ask("Do you agree?", showOk, showCancel);
-
-The arguments showOk and showCancel of ask are called callback functions or just callbacks.
---------------------------------------------------------------------------------------------------------------------------------
-Function Expression vs Function Declaration
-
-Function Declaration: a function, declared as a separate statement
-Function Expression: a function, created inside an expression or inside another syntax construct.
-
-A Function Expression is created when the execution reaches it and is usable only from that moment.
-A Function Declaration can be called earlier than it is defined.
-
-In strict mode, when a Function Declaration is within a code block, it’s visible everywhere inside that block. But not outside of it.
-
-In most cases when we need to declare a function, a Function Declaration is preferable, because it is visible prior to the declaration itself. That gives us more flexibility in code organization, and is usually more readable.
---------------------------------------------------------------------------------------------------------------------------------
-Arrow Functions
-There’s another very simple and concise syntax for creating functions, that’s often better than Function Expressions.
-it looks like this - let func = (arg1, arg2, ..., argN) => expression;
-
-Arrow functions can be used in the same way as Function Expressions.
-
-Multiline arrow functions-
-if arrow function has more logic with multiple expressions and statements. In that case, we can enclose them in curly braces. The major difference is that curly braces require a return within them to return a value (just like a regular function does).
-
-eg - let sum = (a, b) => {  // the curly brace opens a multiline function
-  let result = a + b;
-  return result; // if we use curly braces, then we need an explicit "return"
-};
-
-alert( sum(1, 2) ); // 3
-to make our modern code work on older engines that don’t understand recent features
-There are two tools for that:
-
-Transpilers.
-Polyfills.
-
-A transpiler is a special piece of software that translates source code to another source code. It can parse (“read and understand”) modern code and rewrite it using older syntax constructs, so that it’ll also work in outdated engines.
-
-E.g. JavaScript before year 2020 didn’t have the “nullish coalescing operator” ??. So, if a visitor uses an outdated browser, it may fail to understand the code like height = height ?? 100.
-
-A transpiler would analyze our code and rewrite height ?? 100 into (height !== undefined && height !== null) ? height : 100.
-Usually, a developer runs the transpiler on their own computer, and then deploys the transpiled code to the server.
-
-Speaking of names, Babel is one of the most prominent transpilers out there.
-
-Modern project build systems, such as webpack, provide a means to run a transpiler automatically on every code change, so it’s very easy to integrate into the development process.
-
-----------
-
-New language features may include not only syntax constructs and operators, but also built-in functions.
-
-For example, Math.trunc(n) is a function that “cuts off” the decimal part of a number, e.g Math.trunc(1.23) returns 1.
-
-In some (very outdated) JavaScript engines, there’s no Math.trunc, so such code will fail.
-A script that updates/adds new functions is called “polyfill”. It “fills in” the gap and adds missing implementations.
-
-One interesting polyfill library is core-js, which supports a wide range of features and allows you to include only the ones you need.
---------------------------------------------------------------------------------------------------------------------------------
-Objects
-
-An empty object (“empty cabinet”) can be created using one of two syntaxes:
-
-let user = new Object(); // "object constructor" syntax
-let user = {};  // "object literal" syntax
-
-To remove a property, we can use the delete operator:
-delete user.age;
-
-
-We can also use multiword property names, but then they must be quoted:
-
-let user = {
-  name: "John",
-  age: 30,
-  "likes birds": true  // multiword property name must be quoted
-};
-
-For multiword properties, the dot access doesn’t work:
-
-// this would give a syntax error
-user.likes birds = true
-
-There’s an alternative “square bracket notation” that works with any string:
-
-let user = {};
-
-// set
-user["likes birds"] = true;
-
-
-The "for..in" loop
-To walk over all keys of an object, there exists a special form of the loop: for..in.
-
-for (key in object) {
-  // executes the body for each key among object properties
-}
-
-
-To access a property, we can use:
-
-The dot notation: obj.property.
-Square brackets notation obj["property"]. Square brackets allow taking the key from a variable, like obj[varWithKey].
-Additional operators:
-
-To delete a property: delete obj.prop.
-To check if a property with the given key exists: "key" in obj.
-To iterate over an object: for (let key in obj) loop.
---------------------------------------------------------------------------------------------------------------------------------
-Object references and copying
-One of the fundamental differences of objects versus primitives is that objects are stored and copied “by reference”, whereas primitive values: strings, numbers, booleans, etc – are always copied “as a whole value”.
-
-
-Comparison by reference
-Two objects are equal only if they are the same object.
-
-For instance, here a and b reference the same object, thus they are equal:
-
-let a = {};
-let b = a; // copy the reference
-
-alert( a == b ); // true, both variables reference the same object
-alert( a === b ); // true
-And here two independent objects are not equal, even though they look alike (both are empty):
-
-let a = {};
-let b = {}; // two independent objects
-
-alert( a == b ); // false
---------------------------------------------------------------------------------------------------------------------------------
-Constructor function
-
-Constructor functions technically are regular functions. There are two conventions though:
-
-They are named with capital letter first.
-They should be executed only with "new" operator.
-
-function User(name) {
-  this.name = name;
-  this.isAdmin = false;
-}
-
-let user = new User("Jack");
-
-alert(user.name); // Jack
-alert(user.isAdmin); // false
-
-When a function is executed with new, it does the following steps:
-
-A new empty object is created and assigned to this.
-The function body executes. Usually it modifies this, adds new properties to it.
-The value of this is returned.
---------------------------------------------------------------------------------------------------------------------------------
-Optional chaining
-
-The optional chaining ?. stops the evaluation if the value before ?. is undefined or null and returns undefined.
-
-Other variants: ?.(), ?.[]
-
-The optional chaining ?. is not an operator, but a special syntax construct, that also works with functions and square brackets.
-
-For example, ?.() is used to call a function that may not exist.
-
-let userAdmin = {
-  admin() {
-    alert("I am admin");
+  var initialiseClosure = randomFunc();
+  initialiseClosure(); // Outputs "Vivian is awesome"
+  ```
+
+* Currying:
+  Transforming a function of `N` arguments into `N` sequential functions of single arguments.
+  ```javascript
+  // Target Call Signature: add(1)(2)(3)
+  
+  // Curried Implementation:
+  function add(a) {
+    return function(b) {
+      return function(c) {
+        return a + b + c;
+      };
+    };
   }
-};
 
-let userGuest = {};
-
-userAdmin.admin?.(); // I am admin
-
-userGuest.admin?.(); // nothing happens (no such method)
-
-----------------
-The optional chaining ?. syntax has three forms:
-
-obj?.prop – returns obj.prop if obj exists, otherwise undefined.
-obj?.[prop] – returns obj[prop] if obj exists, otherwise undefined.
-obj.method?.() – calls obj.method() if obj.method exists, otherwise returns undefined.
-
---------------------------------------------------------------------------------------------------------------------------------
-Symbol type
-By specification, only two primitive types may serve as object property keys:
-
-string type, or
-symbol type.
---------------------------------------------------------------------------------------------------------------------------------
-Symbols
-A “symbol” represents a unique identifier.
-
-A value of this type can be created using Symbol():
-
-let id = Symbol();
-
-Upon creation, we can give symbols a description (also called a symbol name), mostly useful for debugging purposes:
-
-// id is a symbol with the description "id"
-let id = Symbol("id");
-----------------------
-Symbols are guaranteed to be unique.
-let id1 = Symbol("id");
-let id2 = Symbol("id");
-
-alert(id1 == id2); // false
----------------------
-Symbols don’t auto-convert to a string
-let id = Symbol("id");
-alert(id); // TypeError: Cannot convert a Symbol value to a string
-
-If we really want to show a symbol, we need to explicitly call .toString()
---------------
-Symbols in an object literal
-Symbols are skipped by for…in
-Object.keys(user) also ignores them.
-Object.assign copies both string and symbol properties
-
--------------------
-Symbol.keyFor
-We have seen that for global symbols, Symbol.for(key) returns a symbol by name
-
---------------------
-Symbol is a primitive type for unique identifiers.
-
-Symbols are created with Symbol() call with an optional description (name).
-
-Symbols are always different values, even if they have the same name
-. If we want same-named symbols to be equal, then we should use the global registry:
- Symbol.for(key) returns (creates if needed) a global symbol with key as the name
- . Multiple calls of Symbol.for with the same key return exactly the same symbol.
-
-
- “Hidden” object properties.
-
-If we want to add a property into an object that “belongs” to another script or a library, we can create a symbol and use it as a property key. A symbolic property does not appear in for..in, so it won’t be accidentally processed together with other properties. Also it won’t be accessed directly, because another script does not have our symbol. So the property will be protected from accidental use or overwrite.
-
-So we can “covertly” hide something into objects that we need, but others should not see, using symbolic properties.
---------------------------------------------------------------------------------------------------------------------------------
-Object to primitive conversion
-
-Conversion rules
-
-There’s no conversion to boolean. All objects are true in a boolean context, as simple as that. There exist only numeric and string conversions.
-
-The numeric conversion happens when we subtract objects or apply mathematical functions. For instance, Date objects can be subtracted, and the result of date1 - date2 is the time difference between two dates.
-
-
-There are three variants of type conversion, that happen in various situations. They’re called “hints”
-
-"string"
-For an object-to-string conversion, when we’re doing an operation on an object that expects a string, like alert:
-
-// output
-alert(obj);
-
-// using object as a property key
-anotherObj[obj] = 123;
-
-"number"
-For an object-to-number conversion, like when we’re doing maths:
-
-// explicit conversion
-let num = Number(obj);
-
-// maths (except binary plus)
-let n = +obj; // unary plus
-let delta = date1 - date2;
-
-// less/greater comparison
-let greater = user1 > user2;
-
-"default"
-Occurs in rare cases when the operator is “not sure” what type to expect.
-
-For instance, binary plus + can work both with strings (concatenates them) and numbers (adds them). So if a binary plus gets an object as an argument, it uses the "default" hint to convert it.
-
-Also, if an object is compared using == with a string, number or a symbol, it’s also unclear which conversion should be done, so the "default" hint is used.
-
-// binary plus uses the "default" hint
-let total = obj1 + obj2;
-
-// obj == number uses the "default" hint
-if (user == 1) { ... };
---------------------------------------------------------------------------------------------------------------------------------
-
-Numbers
-In modern JavaScript, there are two types of numbers:
-Regular numbers in JavaScript are stored in 64-bit format IEEE-754, also known as “double precision floating point numbers”.
-BigInt numbers represent integers of arbitrary length
-
------------------
-let billion = 1_000_000_000;
-Here the underscore _ plays the role of the “syntactic sugar”, it makes the number more readable. The JavaScript engine simply ignores _ between digits, so it’s exactly the same one billion as above.
-
-In JavaScript, we can shorten a number by appending the letter "e" to it and specifying the zeroes count:
-
-let billion = 1e9;  // 1 billion, literally: 1 and 9 zeroes
-
-alert( 7.3e9 );  // 7.3 billions (same as 7300000000 or 7_300_000_000)
-
-In other words, e multiplies the number by 1 with the given zeroes count.
-
-1e3 === 1 * 1000; // e3 means *1000
-1.23e6 === 1.23 * 1000000; // e6 means *1000000
-
---------------
-
-let mcs = 1e-6; // five zeroes to the left from 1
---------------------------------------------------------------------------------------------------------------------------------
-Global Object
-
-The global object provides variables and functions that are available anywhere. By default, those that are built into the language or the environment.
-
-In a browser it is named window, for Node.js it is global, for other environments it may have another name.
-
-Recently, globalThis was added to the language, as a standardized name for a global object, that should be supported across all environments. It’s supported in all major browsers.
---------------------------------------------------------------------------------------------------------------------------------
-new Function
-The syntax for creating a function:
-let func = new Function ([arg1, arg2, ...argN], functionBody);
---------------------------------------------------------------------------------------------------------------------------------
-There are also methods that limit access to the whole object:
-
-Object.preventExtensions(obj)
-Forbids the addition of new properties to the object.
-Object.seal(obj)
-Forbids adding/removing of properties. Sets configurable: false for all existing properties.
-Object.freeze(obj)
-Forbids adding/removing/changing of properties. Sets configurable: false, writable: false for all existing properties.
-And also there are tests for them:
-
-Object.isExtensible(obj)
-Returns false if adding properties is forbidden, otherwise true.
-Object.isSealed(obj)
-Returns true if adding/removing properties is forbidden, and all existing properties have configurable: false.
-Object.isFrozen(obj)
-Returns true if adding/removing/changing properties is forbidden, and all current properties are configurable: false, writable: false.
-
-These methods are rarely used in practice.
---------------------------------------------------------------------------------------------------------------------------------
-Getters and setters
-Accessor properties are represented by “getter” and “setter” methods. In an object literal they are denoted by get and set:
-
-let obj = {
-  get propName() {
-    // getter, the code executed on getting obj.propName
-  },
-
-  set propName(value) {
-    // setter, the code executed on setting obj.propName = value
-  }
-};
---------------------------------------------------------------------------------------------------------------------------------
-Eval: run a code string
-The built-in eval function allows to execute a string of code.
-
-The syntax is:
-
-let result = eval(code);
-For example:
-
-let code = 'alert("Hello")';
-eval(code); // Hello
---------------------------------------------------------------------------------------------------------------------------------
-Debouncing & Throttling
-
- Debouncing:
-Ensures a function runs only after a certain delay has passed since the last event.
-
-Example: Search input — wait until the user stops typing to call the API.
-
-
-
-function debounce(fn, delay) {
-  let timerId = null; // Step 1: Timer to keep track of pending execution
-
-  return function (...args) {
-    // Step 2: On each call, cancel the previous timer
-    if (timerId) {
-      clearTimeout(timerId);
+  console.log(add(1)(2)(3)); // 6
+  ```
+
+* "this" Keyword & call(), apply(), bind():
+  - `this` Keyword: Refers to the object that the function is a property of (the invoking object).
+    - If called globally (non-strict mode): `this` refers to `window` / `globalThis`.
+    - If called globally (strict mode): `this` is `undefined`.
+    - Arrow functions: Inherit `this` lexically from their enclosing parent context (they do not have their own `this`).
+    - Normal functions: `this` dynamically refers to the object invoking the function.
+  - call(), apply(), bind() are methods used to explicitly set the `this` context:
+    - `call()`: Invokes the function immediately with a given `this` value and arguments passed one by one.
+    - `apply()`: Invokes the function immediately with a given `this` value and arguments passed as a single array.
+    - `bind()`: Returns a new function with `this` bound to the specified object, to be executed later.
+  
+  - Interview Code Example:
+    ```javascript
+    let person1 = {
+      name: 'Sahil'
+    };
+    
+    function printDetails(age, food_choice) {
+      console.log(this.name, "is", age, "years old and is", food_choice);
     }
+    
+    printDetails.call(person1, 28, 'vegetarian'); // call (arguments individually)
+    printDetails.apply(person1, [28, 'vegetarian']); // apply (arguments as array)
+    
+    let func = printDetails.bind(person1, 28, 'Vegetarian'); // bind (returns new function)
+    func();
+    ```
+  - Function Borrowing Example:
+    ```javascript
+    var person = {
+      age: 23,
+      getAge: function() { return this.age; }
+    };
+    var person2 = { age: 54 };
+    person.getAge.call(person2); // Returns 54 (person2 borrows getAge method)
+    ```
 
-    // Step 3: Set a new timer to call the function after `delay` ms
-    timerId = setTimeout(() => {
-      fn.apply(this, args); // Step 4: Execute the function
-    }, delay);
+
+5. OBJECTS & MEMORY MODEL
+--------------------------------------------------------------------------------
+* Object Basics:
+  ```javascript
+  let user = {}; // Object literal syntax
+  user.name = "John"; // Dot access
+  user["likes birds"] = true; // Bracket notation (required for multiword keys)
+  delete user.name; // Property removal
+  ```
+
+* Object Property Loop & Checks:
+  - Checking existence: `"key" in obj`
+  - Iterating: `for (let key in obj) { ... }`
+
+* Memory Model (Pass by Value / Sharing):
+  JavaScript is strictly **pass-by-value**.
+  - Primitives: The value is copied.
+  - Objects: The reference (memory address) to the object is copied and passed by value.
+    - Property mutations inside a function affect the outer object.
+    - Reassigning the object parameter does not change the outer variable.
+  ```javascript
+  function modify(obj) {
+    obj.prop = "mutated"; // Affects outer object
+    obj = { newProp: 2 }; // Does not affect outer object (reassigned local copy of reference)
+  }
+  ```
+
+* Object Equality Comparison:
+  Two objects are equal only if they reference the same object in memory.
+  ```javascript
+  let a = {};
+  let b = a;
+  console.log(a === b); // true (same reference)
+  
+  let c = {};
+  let d = {};
+  console.log(c === d); // false (different references in heap)
+  ```
+
+* Restricting Object Mutations:
+  - `Object.preventExtensions(obj)`: Prevents adding new properties.
+  - `Object.seal(obj)`: Prevents adding/removing properties; sets `configurable: false`.
+  - `Object.freeze(obj)`: Prevents adding/removing/updating properties; sets 
+    `configurable: false` and `writable: false`.
+
+* Shallow vs. Deep Copy:
+  - Shallow Copy: Copies only the first level of keys. Nested objects are still shared 
+    by reference.
+    - Example: `Object.assign({}, original)` or using spread `const clone = { ...original }`.
+  - Deep Copy: Copies all nested levels recursively.
+    - Legacy Method: `JSON.parse(JSON.stringify(obj))` (fails with functions, Symbols, 
+      RegExp, and loses `undefined` fields / Date objects are converted to strings).
+    - Modern Native API: `structuredClone(obj)` (fully deep clones structures, supports 
+      Dates, Sets, Maps, Arrays, etc. natively).
+
+* Object Property Descriptors:
+  You can control properties with fine-grained configuration using `Object.defineProperty(obj, prop, descriptor)`:
+  - `writable`: If `true`, the value of the property can be changed.
+  - `enumerable`: If `true`, the property shows up in `for..in` loops and `Object.keys()`.
+  - `configurable`: If `true`, the property can be deleted and its descriptors modified.
+  ```javascript
+  let user = {};
+  Object.defineProperty(user, "id", {
+    value: 101,
+    writable: false, // Cannot be modified
+    enumerable: false, // Hidden in loops
+    configurable: false // Cannot be deleted
+  });
+  ```
+
+* Getters & Setters:
+  Accessor properties inside object literals:
+  ```javascript
+  let obj = {
+    get propName() { return this._val; },
+    set propName(value) { this._val = value; }
   };
-}
+  ```
+
+* Optional Chaining (`?.`):
+  Stops evaluation and returns `undefined` if the operand before `?.` is `null` or 
+  `undefined`.
+  - Property access: `obj?.prop`
+  - Dynamic key access: `obj?.[prop]`
+  - Function call: `obj.method?.()`
 
 
--------------
-Throttling:
-Ensures a function runs only once every X milliseconds, no matter how many times it's triggered.
+6. OBJECT-ORIENTED JAVASCRIPT
+--------------------------------------------------------------------------------
+* Constructor Functions:
+  Used to create objects with a shared blueprint.
+  - Named with a Capital letter (PascalCase).
+  - Executed with the `new` operator.
+  ```javascript
+  function User(name) {
+    this.name = name;
+    this.isAdmin = false;
+  }
+  let user = new User("Jack");
+  ```
 
-Example: Scroll listener or resize — call a function at most every 200ms.
-function throttle(fn, delay) {
-  let lastExecutionTime = 0; // Step 1: Store timestamp of last execution
+* What happens under the hood during a `new` call?
+  1. A new empty object is created and assigned to `this`.
+  2. The function body is executed (modifying `this` properties).
+  3. The value of `this` is implicitly returned (unless an object is returned explicitly).
 
-  return function (...args) {
-    const now = Date.now(); // Step 2: Get current time
+* Prototypes & Prototypal Inheritance:
+  - Every JavaScript object has a private property `[[Prototype]]` linked to another object, 
+    forming a Prototype Chain.
+  - `__proto__` (getter/setter) points to `[[Prototype]]` of the object.
+  - `prototype` is a property on **constructor functions** (not instances) that determines 
+    what the `[[Prototype]]` link will be for instances created by that constructor.
+  - Prototype lookup: If a property is not found on an object, JS looks up the chain 
+    (`obj.__proto__` -> `obj.__proto__.__proto__`) until it either finds the property or 
+    hits `null` (end of chain).
+  ```javascript
+  const animal = { eats: true };
+  const rabbit = Object.create(animal); // sets rabbit's prototype to animal
+  console.log(rabbit.eats); // true (inherited)
+  console.log(rabbit.hasOwnProperty('eats')); // false (property is on prototype)
+  ```
 
-    // Step 3: Check if enough time has passed since last execution
-    if (now - lastExecutionTime >= delay) {
-      lastExecutionTime = now; // Step 4: Update last execution time
-      fn.apply(this, args);    // Step 5: Execute the function
+* ES6 Classes:
+  A template wrapper around JavaScript's prototype-based inheritance.
+  - Unlike functions, classes are not hoisted.
+  - Inherit using the `extends` keyword.
+  - Subclass constructors must call `super()` before accessing `this`.
+  - Class bodies implicitly run in strict mode.
+  ```javascript
+  class Animal {
+    constructor(name) { this.name = name; }
+  }
+
+  class Dog extends Animal {
+    constructor(name, breed) {
+      super(name); // Required call
+      this.breed = breed;
     }
-  };
-}
+  }
+  ```
 
 
---------------------------------------------------------------------------------------------------------------------------------
+7. ASYNCHRONOUS JAVASCRIPT & PROMISES
+--------------------------------------------------------------------------------
+* Promises:
+  An object representing the eventual completion or failure of an asynchronous operation.
+  - States:
+    - `pending`: Initial state.
+    - `fulfilled`: Completed successfully.
+    - `rejected`: Operation failed.
+  - Promise objects are immutable (once settled, their state can never change).
 
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
+* Chaining:
+  Methods like `.then()`, `.catch()`, and `.finally()` associate actions with settled 
+  promises and return new promises, allowing chaining:
+  ```javascript
+  doTask1()
+    .then(res => doTask2(res))
+    .catch(err => handleError(err))
+    .finally(() => cleanup());
+  ```
 
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
+* Promise Concurrency Utilities:
+  1. `Promise.all([p1, p2])`: Fulfills when all fulfill; rejects if *any* reject.
+  2. `Promise.allSettled([p1, p2])`: Fulfills when all settle (fulfilled or rejected).
+  3. `Promise.any([p1, p2])`: Fulfills when *any* fulfills; rejects with `AggregateError` 
+     if all reject.
+  4. `Promise.race([p1, p2])`: Settles when the first promise settles (resolves or 
+     rejects).
 
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
+* Modern Promise helpers:
+  - `Promise.resolve(val)`: Creates a resolved promise.
+  - `Promise.reject(reason)`: Creates a rejected promise.
+  - `Promise.withResolvers()` (ES2024): Returns an object containing a new promise 
+    along with its resolve and reject functions:
+    ```javascript
+    const { promise, resolve, reject } = Promise.withResolvers();
+    setTimeout(() => resolve("Success"), 1000);
+    ```
 
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
+* async / await:
+  Syntactic sugar built on top of promises to write async code in a synchronous style.
+  `await` pauses execution of the async function until the promise settles.
+  ```javascript
+  async function fetchData() {
+    try {
+      let data = await apiCall();
+      console.log(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  ```
 
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
---------------------------------------------------------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------------------------------------------------------
+* `this` in Context of Async Callbacks:
+  - Inside standard callbacks, `this` can dynamically bind based on the caller or default 
+    to the global scope (or `undefined` in strict mode).
+  - Inside arrow functions, `this` is lexically bound to the scope where the arrow 
+    function was originally defined, which is safer inside promise/timeout callbacks.
 
 
+8. EVENT LOOP & BROWSER EVENTS
+--------------------------------------------------------------------------------
+* Event Loop:
+  The core mechanism that enables single-threaded, non-blocking asynchronous execution.
+  - When the Call Stack is empty, the Event Loop pulls tasks from the queues and pushes 
+    them onto the Call Stack.
+
+* Task Queue (Callback Queue) vs. Microtask Queue:
+  1. Task Queue: Handles standard asynchronous callbacks (e.g. `setTimeout`, `setInterval`, 
+     DOM event handlers).
+  2. Microtask Queue: Handles high-priority asynchronous callbacks (e.g. `Promise.then`, 
+     `catch`, `finally`, `queueMicrotask`, `MutationObserver`).
+  
+* Execution Priority:
+  - Microtasks always have higher priority than standard tasks.
+  - The Event Loop will drain the *entire* Microtask Queue before picking up the next 
+    task from the Task Queue.
+  - Consequently, promise resolution runs before `setTimeout` even if scheduled for the 
+    same time.
+
+* Event Propagation (Bubbling vs. Capturing):
+  - Capturing Phase (Trickle-down): The event starts from the window and flows down 
+    the DOM tree to the target element. Enabled by passing `true` as the third parameter 
+    in `addEventListener('click', handler, true)`.
+  - Target Phase: The event reaches the target element.
+  - Bubbling Phase (Bubble-up): The event bubbles up from the target element back up to 
+    the window. This is the default behavior.
+  - Methods:
+    - `event.stopPropagation()`: Stops the event from propagating further up or down the 
+      DOM tree (prevents bubbling or capturing).
+    - `event.stopImmediatePropagation()`: Stops propagation AND prevents any other 
+      handlers on the same element from executing.
+    - `event.preventDefault()`: Cancels the browser's default behavior (e.g., following 
+      a link or submitting a form) but does not stop propagation.
+
+* Event Delegation:
+  A pattern of attaching a single event listener to a parent element instead of adding 
+  individual listeners to all children. Uses event bubbling to catch events from children.
+  - Great for performance (saves memory) and automatically works for dynamically added 
+    child elements.
+  ```javascript
+  document.getElementById("parent-list").addEventListener("click", function(event) {
+    if (event.target && event.target.nodeName === "LI") {
+      console.log("List item clicked:", event.target.textContent);
+    }
+  });
+  ```
 
 
+9. DATA STRUCTURES & COLLECTIONS
+--------------------------------------------------------------------------------
+* Array Methods: Map, Filter, Reduce:
+  - `map()`: Creates a new array by applying a function to each element.
+    ```javascript
+    let double = arr.map(x => x * 2);
+    ```
+  - `filter()`: Creates a new array containing elements that pass a conditional check.
+    ```javascript
+    let evens = arr.filter(x => x % 2 === 0);
+    ```
+  - `reduce()`: Reduces an array to a single value by applying a reducer function.
+    ```javascript
+    let sum = numbers.reduce((accumulator, item) => accumulator + item, 0);
+    ```
+
+* Object and Array Destructuring:
+  Extracted assignments from arrays and objects:
+  ```javascript
+  // Object:
+  const classDetails = { strength: 78, benches: 39 };
+  const { strength: classStrength, benches: classBenches } = classDetails;
+  
+  // Array:
+  const arr = [1, 2, 3];
+  const [first, second] = arr;
+  ```
+
+* Rest Parameter (`...` in declarations) vs. Spread Operator (`...` in execution):
+  - Rest Parameter: Gathers parameters into an array. Must be the last parameter.
+    ```javascript
+    function sumAll(...args) { return args.reduce((a, b) => a + b); }
+    ```
+  - Spread Operator: Spreads array elements or object properties.
+    ```javascript
+    let arr2 = [...arr1, 4, 5];
+    ```
+
+* WeakSet & WeakMap:
+  - `WeakSet`: Stores unique objects. Objects are held weakly, meaning they can be 
+    garbage-collected if there are no other references to them.
+  - `WeakMap`: Stores key/value pairs where keys must be objects (or unique symbols) 
+    and values can be any type. Keys are held weakly, preventing memory leaks if the key 
+    objects are deleted elsewhere. Non-enumerable.
 
 
+10. REGULAR EXPRESSIONS & STRING UTILITIES
+--------------------------------------------------------------------------------
+* charAt(index):
+  Returns the character at the specified index in a string.
 
+* RegExp Methods: `exec()` vs. `test()`:
+  - `exec()`: Searches a string for a match and returns an array containing matched 
+    groups, or `null` if no match is found.
+    ```javascript
+    let match = /x/.exec("xyz"); // Returns array with match details
+    ```
+  - `test()`: Tests for a match and returns boolean `true` or `false`.
+    ```javascript
+    let exists = /x/.test("xyz"); // Returns true
+    ```
+
+
+11. ADVANCED OPTIMIZATION TECHNIQUES
+--------------------------------------------------------------------------------
+* Memoization:
+  An optimization technique that caches function computation results.
+  ```javascript
+  // Fibonacci Memoization Example:
+  function memoizedFib() {
+    const cache = {};
+    return function fib(n) {
+      if (n in cache) return cache[n];
+      if (n <= 1) return n;
+      cache[n] = fib(n - 1) + fib(n - 2);
+      return cache[n];
+    };
+  }
+  const fib = memoizedFib();
+  console.log(fib(40)); // Much faster than standard recursion
+  ```
+
+* Generators:
+  Functions that can pause and resume execution using `function*` and `yield`.
+  - Pause execution and return value on the fly without storing all results in memory.
+  - Yields object format: `{ value: X, done: boolean }`.
+  - Can safely support infinite loop generators without freezing execution.
+  - Comparison: Async/Await vs. Generators:
+    - Generators execute yield-by-yield manually when `.next()` is called, yielding `{ value: X, done: boolean }` objects.
+    - Async/Await functions execute sequentially to completion automatically, wrapping the final returned value in a Promise (or throwing an error).
+    - Async/Await is a specialized implementation designed specifically for cleaner sequential asynchronous control flow.
+
+* Debouncing & Throttling:
+  - Debouncing: Runs the function only after a certain delay has elapsed since the 
+    last invocation (e.g. typing search queries).
+    ```javascript
+    function debounce(fn, delay) {
+      let timerId = null;
+      return function (...args) {
+        if (timerId) clearTimeout(timerId);
+        timerId = setTimeout(() => {
+          fn.apply(this, args);
+        }, delay);
+      };
+    }
+    ```
+  - Throttling: Limits execution to at most once every X milliseconds (e.g. scroll handlers).
+    ```javascript
+    function throttle(fn, delay) {
+      let lastExecutionTime = 0;
+      return function (...args) {
+        const now = Date.now();
+        if (now - lastExecutionTime >= delay) {
+          lastExecutionTime = now;
+          fn.apply(this, args);
+        }
+      };
+    }
+    ```
+
+================================================================================
