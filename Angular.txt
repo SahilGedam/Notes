@@ -27,10 +27,11 @@
   - NgModule (Traditional): A container to declare and group related components, 
     directives, pipes, and configure providers. Every app traditionally had at 
     least one root module (AppModule).
-  - Standalone Components (Modern): Starting in Angular 15, components can be 
-    declared with `standalone: true`. They import their dependencies directly in 
-    their `@Component` decorator, making NgModules entirely optional. Apps can now 
-    be bootstrapped directly using `bootstrapApplication(AppComponent)`.
+  - Standalone Components (Modern): Introduced as a developer preview in Angular 14
+    and stable since Angular 15. Components can be declared with `standalone: true`.
+    They import their dependencies directly in their `@Component` decorator, making
+    NgModules entirely optional. Apps can now be bootstrapped directly using
+    `bootstrapApplication(AppComponent)`.
 
 * Bootstrapping a Standalone Application:
   ```typescript
@@ -181,6 +182,27 @@
      - Sharing via a shared Service (using RxJS Subjects/BehaviorSubjects or Signals).
      - Global State Management libraries (e.g. NgRx).
      - Event Bus pattern (centralized event hub using an RxJS Subject).
+
+* Content Projection (`ng-content`):
+  Allows a parent to pass arbitrary HTML/components into a child's template.
+  ```html
+  <!-- child.component.html -->
+  <div class="card">
+    <ng-content select="[header]"></ng-content>  <!-- Named slot -->
+    <ng-content></ng-content>                    <!-- Default slot -->
+  </div>
+  ```
+  ```html
+  <!-- Parent usage: -->
+  <app-card>
+    <h2 header>My Title</h2>   <!-- Goes into named slot -->
+    <p>Body content</p>        <!-- Goes into default slot -->
+  </app-card>
+  ```
+  - Use `@ContentChild` / `@ContentChildren` (or signal `contentChild()`) to query
+    projected nodes from the child component.
+  - `ngProjectAs`: Lets a wrapper element masquerade as a different selector for
+    slot matching.
 
 
 4. LIFECYCLE HOOKS
@@ -473,8 +495,30 @@
      ```
   2. Global Error Handling: Create a custom class that implements Angular's `ErrorHandler` 
      to capture uncaught runtime exceptions globally.
-  3. Http Interceptors: Intercept requests/responses globally (e.g. to attach auth tokens 
+  3. Http Interceptors: Intercept requests/responses globally (e.g. to attach auth tokens
      or catch specific status code errors like 401/403).
+     - Modern Functional Interceptor (v15+):
+       ```typescript
+       export const authInterceptor: HttpInterceptorFn = (req, next) => {
+         const token = inject(AuthService).getToken();
+         const authReq = req.clone({
+           headers: req.headers.set('Authorization', `Bearer ${token}`)
+         });
+         return next(authReq);
+       };
+
+       // Registration in main.ts:
+       provideHttpClient(withInterceptors([authInterceptor]))
+       ```
+     - For error handling in an interceptor:
+       ```typescript
+       return next(req).pipe(
+         catchError(err => {
+           if (err.status === 401) inject(Router).navigate(['/login']);
+           return throwError(() => err);
+         })
+       );
+       ```
 
 
 9. FORMS IN ANGULAR
@@ -690,11 +734,25 @@
   ```typescript
   count = signal(0);
   doubleCount = computed(() => this.count() * 2);
-  
+
   increment() {
     this.count.update(c => c + 1);
   }
   ```
+
+* `effect()`:
+  Runs a side-effect function whenever its dependent signals change. Must be called
+  in an injection context (constructor or `runInInjectionContext`).
+  ```typescript
+  constructor() {
+    effect(() => {
+      console.log('Count is now:', this.count()); // Re-runs whenever count changes
+    });
+  }
+  ```
+  - Use `allowSignalWrites: true` option if you need to write to signals inside an effect.
+  - Prefer `computed()` over `effect()` for deriving state; use `effect()` only for
+    true side effects (logging, DOM manipulation, syncing to localStorage).
 
 * Signal Inputs, Model, & Outputs:
   - Read-only Signal Inputs (v17.1+):
@@ -711,6 +769,19 @@
     clicked = output<string>();
     this.clicked.emit('data');
     ```
+
+* RxJS ↔ Signal Interoperability (`@angular/core/rxjs-interop`):
+  ```typescript
+  import { toSignal, toObservable } from '@angular/core/rxjs-interop';
+
+  // Observable → Signal (subscribe managed automatically):
+  data = toSignal(this.http.get<User[]>('/api/users'), { initialValue: [] });
+
+  // Signal → Observable (emits whenever signal changes):
+  count$ = toObservable(this.count);
+  ```
+  - `toSignal()` must be called in an injection context.
+  - Provide `initialValue` or `requireSync: true` to avoid the `undefined` initial state.
 
 * Signal Queries (v17.2+):
   Modern alternatives to ViewChild/ContentChild.
@@ -734,21 +805,146 @@
   } @empty {
     <p>No users found.</p>
   }
+
+  @switch (status) {
+    @case ('active')   { <span class="green">Active</span> }
+    @case ('inactive') { <span class="red">Inactive</span> }
+    @default           { <span>Unknown</span> }
+  }
   ```
 
 * Deferred Views (`@defer` - v17+):
-  Lazy-loads sections of a template automatically based on trigger conditions:
+  Lazy-loads sections of a template automatically based on trigger conditions.
+  Supported trigger types:
+  | Trigger              | Description                                      |
+  |----------------------|--------------------------------------------------|
+  | `on idle`            | When the browser is idle                         |
+  | `on viewport`        | When the block enters the viewport               |
+  | `on interaction`     | On first user click or keydown on the block      |
+  | `on hover`           | On mouseover                                     |
+  | `on timer(2s)`       | After a fixed delay                              |
+  | `when condition`     | When a boolean expression becomes true           |
+  | `prefetch on idle`   | Pre-fetches assets while the block is deferred   |
+
   ```html
-  @defer (on viewport) {
+  @defer (on viewport; prefetch on idle) {
     <app-heavy-chart />
   } @placeholder {
-    <div>Chart placeholder...</div>
+    <div>Loading chart...</div>
+  } @loading (minimum 200ms) {
+    <app-spinner />
+  } @error {
+    <p>Failed to load chart.</p>
   }
   ```
 
 * Zoneless Change Detection (v18+):
-  Reduces bundle size and improves performance by running without `Zone.js`. 
-  Enable by adding `provideExperimentalZonelessChangeDetection()` inside the 
-  `bootstrapApplication` config in `main.ts`.
+  Reduces bundle size and improves performance by running without `Zone.js`.
+  Enable by adding `provideExperimentalZonelessChangeDetection()` inside the
+  `bootstrapApplication` config in `main.ts`. Became stable in Angular v20.
+
+* `linkedSignal()` (v19+):
+  Creates a writable signal that automatically resets to a computed value when its
+  source changes. Useful for dependent state (e.g. resetting a selection when a list changes).
+  ```typescript
+  items = signal(['A', 'B', 'C']);
+  selectedItem = linkedSignal(() => this.items()[0]); // Resets when items changes
+
+  selectItem(item: string) {
+    this.selectedItem.set(item); // Can also be set manually
+  }
+  ```
+
+* `resource()` / `rxResource()` (v19+):
+  Built-in primitives for async data loading directly tied to signals.
+  Exposes `value`, `status`, `error`, and `isLoading` as signals.
+  ```typescript
+  // resource() — uses a plain Promise loader:
+  userResource = resource({
+    request: () => ({ id: this.userId() }),
+    loader: ({ request }) => fetch(`/api/users/${request.id}`).then(r => r.json())
+  });
+
+  // rxResource() — uses an Observable loader:
+  userResource = rxResource({
+    request: () => ({ id: this.userId() }),
+    loader: ({ request }) => this.http.get<User>(`/api/users/${request.id}`)
+  });
+
+  // Template usage:
+  // @if (userResource.isLoading()) { <spinner /> }
+  // @if (userResource.value()) { {{ userResource.value().name }} }
+  ```
+
+
+13. DIRECTIVES — ADVANCED FEATURES
+--------------------------------------------------------------------------------
+* `HostListener` & `HostBinding`:
+  Used inside a directive or component to listen to host element events or bind
+  host element properties.
+  ```typescript
+  @Directive({ selector: '[appHighlight]', standalone: true })
+  export class HighlightDirective {
+    @HostBinding('style.backgroundColor') bgColor = 'transparent';
+
+    @HostListener('mouseenter') onEnter() { this.bgColor = 'yellow'; }
+    @HostListener('mouseleave') onLeave() { this.bgColor = 'transparent'; }
+  }
+  ```
+  Modern equivalent — use `host` metadata in the decorator:
+  ```typescript
+  @Directive({
+    selector: '[appHighlight]',
+    standalone: true,
+    host: {
+      '(mouseenter)': 'onEnter()',
+      '(mouseleave)': 'onLeave()',
+      '[style.backgroundColor]': 'bgColor'
+    }
+  })
+  ```
+
+* `ViewEncapsulation`:
+  Controls how component styles are scoped to the component's DOM.
+  | Mode         | Description                                                      |
+  |--------------|------------------------------------------------------------------|
+  | `Emulated`   | Default. Angular adds unique attributes to scope styles          |
+  | `None`       | Styles are global — can affect other components                  |
+  | `ShadowDom`  | Uses native Shadow DOM; true CSS isolation                       |
+  ```typescript
+  @Component({
+    selector: 'app-card',
+    encapsulation: ViewEncapsulation.None // Styles leak globally
+  })
+  ```
+
+* `DestroyRef`:
+  A modern, injectable token (v16+) that lets you register cleanup callbacks
+  without implementing `ngOnDestroy`. Works in any injection context.
+  ```typescript
+  constructor(private destroyRef: DestroyRef) {
+    destroyRef.onDestroy(() => {
+      this.subscription.unsubscribe();
+      console.log('Cleaned up!');
+    });
+  }
+  ```
+  - Preferred over `ngOnDestroy` for services and functional code, as it keeps
+    cleanup logic co-located with setup logic.
+
+* `input()` with `transform` (v17.1+):
+  Transforms an incoming input value before it is stored in the signal.
+  ```typescript
+  import { input, numberAttribute, booleanAttribute } from '@angular/core';
+
+  // Auto-coerces string attribute "42" → number 42 from HTML:
+  count = input(0, { transform: numberAttribute });
+
+  // Auto-coerces string attribute "true" → boolean:
+  disabled = input(false, { transform: booleanAttribute });
+
+  // Custom transform:
+  label = input('', { transform: (v: string) => v.trim().toUpperCase() });
+  ```
 
 ================================================================================

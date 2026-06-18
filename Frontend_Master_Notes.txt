@@ -151,7 +151,8 @@
   - `GET`: Retrieve data. Idempotent. Safe.
   - `POST`: Create data. Non-idempotent.
   - `PUT`: Replace/upsert data. Idempotent.
-  - `PATCH`: Partially update data. Non-idempotent.
+  - `PATCH`: Partially update data. Not required to be idempotent (though implementations 
+    often are — depends on whether the operation is absolute or relative).
   - `DELETE`: Remove data. Idempotent.
 
 * REST APIs vs. GraphQL:
@@ -218,8 +219,12 @@
     - Minify HTML, CSS, JS.
     - Inline critical CSS.
     - Use `async` or `defer` for scripts to prevent DOM-parsing blocking:
-      - `async`: Download in parallel, execute immediately (blocks HTML parsing).
-      - `defer`: Download in parallel, execute only after HTML parsing is complete.
+      - `async`: Downloaded in parallel without blocking HTML parsing, but execution
+        pauses parsing as soon as the download completes. Order is not guaranteed.
+      - `defer`: Downloaded in parallel without blocking parsing. Executes in order,
+        after HTML is fully parsed, just before the `DOMContentLoaded` event fires.
+      - `type="module"`: Module scripts are deferred by default — same behavior as `defer`.
+        They also run in strict mode and have their own scope.
 
 * Resource Hints:
   - `preload`: Fetch high-priority assets needed for the current page immediately.
@@ -241,6 +246,20 @@
   Only rendering the DOM elements that are currently visible inside the scrollable container. 
   Recycles DOM elements as the user scrolls, allowing display of millions of rows without 
   crashing the browser.
+
+* `requestAnimationFrame` (rAF):
+  Schedules a callback to run just before the browser's next repaint, synchronized with 
+  the display refresh rate (~60fps / 16.67ms per frame). Avoids the frame timing issues 
+  of `setTimeout`/`setInterval`, which are not frame-synchronized.
+  ```javascript
+  function animate() {
+    // Update animation state here
+    requestAnimationFrame(animate); // Schedule next frame
+  }
+  requestAnimationFrame(animate);
+  ```
+  - Use `cancelAnimationFrame(id)` to stop the loop.
+  - The callback is automatically paused when the tab is in the background, saving CPU.
 
 * Core Web Vitals:
   Google's user-centric performance metrics for measuring the user experience of a page:
@@ -271,13 +290,30 @@
   Capsules private state and reveals public API (historically via closures, modernly via 
   ES Modules).
 
+* Progressive Enhancement vs. Graceful Degradation:
+  Two opposing philosophies for handling browser capability differences:
+  - Progressive Enhancement: Start with a minimal but fully functional baseline that 
+    works everywhere, then layer on richer features for capable browsers. Content is 
+    always accessible (e.g., build a working form, then enhance with JS validation).
+  - Graceful Degradation: Build a full-featured experience first, then ensure it 
+    degrades acceptably in older or less capable environments (e.g., falls back to a 
+    basic layout if CSS Grid is unsupported).
+  - Modern preference: Progressive Enhancement — better accessibility and resilience.
+
 
 8. SECURITY
 --------------------------------------------------------------------------------
 * Cross-Site Scripting (XSS):
   Injecting malicious scripts into trusted websites.
-  - Prevention: Sanitize and encode inputs/outputs, use text-only binding (e.g. `textContent`), 
+  - Prevention: Sanitize and encode inputs/outputs, use text-only binding (e.g. `textContent`),
     and implement a strict Content Security Policy (CSP).
+  - Content Security Policy (CSP): An HTTP response header that restricts which
+    resources (scripts, styles, images) are permitted to load, blocking injected scripts
+    even if sanitization fails.
+    ```
+    Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.example.com
+    ```
+    The above allows scripts only from the same origin and a trusted CDN, blocking all others.
 
 * Cross-Site Request Forgery (CSRF):
   Forcing a logged-in user to execute unwanted actions on a web application.

@@ -58,6 +58,9 @@
 * Types of Errors in JavaScript:
   - Syntax Error: Mistakes or spelling/structure problems in the code that cause the 
     program to fail parsing and not execute at all (or stop running).
+  - Runtime Error: Valid syntax, but execution fails at that point (e.g., accessing a 
+    property on `null`, calling a non-function). The program starts running but throws 
+    an exception mid-execution.
   - Logical Error: Program logic is incorrect, but the syntax is valid. The application 
     runs without throwing browser errors, but produces incorrect results. These are often 
     harder to debug.
@@ -140,7 +143,8 @@
   - Auto-conversion: Symbols do not auto-convert to string. Direct string output 
     throws a TypeError; call `.toString()` explicitly.
   - Object Properties: Symbols are skipped by `for..in` loops and `Object.keys()`, 
-    but are copied by `Object.assign()`.
+    but are copied by `Object.assign()`. To retrieve symbol-keyed properties, use 
+    `Object.getOwnPropertySymbols(obj)`.
   - Global Registry: Use `Symbol.for(key)` to retrieve or create a global symbol. 
     `Symbol.keyFor(sym)` returns its key name.
 
@@ -375,8 +379,10 @@
 * Restricting Object Mutations:
   - `Object.preventExtensions(obj)`: Prevents adding new properties.
   - `Object.seal(obj)`: Prevents adding/removing properties; sets `configurable: false`.
+    Note: Existing property *values* can still be changed (unless also `writable: false`).
   - `Object.freeze(obj)`: Prevents adding/removing/updating properties; sets 
-    `configurable: false` and `writable: false`.
+    `configurable: false` and `writable: false`. Note: This is a shallow freeze — 
+    nested objects remain mutable.
 
 * Shallow vs. Deep Copy:
   - Shallow Copy: Copies only the first level of keys. Nested objects are still shared 
@@ -457,7 +463,8 @@
 
 * ES6 Classes:
   A template wrapper around JavaScript's prototype-based inheritance.
-  - Unlike functions, classes are not hoisted.
+  - Classes are hoisted (the name is registered) but enter the TDZ like `let`/`const` — 
+    accessing a class before its declaration throws a `ReferenceError`.
   - Inherit using the `extends` keyword.
   - Subclass constructors must call `super()` before accessing `this`.
   - Class bodies implicitly run in strict mode.
@@ -670,6 +677,18 @@
   - Pause execution and return value on the fly without storing all results in memory.
   - Yields object format: `{ value: X, done: boolean }`.
   - Can safely support infinite loop generators without freezing execution.
+  ```javascript
+  function* idGenerator() {
+    let id = 1;
+    while (true) {
+      yield id++;
+    }
+  }
+  const gen = idGenerator();
+  console.log(gen.next().value); // 1
+  console.log(gen.next().value); // 2
+  console.log(gen.next().value); // 3
+  ```
   - Comparison: Async/Await vs. Generators:
     - Generators execute yield-by-yield manually when `.next()` is called, yielding `{ value: X, done: boolean }` objects.
     - Async/Await functions execute sequentially to completion automatically, wrapping the final returned value in a Promise (or throwing an error).
@@ -702,5 +721,211 @@
       };
     }
     ```
+
+
+12. MAP vs. PLAIN OBJECT
+--------------------------------------------------------------------------------
+* `Map`:
+  A keyed collection where any value (including objects) can be a key.
+  - Maintains insertion order.
+  - Has a built-in `.size` property.
+  - Never has key collisions from prototype properties.
+  - Iterable directly with `for..of`.
+  ```javascript
+  const map = new Map();
+  map.set('name', 'Alice');
+  map.set(42, 'answer');
+  map.set({}, 'obj-key');
+  console.log(map.size); // 3
+  ```
+
+* When to use `Map` over `Object`:
+  - Keys are not strings/symbols (e.g., DOM nodes, objects).
+  - Key insertion order must be guaranteed.
+  - Frequent add/delete operations (Map is optimized for this).
+  - Use plain `Object` when keys are strings and you need JSON serialization.
+
+
+13. WEAKREF
+--------------------------------------------------------------------------------
+* `WeakRef`:
+  Holds a weak reference to an object without preventing it from being garbage-collected.
+  - Use `.deref()` to access the target; returns `undefined` if it has been GC'd.
+  ```javascript
+  let obj = { name: 'target' };
+  const ref = new WeakRef(obj);
+  obj = null; // Original reference dropped
+
+  const target = ref.deref();
+  if (target) {
+    console.log(target.name); // 'target' (if not yet GC'd)
+  }
+  ```
+  - Pairs naturally with `WeakMap`/`WeakSet` for cache/registry patterns.
+  - Do not rely on `WeakRef` for critical program logic — GC timing is non-deterministic.
+
+
+14. PROXY & REFLECT
+--------------------------------------------------------------------------------
+* Proxy:
+  Wraps an object and intercepts fundamental operations (get, set, delete, etc.) via traps.
+  ```javascript
+  const handler = {
+    get(target, prop) {
+      return prop in target ? target[prop] : `Property '${prop}' not found`;
+    },
+    set(target, prop, value) {
+      if (typeof value !== 'number') throw new TypeError('Only numbers allowed');
+      target[prop] = value;
+      return true;
+    }
+  };
+
+  const proxy = new Proxy({}, handler);
+  proxy.age = 25;
+  console.log(proxy.age);    // 25
+  console.log(proxy.name);   // "Property 'name' not found"
+  ```
+
+* Reflect:
+  A built-in object providing methods matching the Proxy trap signatures. Used to 
+  forward operations to the original target inside traps.
+  ```javascript
+  get(target, prop, receiver) {
+    return Reflect.get(target, prop, receiver); // Correct forwarding
+  }
+  ```
+  - Key insight: `Reflect` methods mirror Proxy traps 1-to-1, making them natural partners.
+
+
+15. MODERN ARRAY UTILITIES
+--------------------------------------------------------------------------------
+* `Array.at(index)`:
+  Accepts positive and negative integers. Negative integers count back from the end.
+  ```javascript
+  const arr = [1, 2, 3, 4, 5];
+  console.log(arr.at(0));   // 1
+  console.log(arr.at(-1));  // 5 (last element)
+  console.log(arr.at(-2));  // 4
+  ```
+  Advantage over `arr[arr.length - 1]`: cleaner and works on strings/TypedArrays too.
+
+* `Array.from()`:
+  Creates an array from an iterable or array-like object.
+  ```javascript
+  Array.from('hello');           // ['h', 'e', 'l', 'l', 'o']
+  Array.from({length: 3}, (_, i) => i); // [0, 1, 2]
+  ```
+
+* `Array.findIndex()` vs `Array.indexOf()`:
+  - `indexOf(val)`: finds by strict equality.
+  - `findIndex(fn)`: finds by predicate — works for objects and complex conditions.
+  ```javascript
+  const users = [{ id: 1 }, { id: 2 }];
+  users.findIndex(u => u.id === 2); // 1
+  ```
+
+
+16. ES MODULES (ESM)
+--------------------------------------------------------------------------------
+* Named vs. Default Exports:
+  ```javascript
+  // Named exports — multiple per file:
+  export const PI = 3.14;
+  export function add(a, b) { return a + b; }
+
+  // Default export — one per file:
+  export default class MyClass { ... }
+  ```
+
+* Importing:
+  ```javascript
+  import { PI, add } from './math.js';       // Named
+  import MyClass from './MyClass.js';          // Default
+  import * as math from './math.js';           // Namespace import
+  import { add as sum } from './math.js';      // Aliased
+  ```
+
+* Dynamic Import (lazy loading):
+  Returns a Promise — useful for code splitting.
+  ```javascript
+  const { add } = await import('./math.js');
+  ```
+
+* ESM vs. CommonJS (CJS):
+  | Feature            | ESM (`import/export`)   | CJS (`require/module.exports`) |
+  |--------------------|-------------------------|--------------------------------|
+  | Environment        | Browser + Node.js       | Node.js (legacy)               |
+  | Loading            | Static (compile-time)   | Dynamic (runtime)              |
+  | `this` at top level| `undefined`             | `module.exports`               |
+  | Tree-shakeable     | Yes                     | No                             |
+
+
+17. ERROR HANDLING PATTERNS
+--------------------------------------------------------------------------------
+* Runtime Error Types:
+  - `ReferenceError`: Accessed a non-existent variable.
+  - `TypeError`: Value is not the expected type.
+  - `SyntaxError`: Code structure is invalid.
+  - `RangeError`: Number is outside the allowed range.
+
+* try / catch / finally:
+  ```javascript
+  try {
+    riskyOperation();
+  } catch (err) {
+    console.error(err.message);
+  } finally {
+    cleanup(); // Always runs, even if an error was thrown
+  }
+  ```
+
+* Custom Error Classes:
+  Extend the built-in `Error` class to create domain-specific error types.
+  ```javascript
+  class ValidationError extends Error {
+    constructor(message, field) {
+      super(message);
+      this.name = 'ValidationError';
+      this.field = field;
+    }
+  }
+
+  try {
+    throw new ValidationError('Required field missing', 'email');
+  } catch (err) {
+    if (err instanceof ValidationError) {
+      console.log(`${err.name} on '${err.field}': ${err.message}`);
+    }
+  }
+  ```
+
+* Async Error Handling:
+  ```javascript
+  // Option 1: try/catch with async/await
+  async function fetchUser(id) {
+    try {
+      const res = await fetch(`/api/users/${id}`);
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      console.error('Fetch failed:', err);
+    }
+  }
+
+  // Option 2: .catch() on the promise chain
+  fetch('/api/data')
+    .then(res => res.json())
+    .catch(err => console.error(err));
+  ```
+
+* Unhandled Promise Rejections:
+  Always handle rejections. In Node.js/browsers, unhandled rejections can crash the 
+  process or print warnings:
+  ```javascript
+  process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled rejection:', reason);
+  });
+  ```
 
 ================================================================================
