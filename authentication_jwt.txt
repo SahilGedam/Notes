@@ -1,0 +1,154 @@
+================================================================================
+                            JWT AUTHENTICATION NOTES
+================================================================================
+
+1. WHAT IS A JSON WEB TOKEN (JWT)?
+--------------------------------------------------------------------------------
+A JWT is a compact, URL-safe means of representing claims to be transferred between two 
+parties. The token is cryptographically signed (by a secret key or a private/public key pair) 
+to make it tamper-proof.
+
+* JWT Structure:
+  A token consists of three parts separated by dots (`.`): `header.payload.signature`
+  1. **Header**: Declares the token type (JWT) and signing algorithm (e.g. HS256, RS256).
+  2. **Payload**: Contains the claims (user metadata, permissions, expiration time). 
+     Note: This is base64-encoded, not encrypted! Never place sensitive values (like passwords) here.
+  3. **Signature**: Hash calculated from base64 header, base64 payload, and the secret key:
+     `HMACSHA256(base64(header) + "." + base64(payload), secret)`
+
+
+2. EXPRESS.JS JWT AUTHENTICATION PIPELINE
+--------------------------------------------------------------------------------
+Below is a complete, production-grade implementation of Access Tokens, Refresh Tokens, 
+and Verification Middleware.
+
+* Installation:
+  `npm install jsonwebtoken cookie-parser`
+
+* Token Utility Helper (`auth.utils.js`):
+  ```javascript
+  const jwt = require('jsonwebtoken');
+
+  const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'access_secret_key';
+  const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'refresh_secret_key';
+
+  const generateTokens = (user) => {
+    // 1. Access Token: Short-lived (15 minutes)
+    const accessToken = jwt.sign(
+      { id: user.id, role: user.role },
+      ACCESS_SECRET,
+      { expiresIn: '15m' }
+    );
+
+    // 2. Refresh Token: Long-lived (7 days)
+    const refreshToken = jwt.sign(
+      { id: user.id },
+      REFRESH_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    return { accessToken, refreshToken };
+  };
+
+  module.exports = { generateTokens, ACCESS_SECRET, REFRESH_SECRET };
+  ```
+
+* Authentication Middleware (`auth.middleware.js`):
+  Checks the Authorization header for the Bearer token.
+  ```javascript
+  const jwt = require('jsonwebtoken');
+  const { ACCESS_SECRET } = require('./auth.utils');
+
+  const verifyJWT = (req, res, next) => {
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ message: 'Access Token required' });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, ACCESS_SECRET, (err, decoded) => {
+      if (err) {
+        // 403 Forbidden indicates token is expired or altered
+        return res.status(403).json({ message: 'Invalid or expired token' });
+      }
+      req.user = decoded; // Attach payload (id, role) to the request object
+      next();
+    });
+  };
+
+  module.exports = { verifyJWT };
+  ```
+
+* Authentication Controllers & Routes (`auth.routes.js`):
+  Handles Login, Refreshing tokens, and Logout.
+  ```javascript
+  const express = require('express');
+  const router = express.Router();
+  const jwt = require('jsonwebtoken');
+  const { generateTokens, REFRESH_SECRET } = require('./auth.utils');
+
+  // Login Endpoint
+  router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    // ... validate user credentials from DB ...
+    const user = { id: 1, role: 'admin' }; // dummy user object
+
+    const { accessToken, refreshToken } = generateTokens(user);
+
+    // Store Refresh Token in HttpOnly, secure cookie
+    res.cookie('jwt', refreshToken, {
+      httpOnly: true,
+      secure: true, // Requires HTTPS in production
+      sameSite: 'Strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
+    // Send Access Token in response body
+    res.json({ accessToken });
+  });
+
+  // Token Refresh Endpoint
+  router.post('/refresh', (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.status(401).json({ message: 'Refresh token missing' });
+    
+    const refreshToken = cookies.jwt;
+
+    jwt.verify(refreshToken, REFRESH_SECRET, (err, decoded) => {
+      if (err) return res.status(403).json({ message: 'Invalid refresh token' });
+
+      // Generate a new short-lived Access Token
+      const accessToken = jwt.sign(
+        { id: decoded.id, role: decoded.role },
+        process.env.JWT_ACCESS_SECRET || 'access_secret_key',
+        { expiresIn: '15m' }
+      );
+
+      res.json({ accessToken });
+    });
+  });
+
+  // Logout Endpoint (Clear Cookies)
+  router.post('/logout', (req, res) => {
+    res.clearCookie('jwt', { httpOnly: true, secure: true, sameSite: 'Strict' });
+    res.sendStatus(204);
+  });
+
+  module.exports = router;
+  ```
+
+
+3. SECURITY BEST PRACTICES FOR JWTs
+--------------------------------------------------------------------------------
+- **Secure Storage**:
+  - Store the Access Token in client application memory (JavaScript state). Do not save 
+    it in localStorage to prevent cross-site scripting (XSS) extraction.
+  - Store the Refresh Token in an `HttpOnly`, `Secure`, `SameSite=Strict` cookie so it 
+    cannot be accessed by client-side scripts.
+- **Short Expirations**: Keep access tokens active for only 15 minutes to minimize 
+  the window of abuse if intercepted.
+- **Token Revocation (Blacklisting)**:
+  - If a refresh token is compromised or a user logs out, delete the key from the 
+    active session store (Redis) to reject subsequent refresh attempts.
+================================================================================

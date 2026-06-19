@@ -1,0 +1,94 @@
+================================================================================
+                            DOCKER & DEVOPS MASTER NOTES
+================================================================================
+
+1. CONTAINER VIRTUALIZATION: VM vs. CONTAINERS
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Feature       | Virtual Machine (VM)                    | Container (Docker)
+--------------------------------------------------------------------------------
+Architecture  | Guest OS + Hypervisor + Hardware        | Shared Host OS Kernel (No Guest OS)
+Size          | Large (GBs; includes full OS)           | Small (MBs; lightweight image packaging)
+Startup Time  | Minutes (boots entire OS kernel)        | Milliseconds (launches raw process)
+Resource Use  | High (pre-allocates RAM and CPU cores)  | Low (shares host resources dynamically)
+--------------------------------------------------------------------------------
+
+
+2. DOCKERFILE DIRECTIVES
+--------------------------------------------------------------------------------
+A `Dockerfile` is a text document containing instructions to build a Docker Image.
+- `FROM`: Sets the base image (e.g. `node:20-alpine`).
+- `WORKDIR`: Sets the working directory inside the container for subsequent directives.
+- `COPY`: Copies files/folders from the host system into the container.
+- `RUN`: Executes system commands during the image build phase (creates a new image layer).
+- `EXPOSE`: Informs Docker that the container listens on the specified network ports at runtime.
+- `ENV`: Defines environment variables.
+- `CMD`: Specifies the default command to execute when the container launches. (Only one per Dockerfile).
+- `ENTRYPOINT`: Configures a container that will run as an executable.
+
+
+3. MULTI-STAGE BUILDS
+--------------------------------------------------------------------------------
+* Definition:
+  Multi-stage builds use multiple `FROM` statements to discard temporary build-time tools 
+  and dependencies, yielding significantly smaller final production images.
+
+* Example: Packaging an Angular Application (Production-ready Nginx image):
+  ```dockerfile
+  # Stage 1: Build Angular application
+  FROM node:20-alpine AS build-stage
+  WORKDIR /app
+  COPY package*.json ./
+  RUN npm ci
+  COPY . .
+  RUN npm run build -- --configuration=production
+
+  # Stage 2: Serve using Nginx
+  FROM nginx:stable-alpine AS production-stage
+  COPY --from=build-stage /app/dist/my-app/browser /usr/share/nginx/html
+  EXPOSE 80
+  CMD ["nginx", "-g", "daemon off;"]
+  ```
+
+
+4. DOCKER COMPOSE (`docker-compose.yml`)
+--------------------------------------------------------------------------------
+* Definition:
+  A tool for defining and running multi-container Docker applications. Uses YAML files 
+  to configure application services, networks, and volumes.
+
+* Multi-Container Setup Example (Database + Node Backend + Angular Frontend):
+  ```yaml
+  version: '3.8'
+
+  services:
+    # 1. MongoDB Service
+    mongodb:
+      image: mongo:latest
+      ports:
+        - "27017:27017"
+      volumes:
+        - mongo-data:/data/db
+
+    # 2. Node.js Backend Service
+    backend:
+      build: ./backend
+      ports:
+        - "3000:3000"
+      environment:
+        - MONGO_URI=mongodb://mongodb:27017/appdb
+      depends_on:
+        - mongodb
+
+    # 3. Angular Frontend Service
+    frontend:
+      build: ./frontend
+      ports:
+        - "80:80"
+      depends_on:
+        - backend
+
+  volumes:
+    mongo-data:
+  ```
+================================================================================

@@ -1,0 +1,92 @@
+================================================================================
+                            APACHE KAFKA NOTES
+================================================================================
+
+1. WHAT IS KAFKA?
+--------------------------------------------------------------------------------
+* Definition:
+  Apache Kafka is a distributed event streaming platform capable of handling trillions of 
+  events a day. It functions as an append-only, distributed, partitioned, and replicated 
+  commit log.
+  - Performance: Delivers O(1) disk writes by writing sequentially to log files, avoiding 
+    expensive random I/O operations.
+  - Primary Use Cases: Real-time event streaming, activity tracking, metric gathering, log 
+    aggregation, and high-throughput messaging.
+
+
+2. CORE ARCHITECTURE & COMPONENTS
+--------------------------------------------------------------------------------
+- **Producer**: Client applications that publish (write) events/messages to Kafka topics.
+- **Consumer**: Client applications that subscribe to (read and process) events.
+- **Broker**: A single Kafka server node. Multiple brokers form a cluster.
+- **Topic**: A category/feed name to which records are published. Topics are divided into:
+  - **Partitions**: Ordered, immutable sequences of records continually appended to. Each record 
+    gets a sequential ID called an **Offset**.
+  - **Replicas**: Copies of partitions spread across multiple brokers to ensure fault tolerance.
+    - *Leader*: The primary partition replica that handles all reads and writes.
+    - *Follower*: Replicas that pull/sync log updates from the Leader.
+
+* Consumer Groups (Scaling Reads):
+  - A Consumer Group is a set of consumers cooperating to read data from a topic.
+  - **Cardinality Rule**: Each partition is assigned to exactly *one* consumer within a group. 
+    If there are more consumers than partitions in a group, the extra consumers sit idle.
+  - Scale out: To read a topic with 4 partitions, you can run up to 4 consumers in a group.
+
+
+3. OFFSET MANAGEMENT & COMMIT STRATEGIES
+--------------------------------------------------------------------------------
+Consumers track their read position in each partition using offsets. Once processed, the consumer 
+"commits" the offset back to Kafka (in the internal `__consumer_offsets` topic).
+
+* Commit Modes:
+  - **Auto-Commit**: Consumer automatically commits offsets at a set time interval.
+    - *Risk*: Can cause data loss if the consumer crashes after fetching messages but 
+      before processing them.
+  - **Manual Commit**: Consumer code explicitly commits the offsets after business logic completes.
+    - *Synchronous (`commitSync`)*: Blocks execution until the broker acknowledges. (Safe, slower).
+    - *Asynchronous (`commitAsync`)*: Non-blocking write. (Fast, risk of offset order mismatch).
+
+
+4. MESSAGE DELIVERY GUARANTEES
+--------------------------------------------------------------------------------
+* At-least-once (Common default):
+  - Messages are guaranteed to be delivered, but duplicates can occur if a consumer processes 
+    data but crashes before committing the offset.
+  - **Requirement**: Downstream consumers must be **idempotent** (processing the same message 
+    twice yields the same outcome).
+
+* At-most-once:
+  - Messages are committed immediately upon fetch. If processing fails, the message is lost, 
+    but it is never re-read.
+
+* Exactly-once (Transactional):
+  - Involves writing transactions across multiple topics so that a message is successfully 
+    written/processed exactly once. Highly complex (uses Kafka's Transaction Coordinator API).
+
+
+5. ZOOKEEPER vs. KRAFT CONSENSUS
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Feature       | ZooKeeper Mode (Legacy)        | KRaft Mode (Modern Kafka 3.x/4.x)
+--------------------------------------------------------------------------------
+Architecture  | External metadata cluster      | Internal metadata log (Raft consensus)
+Metadata sync | Heavy writes sync to external  | Super fast, stored directly in Kafka
+Cluster Limit | Hard limit around 200k partitions| Scalable to millions of partitions
+Operational   | Managing two separate systems   | Single unified Kafka architecture to manage
+--------------------------------------------------------------------------------
+
+
+6. PARTITIONING & LOG COMPACTION
+--------------------------------------------------------------------------------
+* Partitioning Strategy:
+  - If a message has no Key, Kafka distributes messages round-robin or sticky-assigns them.
+  - If a message has a Key, Kafka hashes the key to assign it to a specific partition:
+    `partition = hash(key) % number_of_partitions`
+  - **Benefit**: Ensures that all messages with the same key (e.g. updates for `userId: 9`) 
+    arrive in the **exact same partition**, guaranteeing strict chronological ordering.
+
+* Log Compaction:
+  - A storage optimization policy. Instead of deleting old logs by age, Kafka periodically 
+    reclaims space by keeping only the *latest version* of a message for each key, removing 
+    outdated updates.
+================================================================================

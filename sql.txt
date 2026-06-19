@@ -1,61 +1,156 @@
-(DBMS)---- is a software application that interacts with the user, applications, and database to capture and analyze data.
-RDBMS--a collection of data items with pre-defined relationships between them.
+================================================================================
+                            SQL & RDBMS MASTER NOTES
+================================================================================
 
-DDl-- create,alter,drop,truncate,rename
-DML-- insert,update,delete
-DQL- select
-DCL---commit,grant,rollback,
-Constraint--.
-NOT NULL - Restricts NULL value from being inserted into a column.
-CHECK - Verifies that all values in a field satisfy a condition.
-DEFAULT - Automatically assigns a default value if no value has been specified for the field.
-UNIQUE - Ensures unique values to be inserted into the field.
-PRIMARY KEY - Uniquely identifies each record in a table. MUST HAVE ONE PK.
-FOREIGN KEY - Ensures referential integrity for a record in another table.
+1. DATABASE CLASSIFICATIONS & SQL COMMAND TYPES
+--------------------------------------------------------------------------------
+* DBMS vs. RDBMS:
+  - DBMS (Database Management System): Software used to store, manage, and retrieve data 
+    stored as files (flat structures).
+  - RDBMS (Relational DBMS): A database system based on the relational model (tables with 
+    predefined columns and relationships). Enforces referential integrity.
 
-INDEX - Indexes a field providing faster retrieval of records.
-UNIQUE Key---is a set of one or more than one field of a table that uniquely identifies a record in a database table.it can accept only one null value and it cannot have duplicate values.
-CANDIDATE keY---->A single key or a group of multiple keys that uniquely identify rows in a table. A table can have multiple Candidate keys.
+* SQL Statement Classifications:
+  - DDL (Data Definition Language): Defines the schema structure.
+    Commands: `CREATE`, `ALTER`, `DROP`, `TRUNCATE`, `RENAME`.
+  - DML (Data Manipulation Language): Modifies record data.
+    Commands: `INSERT`, `UPDATE`, `DELETE`.
+  - DQL (Data Query Language): Retrieves data from the database.
+    Command: `SELECT`.
+  - DCL (Data Control Language): Manages access rights and permissions.
+    Commands: `GRANT`, `REVOKE`.
+  - TCL (Transaction Control Language): Manages transactional changes.
+    Commands: `COMMIT`, `ROLLBACK`, `SAVEPOINT`.
 
-Normalization ---the process of organizing data attributes with their relationships to avoid duplication and redundancy.
-1NF--single-valued attribute
-2NF--no partial dependency
-3NF--no transitive dependency.
-Denormalization ---the process of adding precomputed redundant data ,to improve read performance DB.
-Atomicity--ALL /nothing transaction
-Consistency--Data must be consistent after transaction
-Isolation--no other process can change data while transaction
-Durability--the changes made by transaction must persist.
-VIEW---virtual table based on the result-set of an SQL statement. A view contains rows and columns, just like a real table.
---------------------------------------------------------------------------
-Order of clauses:FWGHSOL
---------------------------------------
-SET OPRRATION--used to join the results of 2/more SELECT statements.
-UNION:-------used to combine the results of 2/more SELECT Statements with Identical columns without returning any duplicate rows. should be the same number of columns.
-UNION ALL---used to combine the results of two or more SELECT Statements into a single set of rows and columns without the removal of any duplicates.
-INTERSECT----used to combine two SELECT statements with identical columns and returns rows only common rows returned by the two select statements.
-MINUS--- combines the results of two SELECT statements and returns only those in
-the final result, which belongs to the first set of the result.
---------------------------------------------
-JOIN------ clause is used to combine rows from two or more tables, based on a related column between them.
-SELF JOIN---joins data from the same table.Records taken from the table are matched to other records from the same table.
-INNERJOIN--------Retrieves records that have matching values in both tables involved in the join. 
-LEFT JOIN-------Retrieves all the records/rows from the left and the matched records/rows from the right table.
-RIGHTJOIN--Retrieves all the records/rows from the right and the matched records/rows from the left table.
-FULL JOIN--- Retrieves all the records where there is a match in either the left or right table.
-----------------------------------------------
-INDEX---data structure that provides a quick lookup of data in a column or columns of a table. 
-SUBQUERY----- a query within another query, also known as a nested query or inner query.
-WHERE clause--- used to filter records that are necessary, based on specific conditions.
-ORDER BY---- used to sort the records based on some fieldS in ascending (ASC) /(DESC).
-GROUP BY ---- used to group records with identical data & to produce summarized results from DB.
-HAVING --- used to filter records in combination with the GROUP BY clause. 
-WHERE clause--- cannot filter aggregated records.
---------------------------------------------
-Data Integrity-- the assurance of accuracy and consistency.
-DELETE -- used to delete rows from a table.
-TRUNCATE--used to delete all the rows from the table and free the space containing the table.
-DROP --used to remove an object from the database.table structure is removed from the database. 
-stored procedure ---------is a prepared SQL code that you can save, so the code can be reused over and over again.
-trigger---- is a database object that is associated with a table and automatically executes a set of SQL statements when a specific event occurs on that table
 
+2. DATABASE CONSTRAINTS
+--------------------------------------------------------------------------------
+Constraints enforce data integrity rules on columns:
+- `NOT NULL`: Restricts null values from being inserted into the column.
+- `UNIQUE`: Guarantees that all values in the column are distinct.
+- `CHECK`: Evaluates inserted values against a boolean condition (e.g. `CHECK (age >= 18)`).
+- `DEFAULT`: Automatically fills a fallback value if no value is specified.
+- `PRIMARY KEY`: Uniquely identifies each record in a table. It is implicitly `UNIQUE` and 
+  `NOT NULL`. A table can have only one primary key.
+- `FOREIGN KEY`: Establishes a link to a primary key in another table, enforcing referential 
+  integrity (prevents orphaned records).
+
+
+3. QUERY EXECUTION ORDER (FWGHSOL)
+--------------------------------------------------------------------------------
+Although queries are written starting with `SELECT`, the database engine executes the clauses 
+in the following logical order:
+
+1. **FROM / JOIN**: Database locates the target tables and joins them.
+2. **WHERE**: Filters row records based on conditional checks. (Cannot filter aggregate values).
+3. **GROUP BY**: Groups filtered rows based on column values.
+4. **HAVING**: Filters grouped summaries (supports aggregate checks like `COUNT(*) > 5`).
+5. **SELECT**: Evaluates columns, aliases, and expressions to return.
+6. **DISTINCT**: Removes duplicate row results.
+7. **ORDER BY**: Sorts rows (default `ASC` / `DESC`).
+8. **LIMIT / OFFSET**: Restricts the size of the final returned rows.
+
+
+4. JOINS & SET OPERATIONS
+--------------------------------------------------------------------------------
+* JOINS (Combining tables horizontally based on columns):
+  - `INNER JOIN`: Returns records that have matching keys in both tables.
+  - `LEFT JOIN` (Outer): Returns all records from the left table, and matching records 
+    from the right table (unmatched right fields return `NULL`).
+  - `RIGHT JOIN` (Outer): Returns all records from the right table, and matching records 
+    from the left table.
+  - `FULL OUTER JOIN`: Returns all records when there is a match in either left or right 
+    tables (unmatched fields return `NULL`).
+  - `SELF JOIN`: A regular join where a table is joined with itself (requires table aliasing).
+    ```sql
+    SELECT e1.name AS Employee, e2.name AS Manager
+    FROM Employees e1
+    JOIN Employees e2 ON e1.manager_id = e2.id;
+    ```
+
+* SET OPERATIONS (Combining query results vertically - requires matching column counts & types):
+  - `UNION`: Combines results, removing duplicates.
+  - `UNION ALL`: Combines results, retaining duplicates (faster than `UNION` as no sorting/filtering is done).
+  - `INTERSECT`: Returns only rows that exist in the results of both queries.
+  - `MINUS` / `EXCEPT`: Returns rows from the first query that do not exist in the second query.
+
+
+5. NORMALIZATION & DENORMALIZATION
+--------------------------------------------------------------------------------
+* Normalization:
+  The systematic process of organizing data attributes to avoid redundancy, anomalies, 
+  and data duplication.
+  - **1NF (First Normal Form)**: Atomic values only. No repeating groups or multi-valued attributes.
+  - **2NF (Second Normal Form)**: Must be in 1NF. All non-prime attributes must be fully 
+    dependent on the entire primary key (no partial dependencies on composite keys).
+  - **3NF (Third Normal Form)**: Must be in 2NF. No transitive dependencies (non-key columns 
+    cannot depend on other non-key columns).
+  - **BCNF (Boyce-Codd Normal Form)**: Stronger version of 3NF. For every functional dependency 
+    `X -> Y`, `X` must be a super key.
+
+* Denormalization:
+  The process of intentionally adding redundant data to database tables to speed up complex read 
+  queries (bypasses expensive joins) at the cost of slower writes and higher storage.
+
+
+6. DATABASE OBJECTS
+--------------------------------------------------------------------------------
+* Index:
+  A data structure (often B-Tree or Hash) used to speed up queries.
+  - `Clustered Index`: Determines the physical storage order of rows in the table. Only one per table.
+  - `Non-Clustered Index`: Separate lookup tree pointing back to the physical row data. Multiple allowed.
+
+* View:
+  A virtual table containing columns and rows derived from a saved query. Does not store physical data.
+
+* Stored Procedure:
+  Precompiled SQL code saved in the database. Can accept inputs/outputs, handle transaction logic, 
+  and is executed manually.
+
+* Trigger:
+  A database listener object that automatically executes a block of code in response to specific 
+  events (e.g., `BEFORE INSERT`, `AFTER UPDATE`, or `DELETE`) on a table.
+
+
+7. TRANSACTIONS & ACID PROPERTIES
+--------------------------------------------------------------------------------
+* ACID Properties:
+  - **Atomicity**: The entire transaction completes successfully, or the database rollbacks 
+    completely (All or Nothing).
+  - **Consistency**: Enforces that all database rules (constraints, keys) are satisfied before 
+    and after a transaction.
+  - **Isolation**: Concurrent transactions run independently without interfering with one another.
+  - **Durability**: Once a transaction commits, changes are written to non-volatile storage 
+    and survive system failures.
+
+* Isolation Levels & Anomalies:
+  - **Anomalies**:
+    - *Dirty Read*: Transaction reads uncommitted updates from another transaction.
+    - *Non-Repeatable Read*: Re-reading the same row returns different column values because 
+      another transaction committed an update in between.
+    - *Phantom Read*: Re-running a query returns new matching rows because another transaction 
+      inserted them.
+  
+  - **Levels**:
+    -----------------------------------------------------------------------------
+    Isolation Level  | Dirty Read? | Non-Repeatable Read? | Phantom Read?
+    -----------------------------------------------------------------------------
+    Read Uncommitted | Yes         | Yes                  | Yes
+    Read Committed   | No          | Yes                  | Yes
+    Repeatable Read  | No          | No                   | Yes
+    Serializable     | No          | No                   | No
+    -----------------------------------------------------------------------------
+
+
+8. DATA REMOVAL OPERATIONS: DELETE vs. TRUNCATE vs. DROP
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Feature      | DELETE                         | TRUNCATE             | DROP
+--------------------------------------------------------------------------------
+Type         | DML                            | DDL                  | DDL
+Scope        | Selected rows (using WHERE)    | All rows             | Entire table structure
+Rollback?    | Yes (writes to transaction log)| No (bypasses log)    | No
+Speed        | Slow (logs row-by-row)         | Fast                 | Fast
+Resets ID?   | No                             | Yes (Auto-increment) | Yes (Deletes table)
+--------------------------------------------------------------------------------
+================================================================================

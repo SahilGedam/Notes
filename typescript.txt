@@ -1,0 +1,104 @@
+================================================================================
+                            TYPESCRIPT MASTER NOTES
+================================================================================
+
+1. TYPE ALIASES vs. INTERFACES
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Feature       | Interface                               | Type Alias
+--------------------------------------------------------------------------------
+Declaration   | `interface User { name: string; }`      | `type User = { name: string; };`
+Extending     | Via inheritance: `extends`             | Via intersection: `&`
+Merged Fields | Declaration merging is supported        | Duplicate type declaration throws error
+Union/Tuple   | Cannot define Union/Tuple types directly| Can define Union, Tuple, mapped, etc.
+--------------------------------------------------------------------------------
+
+* Declaration Merging (Interface only):
+  Declaring two interfaces with the same name combines their properties:
+  ```typescript
+  interface Window { title: string; }
+  interface Window { size: number; }
+  // Resulting Window has both title and size properties.
+  ```
+
+
+2. GENERICS & GENERIC CONSTRAINTS
+--------------------------------------------------------------------------------
+* Definition:
+  Generics allow creating reusable components that work with a variety of types rather than 
+  a single one, preserving type safety.
+
+* Basic Syntax:
+  ```typescript
+  function identity<T>(arg: T): T {
+    return arg;
+  }
+  let output = identity<string>("myString");
+  ```
+
+* Generic Constraints:
+  Limit the types that a Generic type parameter accepts by using the `extends` keyword:
+  ```typescript
+  interface Lengthwise {
+    length: number;
+  }
+
+  // T is constrained to objects containing a length property
+  function loggingIdentity<T extends Lengthwise>(arg: T): T {
+    console.log(arg.length);
+    return arg;
+  }
+  ```
+
+
+3. TYPESCRIPT UTILITY TYPES
+--------------------------------------------------------------------------------
+TypeScript provides built-in transformations to simplify common type operations:
+- `Partial<T>`: Constructs a type with all properties of `T` set to optional.
+- `Required<T>`: Constructs a type with all properties of `T` set to required.
+- `Readonly<T>`: Sets all properties of `T` to read-only (prevents reassignment).
+- `Record<K, T>`: Constructs an object type with property keys of type `K` and values of type `T`.
+- `Pick<T, K>`: Constructs a type by picking a subset of keys `K` from `T`.
+- `Omit<T, K>`: Constructs a type by omitting a subset of keys `K` from `T`.
+
+* Usage Example:
+  ```typescript
+  interface User {
+    id: number;
+    name: string;
+    email: string;
+  }
+
+  type PreviewUser = Pick<User, 'id' | 'name'>; // { id: number, name: string }
+  type RegisterUser = Omit<User, 'id'>;         // { name: string, email: string }
+  ```
+
+
+4. TSCONFIG COMPILER FLAGS
+--------------------------------------------------------------------------------
+Key properties configured inside `tsconfig.json`:
+- `target`: Output JavaScript version (e.g. `es2022`, `es6`, `es5`).
+- `module`: Target module loader format (e.g. `CommonJS` for Node, `ESNext` for bundlers).
+- `strict`: Enabler flag that bundles strict checks (`noImplicitAny`, `strictNullChecks`, etc.).
+  - `strictNullChecks`: Prevents assigning `null` or `undefined` to types unless explicitly unioned.
+  - `noImplicitAny`: Throws error on expressions and declarations with an implied `any` type.
+- `noUnusedLocals` / `noUnusedParameters`: Throws error if local variables or parameters are unused.
+
+
+5. DECORATORS & TYPE GUARDS
+--------------------------------------------------------------------------------
+* Type Guards:
+  Functions or operators that perform runtime checks to narrow down a type within a block:
+  - `typeof`: Narrowing primitive types.
+  - `instanceof`: Narrowing class instances.
+  - User-defined Type Guards (using `parameter is Type` return syntax):
+    ```typescript
+    function isFish(pet: Fish | Bird): pet is Fish {
+      return (pet as Fish).swim !== undefined;
+    }
+    ```
+
+* Decorators (used heavily in Angular/NestJS):
+  A special declaration attached to classes, methods, or properties. They compile to functions 
+  that modify class behaviors at runtime (requires `experimentalDecorators: true` in tsconfig).
+================================================================================

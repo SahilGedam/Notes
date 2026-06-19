@@ -1,0 +1,104 @@
+================================================================================
+                            GIT VERSION CONTROL NOTES
+================================================================================
+
+1. MERGE vs. REBASE
+--------------------------------------------------------------------------------
+Both commands integrate changes from one branch into another:
+
+* `git merge`:
+  - Combines histories. Creates a new "Merge Commit" in the target branch.
+  - Pros: Non-destructive operation. History is preserved exactly as it occurred.
+  - Cons: History can become cluttered with many merge commits.
+
+* `git rebase`:
+  - Moves the entire commits history of a branch onto the tip of another branch, 
+    rewriting the commit hashes.
+  - Pros: Yields a clean, linear commit history.
+  - Cons: Rewrites public history! **Rule of thumb**: Never rebase commits that have 
+    been pushed to a shared/public repository.
+
+
+2. BRANCHING STRATEGIES
+--------------------------------------------------------------------------------
+- **Git Flow**:
+  - Uses multiple long-lived branches: `main` (production), `develop` (pre-production), 
+    `feature/*` (topic branches), `release/*` (pre-release testing), and `hotfix/*` 
+    (emergency production fixes).
+  - Best for: Structured release cycles, legacy software, strict QA.
+- **Trunk-Based Development**:
+  - Developers merge small, frequent updates directly into a single central branch 
+    (usually `main`/`trunk`). Relies on automated testing and "Feature Flags" to hide 
+    unfinished code in production.
+  - Best for: Continuous Delivery (CD), fast-moving teams.
+
+
+3. BASIC GIT COMMANDS
+--------------------------------------------------------------------------------
+* Repository Setup & Configuration:
+  - `git init`: Initializes a new local Git repository in the current directory.
+  - `git clone <url>`: Clones/downloads a remote repository to your local machine.
+  - `git config --global user.name "Your Name"`: Configures commit author name.
+  - `git config --global user.email "email@example.com"`: Configures commit author email.
+
+* Local Development Lifecycle (Stage & Commit):
+  - `git status`: Displays the state of the working directory (tracked/untracked changes).
+  - `git add <file>`: Stages a specific file's changes for the next commit.
+  - `git add .`: Stages all modified and new files in the current folder.
+  - `git commit -m "message"`: Records staged changes in the local repository history.
+  - `git diff`: Shows unstaged changes compared to the last commit.
+  - `git log`: Lists commit history for the active branch.
+  - `git log --oneline`: Lists commit history in a condensed, single-line format.
+
+* Basic Branching & Merging:
+  - `git branch`: Lists all local branches.
+  - `git branch <branch-name>`: Creates a new local branch at the current commit.
+  - `git checkout <branch-name>` / `git switch <branch-name>`: Switches to the specified branch.
+  - `git checkout -b <branch-name>` / `git switch -c <branch-name>`: Creates and switches to a new branch.
+  - `git merge <branch-name>`: Integrates target branch changes into the current active branch.
+  - `git branch -d <branch-name>`: Safely deletes a branch (prevents deletion if it has unmerged changes).
+  - `git branch -D <branch-name>`: Forces deletion of a branch.
+
+* Remote Synchronization:
+  - `git remote add origin <url>`: Connects the local repository to a remote repository URL.
+  - `git fetch`: Downloads all commits, files, and refs from remote without merging them.
+  - `git pull`: Downloads and immediately integrates remote branch changes into the local branch (`fetch + merge`).
+  - `git push origin <branch-name>`: Uploads local branch commits to the remote repository.
+  - `git push -u origin <branch-name>`: Pushes commits and binds the local branch to the remote branch as upstream.
+
+
+4. INTERMEDIATE & ADVANCED GIT COMMANDS
+--------------------------------------------------------------------------------
+- `git cherry-pick <commit-hash>`: Copies a specific commit from another branch and 
+  applies it onto your current branch.
+- `git stash` / `git stash pop`: Temporarily shelves uncommitted changes to clean the working 
+  directory, and restores them later.
+- `git reset --soft <commit-hash>`: Moves the HEAD pointer back to the specified commit, but 
+  keeps changes staged in your working directory.
+- `git reset --hard <commit-hash>`: Discards all commits and unstaged changes, aligning the 
+  working directory exactly with the specified commit.
+- `git revert <commit-hash>`: Creates a *new* commit that undoes the changes of the specified 
+  commit (safe way to undo history that has already been pushed to remote repositories).
+
+
+5. RESOLVING CONFLICTS
+--------------------------------------------------------------------------------
+* When conflicts happen:
+  Occurs when two branches edit the same lines of a file, and Git is unable to automatically 
+  determine which changes to keep.
+  
+* Markers to identify conflict areas:
+  ```
+  <<<<<<< HEAD
+  My local changes in active branch
+  =======
+  Incoming changes from merged branch
+  >>>>>>> feature-branch
+  ```
+* Resolution Flow:
+  1. Open the file and choose which blocks to keep (or combine both).
+  2. Remove the Git conflict markers (`<<<<<<<`, `=======`, `>>>>>>>`).
+  3. Save the file.
+  4. Stage the files: `git add <filename>`
+  5. Complete the merge/rebase: `git commit` or `git rebase --continue`.
+================================================================================

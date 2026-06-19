@@ -1,29 +1,101 @@
-No of subarrays in an Aray = (n * (n + 1)) / 2;
+================================================================================
+                    CODING INTERVIEW PATTERNS & CHEAT SHEET
+================================================================================
 
-------------------
-Regex - 
-Alphanumeric - ^[a-zA-Z0-9]+$
-Alphabet only - ^[a-zA-Z]+$
-Digits only - ^\d+$
-Alphanumeric with space - ^[a-zA-Z0-9 ]+$
-Floating point number - ^-?\d+(\.\d+)?$
-Integer - ^-?\d+$
-HTML Tag - `^<([a-z]+)([^<]+)(?:>(.)</\1>
-Valid URL - ^(https?:\/\/)?[\w.-]+\.\w{2,}
+1. MATHEMATICS & COMBINATORICS FORMULAS
+--------------------------------------------------------------------------------
+* Subarrays & Substrings:
+  - Total number of subarrays/substrings of size `n` (contiguous elements):
+    `Formula = (n * (n + 1)) / 2`
 
-------------------
+* Subsequences & Subsets:
+  - Total number of subsequences/subsets of a set of size `n` (non-contiguous allowed):
+    `Formula = 2^n`
 
-Remove Non alphanumeric characters from string
-str.replace(/[^a-zA-Z0-9]/g, '');
+* Permutations (Order matters):
+  - Number of ways to arrange `n` unique items:
+    `Formula = n!`
+  - Arranging `r` items out of `n` total:
+    `Formula = P(n, r) = n! / (n - r)!`
 
-------------------
-Remove all except numbers
-str.replace(/[^0-9]/g, '');
+* Combinations (Order does not matter):
+  - Choosing `r` items out of `n` total:
+    `Formula = C(n, r) = n! / (r! * (n - r)!)`
 
------------------
 
-Remove all numbers
-str.replace(/[0-9]/g, '');
+2. COMMON REGEX PATTERNS
+--------------------------------------------------------------------------------
+- Alphanumeric only: `^[a-zA-Z0-9]+$`
+- Alphabets only: `^[a-zA-Z]+$`
+- Digits/Numbers only: `^\d+$`
+- Alphanumeric with spaces: `^[a-zA-Z0-9 ]+$`
+- Integer (positive/negative): `^-?\d+$`
+- Floating point decimal: `^-?\d+(\.\d+)?$`
+- Valid Email Address: `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+- Valid URL Path: `^(https?:\/\/)?([\w.-]+)\.([a-z]{2,})(:\d{1,5})?(\/\S*)?$`
 
-------------------
 
+3. COMMON STRING CLEANUP SNIPPETS (JAVASCRIPT)
+--------------------------------------------------------------------------------
+* Remove non-alphanumeric characters:
+  `const clean = str.replace(/[^a-zA-Z0-9]/g, '');`
+
+* Remove all characters EXCEPT numbers:
+  `const digits = str.replace(/[^0-9]/g, '');`
+
+* Remove ALL numbers:
+  `const letters = str.replace(/[0-9]/g, '');`
+
+* Remove extra duplicate spaces (collapse to single space):
+  `const singleSpaces = str.replace(/\s+/g, ' ').trim();`
+
+
+4. ESSENTIAL ALGORITHMIC PATTERNS
+--------------------------------------------------------------------------------
+* 1. Two Pointers
+  - How it works: Two indices starting at different positions (e.g. left/right ends or slow/fast) 
+    that move towards each other or in the same direction.
+  - When to use: Sorted arrays/linked lists, looking for pairs that sum to a target, reversing lists.
+  - Time Complexity: `O(N)`
+  - Space Complexity: `O(1)`
+
+* 2. Sliding Window
+  - How it works: Maintains a window (range of elements) of dynamic or fixed size over an array/string. 
+    Expands the right pointer to grow, shrinks the left pointer to meet constraints.
+  - When to use: Subarrays/substring problems looking for maximum, minimum, or longest target 
+    under specific conditions (e.g., longest substring with K distinct characters).
+  - Time Complexity: `O(N)`
+  - Space Complexity: `O(1)` or `O(K)` (if storing characters in a hash map)
+
+* 3. Fast and Slow Pointers (Tortoise & Hare)
+  - How it works: Two pointers moving through the data structure at different speeds (slow moves 1 step, 
+    fast moves 2 steps).
+  - When to use: Cycle detection in Linked Lists or Arrays, finding the middle of a Linked List.
+  - Time Complexity: `O(N)`
+  - Space Complexity: `O(1)`
+
+* 4. Merge Intervals
+  - How it works: Sorts intervals by start time and merges overlapping ranges.
+  - When to use: Scheduling conflicts, meeting rooms booking, combining overlapping ranges.
+  - Time Complexity: `O(N log N)` (due to sorting)
+  - Space Complexity: `O(N)` (for storing sorted/merged intervals)
+
+* 5. Binary Search
+  - How it works: Recursively halves the search space by evaluating the middle index.
+  - When to use: Sorted arrays, or searching for an integer target in a monotonic range ("Search Space").
+  - Time Complexity: `O(log N)`
+  - Space Complexity: `O(1)`
+
+* 6. Top K Elements (Heaps)
+  - How it works: Uses a Min-Heap (to track K largest) or Max-Heap (to track K smallest elements) 
+    to process list numbers.
+  - When to use: Finding "K closest points", "K largest items", "Top K frequent words".
+  - Time Complexity: `O(N log K)`
+  - Space Complexity: `O(K)`
+
+* 7. Tree/Graph Traversals (DFS & BFS)
+  - Depth-First Search (DFS): Explores deep down a branch before backtracking. Uses Call Stack (recursion).
+  - Breadth-First Search (BFS): Explores level-by-level. Uses a Queue (`FIFO`).
+  - Time Complexity: `O(V + E)` (where V is vertices, E is edges)
+  - Space Complexity: `O(V)`
+================================================================================

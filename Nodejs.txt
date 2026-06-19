@@ -1,0 +1,275 @@
+================================================================================
+                         NODE.JS & EXPRESS MASTER NOTES
+================================================================================
+
+1. NODE.JS RUNTIME ARCHITECTURE
+--------------------------------------------------------------------------------
+* What is Node.js?
+  Node.js is an open-source, cross-platform JavaScript runtime environment built on 
+  Chrome's V8 JavaScript engine. It uses an asynchronous, event-driven, non-blocking 
+  I/O model, making it lightweight and highly efficient.
+  - V8 Engine: Compiles JavaScript directly to native machine code.
+  - Libuv: A multi-platform C library that provides support for asynchronous I/O based on 
+    event loops. It manages the operating system interaction, file system operations,
+    DNS lookups, child processes, and maintains a pool of background worker threads.
+
+* The Node.js Event Loop:
+  The Event Loop is what allows Node.js to perform non-blocking I/O operations (by 
+  offloading operations to the system kernel whenever possible).
+  - Main phases of the Event Loop:
+    1. Timers: Executes callbacks scheduled by `setTimeout()` and `setInterval()`.
+    2. Pending Callbacks: Executes I/O callbacks deferred to the next loop iteration.
+    3. Idle, Prepare: Used internally by the runtime.
+    4. Poll: Retrieves new I/O events; executes I/O-related callbacks (almost all
+       callbacks except close callbacks, timers, and `setImmediate()`).
+    5. Check: Executes callbacks scheduled by `setImmediate()`.
+    6. Close Callbacks: Executes callbacks like `socket.on('close', ...)`.
+
+* Microtask Queue Priority:
+  Node.js maintains two microtask queues:
+  - `process.nextTick()` queue (highest priority).
+  - Promise `.then()` / `.catch()` / `.finally()` queue.
+  - Transition Rule: Microtasks are drained completely immediately after the current 
+    operation completes, *between* phases of the Event Loop, and before moving on.
+  - `process.nextTick()` vs `setImmediate()`:
+    - `process.nextTick()` fires immediately on the same phase (before the event loop continues).
+    - `setImmediate()` fires in the next Check phase of the event loop.
+
+* Libuv Thread Pool:
+  Although JavaScript runs on a single thread, Node.js offloads heavy operations to the 
+  Libuv thread pool.
+  - Handles: File system (`fs`), cryptography (`crypto`), compression (`zlib`), and DNS lookups.
+  - Thread Pool Size: Default is 4 threads. Can be configured using the environment variable:
+    `process.env.UV_THREADPOOL_SIZE = 64;` (must be set before loading native libraries).
+
+
+2. CORE MODULES & APIs
+--------------------------------------------------------------------------------
+* File System (`fs`):
+  Handles file read/write operations.
+  - Sync methods: Block the single main thread (`fs.readFileSync`). Avoid in production servers!
+  - Async callbacks: Non-blocking (`fs.readFile`).
+  - Promises: Modern Promise-based API (`fs.promises.readFile` or `const fs = require('fs/promises')`).
+
+* Event Emitter (`events`):
+  Many Node.js core objects inherit from `EventEmitter`.
+  ```javascript
+  const EventEmitter = require('events');
+  class MyEmitter extends EventEmitter {}
+  const myEmitter = new MyEmitter();
+
+  myEmitter.on('event', (data) => {
+    console.log('An event occurred!', data);
+  });
+  myEmitter.emit('event', { id: 1 });
+  ```
+  - Memory Leaks: Event emitters retain references to listeners. Always clean up listeners
+    using `.off()` or `.removeListener()` to prevent memory leaks when disposing objects.
+
+* HTTP / HTTPS Module:
+  Low-level built-in API to create servers:
+  ```javascript
+  const http = require('http');
+  const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Hello World');
+  });
+  server.listen(3000);
+  ```
+
+
+3. BUFFERS & STREAMS
+--------------------------------------------------------------------------------
+* Buffers:
+  Objects representing a fixed-size chunk of raw binary data allocated outside the V8 heap.
+  - Used to handle binary streams directly (files, network packets).
+  - Creation: `Buffer.from('Hello')` or `Buffer.alloc(10)` (pre-filled with zero).
+
+* Streams:
+  Mechanisms to read/write data chunk-by-chunk without loading the entire content into memory.
+  - Types of Streams:
+    1. Readable: E.g., `fs.createReadStream()`, `req`.
+    2. Writable: E.g., `fs.createWriteStream()`, `res`.
+    3. Duplex: Bidirectional (Readable & Writable), E.g., `net.Socket`.
+    4. Transform: A Duplex stream where data is modified on the fly, E.g., `zlib.createGzip()`.
+  
+* Piping & Backpressure:
+  - Piping: Connects a readable stream to a writable stream: `readable.pipe(writable)`.
+  - Backpressure: Occurs when a readable stream produces data faster than the writable stream 
+    can consume it. `pipe()` automatically handles backpressure by pausing the reader until 
+    the writer's internal buffer drains (emitting the `drain` event).
+
+
+4. EXPRESS.JS FRAMEWORK CORE
+--------------------------------------------------------------------------------
+* Architecture:
+  Express is a minimal and flexible Node.js web application framework providing a robust set 
+  of features for web and mobile applications. It operates as a series of middleware functions.
+
+* Middleware:
+  Functions that have access to the Request (`req`), Response (`res`), and the `next` middleware 
+  function in the application's request-response cycle.
+  - Categories:
+    1. Application-level: `app.use((req, res, next) => {})`
+    2. Router-level: `router.use((req, res, next) => {})`
+    3. Built-in: `express.json()`, `express.static()`
+    4. Third-party: `cors()`, `helmet()`, `morgan()`
+    5. Error-handling: Must accept exactly 4 arguments:
+       ```javascript
+       app.use((err, req, res, next) => {
+         console.error(err.stack);
+         res.status(500).send('Something broke!');
+       });
+       ```
+
+* Request & Response Objects:
+  - `req.params`: Key-value map of route parameters (e.g. `/users/:id` -> `req.params.id`).
+  - `req.query`: Parsed query string parameters (e.g. `/search?q=node` -> `req.query.q`).
+  - `req.body`: Parsed request body (requires JSON/url-encoded body parser middleware).
+  - `res.send()`: Sends generic HTTP responses (handles buffers, strings, or objects).
+  - `res.json()`: Formats object payloads to JSON and sets correct `Content-Type: application/json`.
+
+
+5. CONCURRENCY & PROCESS MANAGEMENT
+--------------------------------------------------------------------------------
+* Scaling via Cluster Module:
+  The `cluster` module allows running multiple instances of a Node.js process (one per CPU core) 
+  sharing the same server port.
+  - Works via master-worker architecture (master spawns worker processes using `child_process.fork()`).
+  - Uses Round-Robin algorithm internally to load balance incoming connection sockets.
+
+* PM2 Process Manager:
+  Production-grade process manager for Node.js.
+  - Key features: Auto-restarts on crashes, zero-downtime reloads (cluster mode), logs management,
+    and monitoring dashboard.
+  - Commands: `pm2 start app.js -i max`, `pm2 status`, `pm2 logs`, `pm2 restart all`.
+
+* Worker Threads vs. Clustering:
+  - Cluster: Spawns completely separate processes. They share port, but do NOT share memory.
+    Best for scaling network-bound servers.
+  - Worker Threads (`worker_threads`): Spawns light-weight threads within the *same* process.
+    They share memory (via `SharedArrayBuffer`). Best for CPU-intensive computing tasks.
+
+* Child Processes:
+  Allows running external system commands or scripts.
+  - `exec()` / `execFile()`: Run commands in a shell, buffering the output (best for small outputs).
+  - `spawn()`: Streams command outputs (best for continuous data or large streams).
+  - `fork()`: Specialized version of `spawn` designed to run Node.js modules, establishing 
+    an IPC (Inter-Process Communication) channel.
+
+
+6. NODE.JS PERFORMANCE & SECURITY BEST PRACTICES
+--------------------------------------------------------------------------------
+* Avoiding Event Loop Blocking:
+  Since Node.js runs JS on a single thread, blocking operations freeze the entire server.
+  - Never run CPU-heavy operations (large loops, complex regular expressions, synchronous crypto) 
+    directly in requests.
+  - Offload CPU tasks using `worker_threads` or queue systems (e.g., BullMQ).
+
+* Security Checklist:
+  - Use `helmet` middleware to set secure HTTP headers (e.g. X-Content-Type-Options, CSP, etc.).
+  - Implement Rate Limiting (`express-rate-limit`) to prevent DDoS attacks.
+  - Validate and sanitize user inputs (`express-validator`) to prevent XSS and command injection.
+  - Handle uncaught exceptions and unhandled promise rejections properly:
+    ```javascript
+    process.on('uncaughtException', (err) => {
+      console.error('Uncaught Exception:', err);
+      process.exit(1); // Exit process, let PM2/container orchestrate restart
+    });
+    ```
+================================================================================
+
+7. DATABASE INTEGRATION & ORMs (SEQUELIZE)
+--------------------------------------------------------------------------------
+* Database Connectors, Query Builders, and ORMs:
+  - Native Driver / Connector (e.g. `pg`, `mysql2`): Low-level clients. You write raw SQL strings. 
+    Highest performance but zero abstraction and manual mapping.
+  - Query Builder (e.g. `Knex.js`): Programmatically construct SQL queries using JavaScript methods. 
+    Maintains SQL-like syntax but avoids string concatenation.
+  - ORM (Object-Relational Mapper, e.g. `Sequelize`, `Prisma`): Maps database tables to JavaScript 
+    classes/models. High level of abstraction, handles queries, validation, associations, 
+    and migrations.
+
+* Sequelize Setup and Connection:
+  ```javascript
+  const { Sequelize, DataTypes } = require('sequelize');
+
+  // Initialize DB Connection
+  const sequelize = new Sequelize('database_name', 'username', 'password', {
+    host: 'localhost',
+    dialect: 'postgres', // OR mysql, sqlite, mssql
+    logging: false       // Disable console logging SQL queries
+  });
+
+  // Test connection
+  async function testDB() {
+    try {
+      await sequelize.authenticate();
+      console.log('Database connected successfully.');
+    } catch (error) {
+      console.error('Unable to connect to the database:', error);
+    }
+  }
+  ```
+
+* Defining Models & Fields:
+  ```javascript
+  const User = sequelize.define('User', {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true
+    },
+    username: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true
+    },
+    email: {
+      type: DataTypes.STRING,
+      validate: {
+        isEmail: true
+      }
+    }
+  }, {
+    timestamps: true // Adds createdAt and updatedAt
+  });
+  ```
+
+* Model Associations (Relationships):
+  - **One-to-One**: `User.hasOne(Profile); Profile.belongsTo(User);`
+  - **One-to-Many**: `User.hasMany(Post); Post.belongsTo(User);`
+  - **Many-to-Many** (requires a junction table):
+    `User.belongsToMany(Project, { through: 'UserProjects' });`
+    `Project.belongsToMany(User, { through: 'UserProjects' });`
+
+* Standard Queries:
+  ```javascript
+  // Create / Insert
+  const newUser = await User.create({ username: 'Sahil', email: 'sahil@example.com' });
+
+  // Read / Select
+  const users = await User.findAll({
+    where: { email: 'sahil@example.com' },
+    include: [Post] // Joins and loads Posts related to User
+  });
+
+  // Update
+  await User.update({ email: 'newemail@example.com' }, {
+    where: { id: 1 }
+  });
+
+  // Delete
+  await User.destroy({
+    where: { id: 1 }
+  });
+  ```
+
+* Database Migrations:
+  Migrations act as version control for your database schema structure.
+  - Setup CLI: `npx sequelize-cli init`
+  - Generate migration: `npx sequelize-cli migration:generate --name create-users`
+  - Run migrations: `npx sequelize-cli db:migrate`
+  - Undo migrations: `npx sequelize-cli db:migrate:undo`
+================================================================================
+

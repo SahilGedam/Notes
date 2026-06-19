@@ -1,0 +1,141 @@
+================================================================================
+                            MONGODB & NOSQL MASTER NOTES
+================================================================================
+
+1. SQL vs. NOSQL PARADIGMS
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Feature       | SQL (Relational Databases)     | NoSQL (MongoDB - Document Store)
+--------------------------------------------------------------------------------
+Structure     | Tabular (Rows & Columns)       | BSON Documents (JSON-like key-value)
+Schema        | Strict predefined schema       | Flexible dynamic schema (Polymorphic)
+Relationships | Handled via Joins & Foreign Keys| Handled via Embedding or Referencing
+Scaling       | Vertically (scale up CPU/RAM)  | Horizontally (Sharding/Scale out)
+Consistency   | Strong Consistency (ACID)      | Eventual Consistency (BASE)
+--------------------------------------------------------------------------------
+
+* Key Concept: Document Modeling Decisions
+  - **Embedding (Denormalization)**: Storing related data nested inside a single document.
+    - Use when: Data has 1-to-1 or 1-to-many relationships, is read frequently, and 
+      seldom changes. Saves execution time by avoiding lookups.
+  - **Referencing (Normalization)**: Storing references (ObjectIDs) to other documents.
+    - Use when: Data has many-to-many relationships, changes frequently, or the child 
+      documents grow unboundedly (exceeding MongoDB's 16MB document size limit).
+
+
+2. MONGODB AGGREGATION FRAMEWORK
+--------------------------------------------------------------------------------
+* Definition:
+  The aggregation framework processes documents in a multi-stage pipeline, transforming 
+  them to return computed results.
+
+* Core Stages:
+  1. `$match`: Filters documents (behaves like a SQL `WHERE` clause).
+  2. `$group`: Groups documents by a specified key and computes aggregations (behaves like `GROUP BY`).
+  3. `$project`: Selects, renames, or calculates new fields to return.
+  4. `$lookup`: Performs a left-outer join to an unmatched collection.
+  5. `$unwind`: Deconstructs an array field from input documents to output a document for each element.
+
+* Aggregation Pipeline Example:
+  Find total sales and join user info for active customers:
+  ```javascript
+  db.orders.aggregate([
+    // Stage 1: Filter active orders
+    { $match: { status: "active" } },
+    
+    // Stage 2: Group by customer and sum totals
+    { 
+      $group: { 
+        _id: "$customerId", 
+        totalSpend: { $sum: "$amount" },
+        orderCount: { $sum: 1 }
+      } 
+    },
+    
+    // Stage 3: Join User details
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "customerInfo"
+      }
+    },
+    
+    // Stage 4: Unwind the array returned by lookup
+    { $unwind: "$customerInfo" },
+    
+    // Stage 5: Select returned fields
+    {
+      $project: {
+        _id: 1,
+        totalSpend: 1,
+        orderCount: 1,
+        customerName: "$customerInfo.name"
+      }
+    }
+  ]);
+  ```
+
+
+3. MONGOOSE ODM (OBJECT DOCUMENT MAPPER)
+--------------------------------------------------------------------------------
+* Schemas & Models:
+  Mongoose wraps MongoDB driver to enforce structured schemas, validation, and middleware.
+  ```javascript
+  const mongoose = require('mongoose');
+
+  const UserSchema = new mongoose.Schema({
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    age: { type: Number, min: 18 }
+  }, { timestamps: true });
+
+  const User = mongoose.model('User', UserSchema);
+  ```
+
+* Mongoose Middlewares (Hooks):
+  Functions that run pre or post execution lifecycle operations (e.g., hashing password before save):
+  ```javascript
+  UserSchema.pre('save', async function(next) {
+    if (this.isModified('password')) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
+    next();
+  });
+  ```
+
+* Virtuals:
+  Properties not persisted to MongoDB but derived on the fly:
+  ```javascript
+  UserSchema.virtual('fullName').get(function() {
+    return `${this.firstName} ${this.lastName}`;
+  });
+  ```
+
+* Populate:
+  Mongoose helper to automatically replace referenced IDs in a document with actual documents:
+  ```javascript
+  // Get post and populate author info
+  const post = await Post.findById(id).populate('author', 'name email');
+  ```
+
+
+4. INDEXING, REPLICATION & SHARDING
+--------------------------------------------------------------------------------
+* Indexing:
+  Increases query read speeds by sorting fields in a B-Tree structure.
+  - **Single Field Index**: `db.users.createIndex({ email: 1 })`
+  - **Compound Index**: `db.users.createIndex({ lastName: 1, age: -1 })` (Order of fields matters!).
+  - **TTL (Time-To-Live) Index**: Automatically deletes documents after a certain time. 
+    Ideal for session tokens/logs. `db.sessions.createIndex({ "createdAt": 1 }, { expireAfterSeconds: 3600 })`
+
+* Replication Sets (High Availability):
+  A group of MongoDB processes that maintain the same data set. Contains one Primary node 
+  (handles all write requests) and multiple Secondary nodes (replicate primary log data). 
+  Provides automatic failover if the Primary goes down.
+
+* Sharding (Horizontal Partitioning):
+  Distributes dataset chunks across multiple physical servers (shards) using a Shard Key. 
+  Allows write operations to scale horizontally across servers.
+================================================================================

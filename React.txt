@@ -1,60 +1,324 @@
-A browser cannot understand JSX syntax.
-This means that making a browser understand React code requires a lot of supporting technologies.
+================================================================================
+                            REACT MASTER NOTES
+================================================================================
 
-An example of such a technology is a transpiler.
+1. REACT BASICS & VIRTUAL DOM ARCHITECTURE
+--------------------------------------------------------------------------------
+* What is React?
+  React is an open-source, component-based front-end JavaScript library developed by 
+  Meta (Facebook). It is designed strictly for building user interfaces (often referred 
+  to as the View layer in MVC).
 
-A transpiler takes a piece of code and transforms it into some other code.
+* Virtual DOM (VDOM) & Reconciliation:
+  - Virtual DOM: A lightweight, in-memory representation of the real DOM.
+  - Reconciliation (Diffing Algorithm):
+    1. When a component's state or props change, React creates a new VDOM tree.
+    2. React compares (diffs) this new tree with the previous VDOM tree.
+    3. It calculates the minimum set of changes required.
+    4. React batch-applies these changes to the real DOM (via ReactDOM), minimizing 
+       expensive browser reflows and repaints.
+  - Fiber Engine: The reconciliation engine introduced in React 16. It enables incremental 
+    rendering—the ability to split rendering work into chunks and spread it over multiple 
+    frames (concurrency).
 
---------------------------------------------------------------------------------------------------------------------------------
-Single-Page Apps
-A Single Page Application allows the user to interact with the website without downloading entire new webpages. Instead, it rewrites the current webpage as the user interacts with it. The outcome is that the application will feel faster and more responsive to the user.
---------------------------------------------------------------------------------------------------------------------------------
+* Single-Page Applications (SPA):
+  SPAs load a single HTML document and dynamically rewrite the DOM as the user interacts 
+  with the app. This avoids reloading entire web pages, yielding desktop-like performance.
 
-Conditional Rendering
 
-Rendering components Conditionally using data from states
-eg - using ternary operators to decide which component to display
-eg - using if else statements to decide which component to display
-   if (weekday) {
-        message = <Workdays />
-    } else if (weekend) {
-        message = <Weekends />
-    } else {
-        message = <ErrorComponent />
-    }
+2. COMPONENTS & JSX SYNTAX
+--------------------------------------------------------------------------------
+* JSX (JavaScript XML):
+  JSX is a syntax extension for JavaScript that looks like HTML. It allows developers 
+  to write UI structures directly alongside JavaScript logic.
+  - Browser Parsing: Browsers cannot read JSX natively. Transpilers (like Babel) compile 
+    JSX tags into standard JavaScript `React.createElement()` calls.
+    ```javascript
+    // JSX:
+    const element = <h1 className="title">Hello</h1>;
 
-Conditional rendering using the logical AND operator
-     <div>
-            <h1>Please don't type in a zero</h1>
-            {val &&
-                <h2>Yay, no 0 was typed in!</h2>
-            }
-        </div>
+    // Compiled JavaScript:
+    const element = React.createElement('h1', { className: 'title' }, 'Hello');
+    ```
 
---------------------------------------------------------------------------------------------------------------------------------
-Assets
+* Functional vs. Class Components:
+  - Functional Components (Modern standard): Plain JavaScript functions that accept `props` 
+    and return JSX. They use **Hooks** to manage state and lifecycle.
+  - Class Components (Legacy): ES6 classes extending `React.Component`. Use `this.state` 
+    and lifecycle methods (`componentDidMount`, etc.).
 
-all the files used in the application
-kept in Assets folder or public folder
+* Fragments (`<React.Fragment>` or `<>`):
+  Used to group multiple elements together without adding redundant wrapper nodes to the DOM.
+  ```jsx
+  return (
+    <>
+      <h1>First Element</h1>
+      <p>Second Element</p>
+    </>
+  );
+  ```
 
---------------------------------------------------------------------------------------------------------------------------------
-Bundling is a process that takes all the imported files in an app and joins them into a single file, referred to as a bundle. Several tools can perform this bundling.
 
-In development mode, webpack bundles your files and optimizes your bundles for updates - so that any updates to any of the files in your locally developed app are quickly re-bundled. It also builds source maps so you can inspect the original file included in the bundled code.
+3. LIFECYCLE HOOKS & SIDE EFFECTS (useEffect)
+--------------------------------------------------------------------------------
+* Side Effects:
+  Operations that interact with the outside world (e.g. data fetching, DOM manipulation, 
+  subscriptions) must be isolated inside lifecycle methods or hooks.
 
-In production mode, webpack bundles your files so that they are optimized for speed. This means the files are minified and organized to take up the least amount of memory. So, they are optimized for speed because these bundles are fast to download when a user visits the website online.
+* `useEffect` (The Lifecycle Workhorse):
+  Combines the functionality of class lifecycle methods `componentDidMount`, 
+  `componentDidUpdate`, and `componentWillUnmount` into a single hook.
+  
+  - Dependency Array Behaviors:
+    1. No Dependency Array: Runs on *every* render.
+       ```javascript
+       useEffect(() => { console.log('Runs every render'); });
+       ```
+    2. Empty Dependency Array (`[]`): Runs exactly *once* after initial mount.
+       ```javascript
+       useEffect(() => { console.log('Mounted'); }, []);
+       ```
+    3. With Dependencies (`[count]`): Runs on mount and whenever variables in the array change.
+       ```javascript
+       useEffect(() => { console.log('Count updated:', count); }, [count]);
+       ```
 
---------------------------------------------------------------------------------------------------------------------------------
+* Cleanups (Preventing Memory Leaks):
+  If the hook returns a function, React runs this cleanup function when the component 
+  unmounts or before re-running the effect.
+  ```javascript
+  useEffect(() => {
+    const handleResize = () => console.log(window.innerWidth);
+    window.addEventListener('resize', handleResize);
 
-3 ways to add images
-1. import => import image name from images folder , use it directly  in src tag
-2. require => add image by require(../.) in src attribute
-2. image url => use a variable to store url , use variable in src tag
+    return () => {
+      // Cleanup listener
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+  ```
 
-videos =>
-npm install react-player
+* `useLayoutEffect`:
+  Identical signature to `useEffect`, but fires synchronously *after* all DOM mutations 
+  but *before* the browser paints the screen. Use this only to measure DOM layout dimensions 
+  to prevent visual flickers.
 
---------------------------------------------------------------------------------------------------------------------------------
 
-Keys - Unique Identifier in lists
-Unique keys solve issue of re rendering of items
+4. STATE MANAGEMENT & HOOKS
+--------------------------------------------------------------------------------
+* `useState`:
+  Declares a state variable inside functional components.
+  - Functional Updates: Always pass a function to updater functions when updating 
+    state based on its previous value to avoid stale closure bugs.
+    ```javascript
+    const [count, setCount] = useState(0);
+    // Correct way to increment:
+    setCount(prevCount => prevCount + 1);
+    ```
+
+* `useReducer`:
+  Alternative state hook suited for complex state objects and transition logic (similar to Redux).
+  ```javascript
+  const reducer = (state, action) => {
+    switch (action.type) {
+      case 'increment': return { count: state.count + 1 };
+      default: return state;
+    }
+  };
+  const [state, dispatch] = useReducer(reducer, { count: 0 });
+  ```
+
+* Immutability in React State:
+  Never mutate state directly. Always return new references to arrays or objects.
+  ```javascript
+  // ❌ BAD: Mutates existing array
+  list.push(newItem);
+  setList(list);
+
+  // ✅ GOOD: Spreads and creates new array reference
+  setList([...list, newItem]);
+  ```
+
+
+5. COMPONENT COMMUNICATION
+--------------------------------------------------------------------------------
+* Data Flow:
+  Data always flows unidirectionally from parent to child (via `props`).
+
+* Parent to Child (Props):
+  ```jsx
+  function Parent() {
+    return <Child message="Hello from Parent" />;
+  }
+  ```
+
+* Child to Parent (Callback functions):
+  Child triggers a callback function provided by the parent, passing data back up.
+  ```jsx
+  function Parent() {
+    const handleData = (childData) => console.log(childData);
+    return <Child onSendData={handleData} />;
+  }
+  ```
+
+* Lifting State Up:
+  When two sibling components need to share data, hoist the state up to their nearest 
+  common ancestor component, then pass it down via props.
+
+* Children Prop (`props.children`):
+  Allows components to project arbitrary JSX content, similar to Angular's `<ng-content>`.
+  ```jsx
+  function Wrapper({ children }) {
+    return <div className="border">{children}</div>;
+  }
+  ```
+
+
+6. CONTEXT API & GLOBAL STATE
+--------------------------------------------------------------------------------
+* Context API:
+  Enables sharing state globally across components without manual "prop-drilling" through 
+  intermediate levels.
+  
+  - Setup Steps:
+    1. Create context: `const UserContext = React.createContext();`
+    2. Provide values: `<UserContext.Provider value={userData}>...children</UserContext.Provider>`
+    3. Consume values: `const user = useContext(UserContext);`
+
+* Global State Alternatives:
+  - Context API: Native, good for low-frequency updates (e.g. themes, auth profiles). Can 
+    cause performance issues (unwanted re-renders) on high-frequency changes.
+  - Zustand / Redux Toolkit: External state engines utilizing centralized selectors to prevent 
+    unnecessary re-renders on components.
+
+
+7. FORMS IN REACT
+--------------------------------------------------------------------------------
+* Controlled Components:
+  Form input values are driven strictly by React state.
+  ```jsx
+  const [name, setName] = useState('');
+  return (
+    <input value={name} onChange={(e) => setName(e.target.value)} />
+  );
+  ```
+
+* Uncontrolled Components:
+  Form data is handled by the DOM itself. Access values using a reference (`useRef`).
+  ```jsx
+  const inputRef = useRef(null);
+  const handleSubmit = () => console.log(inputRef.current.value);
+  return <input ref={inputRef} />;
+  ```
+
+
+8. PERFORMANCE OPTIMIZATION
+--------------------------------------------------------------------------------
+* `React.memo`:
+  A higher-order component that shallowly compares props and skips re-rendering if props 
+  are unchanged.
+
+* `useMemo`:
+  Caches the computed result of an expensive calculation between renders.
+  ```javascript
+  const expensiveVal = useMemo(() => computeHeavyData(list), [list]);
+  ```
+
+* `useCallback`:
+  Caches the function definition itself between renders to prevent children from 
+  re-rendering when passed callbacks as props.
+  ```javascript
+  const handleToggle = useCallback(() => setIsActive(prev => !prev), []);
+  ```
+
+* Virtual Lists (Virtualization):
+  Only rendering elements currently visible in the viewport. Prevents browser sluggishness 
+  when handling thousands of list rows (using libraries like `react-window`).
+
+
+9. ROUTING (REACT ROUTER)
+--------------------------------------------------------------------------------
+* Basic Setup (React Router v6+):
+  ```jsx
+  import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+  const router = createBrowserRouter([
+    { path: '/', element: <Home /> },
+    { path: '/profile/:id', element: <Profile /> },
+    { path: '*', element: <NotFound /> }
+  ]);
+
+  function App() {
+    return <RouterProvider router={router} />;
+  }
+  ```
+
+* Navigation:
+  - Declared Link: `<Link to="/login">Login</Link>`
+  - Programmatic:
+    ```javascript
+    const navigate = useNavigate();
+    const handleLogin = () => navigate('/dashboard');
+    ```
+
+
+10. CODE SPLITTING & SUSPENSE
+--------------------------------------------------------------------------------
+* Dynamic Import (`React.lazy`):
+  Allows components to be loaded lazily in separate chunks only when rendered.
+  ```javascript
+  const LazyProfile = React.lazy(() => import('./Profile'));
+  ```
+
+* Suspense:
+  Wraps lazy components to display a fallback UI loader while files are being downloaded.
+  ```jsx
+  <Suspense fallback={<div>Loading component...</div>}>
+    <LazyProfile />
+  </Suspense>
+  ```
+
+
+11. EVENT HANDLING & SYNTHETIC EVENTS
+--------------------------------------------------------------------------------
+* SyntheticEvent:
+  React wraps native browser events in a cross-browser helper called `SyntheticEvent` to 
+  ensure consistent properties across Safari, Chrome, and Firefox.
+  - Event Pooling (Historical): React pooled events for performance before React 17. 
+    In modern React, event properties are fully retained.
+
+* Debouncing Input changes:
+  ```javascript
+  import { debounce } from 'lodash';
+
+  const debouncedSearch = useCallback(
+    debounce((query) => apiSearch(query), 500),
+    []
+  );
+  ```
+
+
+12. MODERN REACT ADDITIONS (REACT 18 & 19)
+--------------------------------------------------------------------------------
+* Server Components (RSC vs Client Components):
+  - React Server Components (RSC): Rendered on the server. Zero impact on client bundle size 
+    because dependencies are not sent to the client. Excellent for initial loads and SEO.
+  - Client Components (indicated by `'use client'` directive): Executed in the browser. 
+    Can use state, effects, hooks, and browser APIs.
+
+* Transition & Non-Blocking Updates:
+  - `useTransition`: Splits updates into urgent (typing, clicking) and non-urgent transitions 
+    (fetching lists). Prevents UI locks during rendering.
+    ```javascript
+    const [isPending, startTransition] = useTransition();
+    
+    startTransition(() => {
+      setFilterQuery(query); // Runs asynchronously without blocking UI typing
+    });
+    ```
+
+* React 19 Action Hooks:
+  - `useActionState`: Handles async actions, loading states, and error handling seamlessly.
+  - `useFormStatus`: Provides status information (like `pending`) of the parent `<form>` 
+    inside child components.
+================================================================================

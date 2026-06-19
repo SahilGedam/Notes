@@ -1,0 +1,101 @@
+================================================================================
+                            TESTING & QUALITY ASSURANCE NOTES
+================================================================================
+
+1. TESTING TERMINOLOGY: MOCKS, SPIES, STUBS, & DUMMIES
+--------------------------------------------------------------------------------
+- **Mock**: Objects pre-programmed with expectations which form a specification of the 
+  calls they are expected to receive (behavior verification).
+- **Spy**: A test double that records execution information (arguments, return values, call 
+  frequency) of functions without modifying their actual implementation (e.g. `jest.spyOn`).
+- **Stub**: Provides canned/pre-programmed responses to calls made during the test. Usually 
+  does not respond to anything outside what's programmed for the test.
+- **Dummy**: Objects passed around but never actually used or called. Typically used to fill 
+  parameter lists.
+
+
+2. UNIT TESTING: JEST vs. JASMINE / KARMA
+--------------------------------------------------------------------------------
+- **Jest**: A zero-config JavaScript testing framework created by Meta, commonly used in 
+  React/MERN stack projects. Includes a test runner, assertion library, and mocking features.
+- **Jasmine**: A behavior-driven testing library. It is the default testing framework 
+  historically bundled with Angular.
+- **Karma**: A test runner developed by the Angular team that launches browsers to execute 
+  Jasmine tests.
+
+* Code Syntax Comparison:
+  ```javascript
+  // Jest Assertion:
+  expect(calculateSum(2, 3)).toBe(5);
+  expect(mockFn).toHaveBeenCalledWith("data");
+
+  // Jasmine Assertion:
+  expect(calculateSum(2, 3)).toEqual(5);
+  expect(spyObj.methodName).toHaveBeenCalledWith("data");
+  ```
+
+
+3. ANGULAR TESTBED & COMPONENT FIXTURE
+--------------------------------------------------------------------------------
+* Angular TestBed:
+  The primary Angular testing utility. Configures and initializes an environment to instantiate 
+  components/services with Dependency Injection.
+
+* Example Component Test:
+  ```typescript
+  import { ComponentFixture, TestBed } from '@angular/core/testing';
+  import { UsersComponent } from './users.component';
+  import { UserService } from './user.service';
+  import { of } from 'rxjs';
+
+  describe('UsersComponent', () => {
+    let component: UsersComponent;
+    let fixture: ComponentFixture<UsersComponent>;
+    let mockUserService: any;
+
+    beforeEach(async () => {
+      // 1. Create a stub/mock for dependencies
+      mockUserService = jasmine.createSpyObj(['getUsers']);
+      mockUserService.getUsers.and.returnValue(of([{ id: 1, name: 'Sahil' }]));
+
+      // 2. Configure testing module
+      await TestBed.configureTestingModule({
+        imports: [UsersComponent], // import if standalone
+        providers: [
+          { provide: UserService, useValue: mockUserService }
+        ]
+      }).compileComponents();
+
+      // 3. Instantiate fixture and component
+      fixture = TestBed.createComponent(UsersComponent);
+      component = fixture.componentInstance;
+      fixture.detectChanges(); // Trigger initial lifecycle hooks (ngOnInit)
+    });
+
+    it('should load users on init', () => {
+      expect(component.users.length).toBe(1);
+      expect(mockUserService.getUsers).toHaveBeenCalled();
+    });
+  });
+  ```
+  - `fixture.detectChanges()`: Forces Angular to run change detection on the tested component.
+  - `fixture.nativeElement`: Exposes the raw DOM element of the component for query selectors.
+
+
+4. END-TO-END (E2E) TESTING: CYPRESS & PLAYWRIGHT
+--------------------------------------------------------------------------------
+E2E testing automates browser actions to test the entire application flow from end to end.
+
+* Cypress:
+  - Architecture: Runs inside the browser alongside your application code, yielding 
+    fast execution and debugger access.
+  - Pros: Auto-waiting for assertions, readable commands, time-travel debugging.
+  - Cons: Restricted to executing inside a single browser tab, no multi-tab support.
+
+* Playwright:
+  - Architecture: Developed by Microsoft. Connects to browser engines (Chromium, WebKit, Firefox) 
+    using the browser's native debugging protocol (WebSocket-based).
+  - Pros: Native multi-page/multi-tab support, faster execution via parallel threads, 
+    rich code generators.
+  - Cons: Requires node engine setup, runs out-of-process.
+================================================================================

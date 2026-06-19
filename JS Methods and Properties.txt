@@ -1,30 +1,141 @@
--------------------------------------------------------------------------------------------------------------------
+================================================================================
+                     JAVASCRIPT METHODS & PROPERTIES
+================================================================================
 
-Array.prototype.flat()
+1. ARRAY METHODS & PROPERTIES
+--------------------------------------------------------------------------------
+* Property:
+  - `length`: Returns or sets the number of elements in an array.
+    ```javascript
+    const arr = [1, 2, 3];
+    console.log(arr.length); // 3
+    ```
 
-The flat() method of Array instances creates a new array with all sub-array elements concatenated into it recursively up to the specified depth.
+* Mutator Methods (Modify the original array in-place):
+  - `push(...items)`: Adds items to the end; returns the new length.
+  - `pop()`: Removes the last item; returns that item.
+  - `unshift(...items)`: Adds items to the beginning; returns the new length.
+  - `shift()`: Removes the first item; returns that item.
+  - `splice(start, deleteCount, ...items)`: Adds/removes elements at an index; returns deleted items.
+  - `sort(compareFn)`: Sorts elements in-place; default is alphabetical sorting.
+  - `reverse()`: Reverses the order of elements in-place.
+  - `fill(value, start, end)`: Fills elements with a static value.
+  - `copyWithin(target, start, end)`: Copies array elements within the array.
 
-const arr1 = [0, 1, 2, [3, 4]];
+  ```javascript
+  const arr = [1, 2, 3];
+  arr.push(4);          // arr is now [1, 2, 3, 4]
+  arr.splice(1, 1, 9);  // Removes 1 item at index 1 and inserts 9 -> [1, 9, 3, 4]
+  ```
 
-console.log(arr1.flat());
-// expected output: Array [0, 1, 2, 3, 4]
+* Accessor Methods (Do not modify the original; return a new value/array):
+  - `concat(...arrays)`: Merges two or more arrays.
+  - `slice(start, end)`: Extracts a shallow copy of a portion of an array.
+  - `join(separator)`: Joins all elements into a string.
+  - `indexOf(element)` / `lastIndexOf(element)`: Returns the first/last index of an element, or -1.
+  - `includes(element)`: Returns `true` if the array contains the value.
+  - `flat(depth)`: Flattens nested sub-arrays up to a specified depth.
+  - `flatMap(callbackFn)`: Maps each element, then flattens the result by 1 level.
 
-const arr2 = [0, 1, [2, [3, [4, 5]]]];
+  ```javascript
+  const nested = [1, [2, [3]]];
+  console.log(nested.flat(Infinity)); // [1, 2, 3] (original nested is unchanged)
+  ```
 
-console.log(arr2.flat());
-// expected output: Array [0, 1, 2, Array [3, Array [4, 5]]]
+* Iteration / Helper Methods (Accept callbacks):
+  - `forEach(callback)`: Executes a function for each element (returns `undefined`).
+  - `map(callback)`: Creates a new array with results of calling the function on every element.
+  - `filter(callback)`: Creates a new array with elements that pass the test function.
+  - `reduce(callback, initialValue)`: Reduces the array to a single value (left-to-right).
+  - `some(callback)`: Returns `true` if at least one element passes the test.
+  - `every(callback)`: Returns `true` if all elements pass the test.
+  - `find(callback)`: Returns the value of the first element that satisfies the test.
+  - `findIndex(callback)`: Returns the index of the first element satisfying the test.
+  - `findLast(callback)` / `findLastIndex(callback)`: Finds elements starting from the end.
 
-console.log(arr2.flat(2));
-// expected output: Array [0, 1, 2, 3, Array [4, 5]]
+* Static Utility Methods:
+  - `Array.isArray(obj)`: Returns `true` if the passed value is an Array.
+  - `Array.from(iterable)`: Creates an array from an array-like or iterable object.
+  - `Array.of(...items)`: Creates an array from arguments.
 
-console.log(arr2.flat(Infinity));
-// expected output: Array [0, 1, 2, 3, 4, 5]
 
--------------------------------------------------------------------------------------------------------------------
+2. STRING METHODS & PROPERTIES
+--------------------------------------------------------------------------------
+* Property:
+  - `length`: Returns the code unit length of the string.
 
-Array.isArray()
+* Character Access:
+  - `charAt(index)`: Returns character at the specified index.
+  - `charCodeAt(index)`: Returns UTF-16 code unit value at the index.
+  - `at(index)`: Returns character at index (supports negative indexes for counting backwards).
 
-The isArray() method returns true if an object is an array, otherwise false.
+* Manipulation (Strings are immutable; these return new strings):
+  - `slice(start, end)`: Extracts a section of a string.
+  - `substring(start, end)`: Extracts characters between two indices.
+  - `replace(pattern, replacement)`: Replaces the first match of a pattern (string or RegExp).
+  - `replaceAll(pattern, replacement)`: Replaces all matches.
+  - `toUpperCase()` / `toLowerCase()`: Converts casing.
+  - `trim()` / `trimStart()` / `trimEnd()`: Removes whitespace from ends.
+  - `padStart(targetLength, padString)` / `padEnd(...)`: Pads string to a target length.
+  - `repeat(count)`: Repeats string.
 
--------------------------------------------------------------------------------------------------------------------
+* Search & Splitting:
+  - `indexOf(substr)` / `lastIndexOf(substr)`: Finds indices of substrings.
+  - `includes(substr)`: Returns `true` if string contains the substring.
+  - `startsWith(substr)` / `endsWith(substr)`: Checks string boundaries.
+  - `split(separator)`: Splitting string into an array of substrings.
+  - `match(regex)` / `search(regex)`: Matches against regular expressions.
 
+
+3. OBJECT METHODS
+--------------------------------------------------------------------------------
+* Static Management & Mutations:
+  - `Object.assign(target, ...sources)`: Copies enumerable properties to target.
+  - `Object.create(proto)`: Creates a new object with the specified prototype.
+  - `Object.defineProperty(obj, prop, descriptor)`: Defines a property with configurations.
+  - `Object.freeze(obj)`: Freezes object (prevents addition/removal/modification of values).
+  - `Object.seal(obj)`: Seals object (prevents addition/removal, but allows modification).
+  - `Object.preventExtensions(obj)`: Prevents adding new properties.
+
+* Static Inspection:
+  - `Object.keys(obj)`: Returns array of enumerable property names.
+  - `Object.values(obj)`: Returns array of enumerable property values.
+  - `Object.entries(obj)`: Returns array of `[key, value]` pairs.
+  - `Object.getPrototypeOf(obj)`: Returns prototype of the object.
+  - `Object.setPrototypeOf(obj, prototype)`: Sets the prototype.
+  - `Object.hasOwn(obj, prop)`: Modern standard to check if property exists directly on object.
+
+  ```javascript
+  const user = { name: 'Sahil', age: 28 };
+  console.log(Object.entries(user)); // [['name', 'Sahil'], ['age', 28]]
+  console.log(Object.hasOwn(user, 'name')); // true
+  ```
+
+
+4. NUMBER METHODS
+--------------------------------------------------------------------------------
+* Formatting & Conversion:
+  - `toFixed(digits)`: Formats number to fixed-point decimal notation string.
+  - `toPrecision(precision)`: Formats number to specified precision string.
+  - `toString(radix)`: Converts number to string representation (can specify base, e.g., 16 for hex).
+
+* Static Checks:
+  - `Number.isInteger(value)`: Checks if value is a safe integer.
+  - `Number.isNaN(value)`: Checks if value is exactly `NaN` without type coercion.
+  - `Number.isFinite(value)`: Checks if value is a finite number.
+
+
+5. MATH METHODS
+--------------------------------------------------------------------------------
+* Math Operations:
+  - `Math.abs(x)`: Returns the absolute value of `x`.
+  - `Math.ceil(x)`: Rounds up to the nearest integer.
+  - `Math.floor(x)`: Rounds down to the nearest integer.
+  - `Math.round(x)`: Rounds to the nearest integer (standard rounding).
+  - `Math.trunc(x)`: Drops the decimal part (removes digits after the dot).
+  - `Math.max(...nums)` / `Math.min(...nums)`: Returns largest/smallest arguments.
+  - `Math.random()`: Returns a pseudo-random decimal number between 0 (inclusive) and 1 (exclusive).
+  - `Math.pow(base, exponent)`: Returns base to the power of exponent.
+  - `Math.sqrt(x)`: Returns square root.
+  - `Math.sign(x)`: Returns 1 (positive), -1 (negative), or 0.
+================================================================================

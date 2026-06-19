@@ -1,0 +1,228 @@
+================================================================================
+                      BACKEND DEVELOPER MASTER NOTES
+================================================================================
+
+1. CLIENT-SERVER ARCHITECTURE & COMMUNICATIONS
+--------------------------------------------------------------------------------
+* Monolithic vs. Microservices Architecture:
+  - Monolithic: Single, unified codebase and deployment unit. Easy to develop, test,
+    and deploy initially, but harder to scale, maintain, and adopt new technologies
+    as the application grows.
+  - Microservices: Application split into small, autonomous, loosely coupled services.
+    - Each service manages its own database and communicates over lightweight protocols
+      (HTTP/REST, gRPC, message queues).
+    - Pros: Independent scaling, technology diversity, clear team boundaries.
+    - Cons: Network latency, complex distributed data management (Saga pattern),
+      operational overhead, and distributed debugging.
+
+* API Architectures:
+  - REST (Representational State Transfer):
+    - Resource-oriented API design constraint.
+    - Key constraints: Client-server, Statelessness, Cacheability, Uniform Interface,
+      Layered System, and Code on Demand.
+    - Suffers from over-fetching (retrieving unnecessary fields) or under-fetching
+      (requiring multiple endpoints/requests for a single view).
+  - GraphQL:
+    - Schema-driven, single-endpoint query language.
+    - Clients specify exact fields they need, eliminating over/under-fetching.
+    - N+1 Query Problem: Occurs when a resolver triggers database queries in a loop
+      for nested relations. Solved using batching/caching libraries (e.g., DataLoader).
+  - gRPC:
+    - High-performance RPC framework developed by Google.
+    - Uses Protocol Buffers (protobuf) for binary serialization (smaller/faster payloads).
+    - Runs on HTTP/2, allowing multiplexed streams, bidirectional streaming, and header
+      compression.
+    - Best for internal microservice-to-microservice communication.
+  - WebSockets:
+    - TCP-based protocol establishing a persistent, bidirectional, full-duplex connection
+      after an initial HTTP/1.1 handshake.
+    - Best for real-time applications (chat, live notifications, real-time gaming).
+  - Webhooks:
+    - Reverse APIs or HTTP push notifications.
+    - A server sends HTTP POST requests containing event payloads to registered client URLs
+      when specific events occur. Fully asynchronous and event-driven.
+
+
+2. HTTP PROTOCOL DEEP DIVE
+--------------------------------------------------------------------------------
+* HTTP Methods, Safety, and Idempotency:
+  - Safe Method: Does not modify server state (read-only).
+  - Idempotent Method: Making multiple identical requests has the same server state
+    as making a single request.
+  
+  -----------------------------------------------------------------------------
+  Method   | Description                     | Safe? | Idempotent?
+  -----------------------------------------------------------------------------
+  GET      | Retrieve resource representation| Yes   | Yes
+  POST     | Create a new resource           | No    | No
+  PUT      | Replace/Upsert resource         | No    | Yes
+  PATCH    | Partially modify resource       | No    | No (Often implemented as yes)
+  DELETE   | Remove resource                 | No    | Yes
+  HEAD     | Same as GET but no body returned| Yes   | Yes
+  OPTIONS  | Describe communication options  | Yes   | Yes
+  -----------------------------------------------------------------------------
+
+* HTTP Status Codes:
+  - 1xx (Informational): e.g., 101 Switching Protocols (WebSockets).
+  - 2xx (Success):
+    - 200 OK: Request succeeded.
+    - 201 Created: Resource successfully created.
+    - 204 No Content: Request succeeded, but response has no body.
+  - 3xx (Redirection):
+    - 301 Moved Permanently: Resource moved to a new URI permanently.
+    - 302 Found / 307 Temporary Redirect: Temporary redirect; original method preserved in 307.
+    - 304 Not Modified: Resource has not changed (uses cache validation headers).
+  - 4xx (Client Errors):
+    - 400 Bad Request: Malformed request syntax or invalid input validation.
+    - 401 Unauthorized: Lacks valid authentication credentials (identity unknown).
+    - 403 Forbidden: Identity known, but user lacks permissions (authorization failed).
+    - 404 Not Found: Requested resource could not be found.
+    - 409 Conflict: Request conflicts with current server state (e.g., duplicate unique keys).
+    - 429 Too Many Requests: Rate limit exceeded.
+  - 5xx (Server Errors):
+    - 500 Internal Server Error: Generic catch-all server crash.
+    - 502 Bad Gateway: Proxy/Gateway received an invalid response from upstream server.
+    - 503 Service Unavailable: Server overloaded or down for maintenance.
+    - 504 Gateway Timeout: Upstream server failed to respond in time.
+
+* Key HTTP Headers:
+  - `Authorization`: Contains credentials (e.g., `Bearer <token>`).
+  - `Cookie` / `Set-Cookie`: Manages client-side session identification state.
+  - `Content-Type`: Format of the request/response payload (e.g., `application/json`).
+  - `Cache-Control`: Caching directives (e.g., `no-cache`, `max-age=3600`).
+  - CORS Headers: `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, etc.
+
+
+3. AUTHENTICATION, AUTHORIZATION & SECURITY
+--------------------------------------------------------------------------------
+* Session-Based (Stateful) vs. JWT-Based (Stateless) Authentication:
+  - Stateful: Server creates a session ID, stores it in memory/database (Redis),
+    and sends it in a cookie. The client sends the session ID back with each request.
+    - Pros: Instant revocation of sessions is easy.
+    - Cons: High server memory footprint, scaling requires shared session stores.
+  - Stateless: Server signs a JSON Web Token (JWT) and returns it. Client stores it
+    (localStorage or HTTP-only cookie) and attaches it in the Authorization header.
+    - Pros: Highly scalable, no session store needed, good for multi-domain APIs.
+    - Cons: Hard to revoke tokens before expiration (requires token blacklisting).
+
+* OAuth 2.0 & OpenID Connect (OIDC):
+  - OAuth 2.0: Delegation framework for authorization. Permits third-party apps
+    to access resources without sharing passwords.
+    - Key grant types: Authorization Code (with PKCE for SPAs/Mobile), Client Credentials.
+  - OIDC: An identity layer built on top of OAuth 2.0 that provides authentication
+    by introducing an `ID Token` containing user profile claims.
+
+* Access Control Paradigms:
+  - RBAC (Role-Based Access Control): Access granted based on roles (e.g., Admin, Editor).
+  - ABAC (Attribute-Based Access Control): Access evaluated dynamically using attributes
+    (e.g., user department, time of day, request IP, resource owner).
+
+* Backend Security Best Practices (OWASP Top 10):
+  - SQL Injection (SQLi): Prevented by using parameterized queries / prepared statements.
+  - Cross-Site Scripting (XSS): Sanitizing HTML outputs, applying `HttpOnly` flags to cookies.
+  - Cross-Site Request Forgery (CSRF): Enforcing `SameSite` cookie policies, anti-CSRF tokens.
+  - Rate Limiting: Preventing brute force and DDoS using algorithms like Token Bucket or Leaky Bucket.
+  - CORS (Cross-Origin Resource Sharing): Enforcing explicit origin whitelists rather than wildcard `*`.
+
+
+4. DATABASE CONCEPTS & SYSTEM DESIGN
+--------------------------------------------------------------------------------
+* SQL vs. NoSQL Databases:
+  - SQL (Relational): Relational schema, tabular tables, foreign key constraints.
+    - Ideal for structured data, complex join operations, and strong consistency requirements.
+  - NoSQL (Non-Relational): Document (MongoDB), Key-Value (Redis), Column-Family (Cassandra), Graph (Neo4j).
+    - Ideal for unstructured or semi-structured data, high-velocity writing, horizontal scaling, and flexible schemas.
+
+* ACID vs. BASE Paradigms:
+  - ACID (Relational):
+    - Atomicity: All operations in a transaction succeed or all fail.
+    - Consistency: Data transitions from one valid state to another.
+    - Isolation: Concurrent transactions do not interfere with each other.
+    - Durability: Once committed, updates persist even during a crash.
+  - BASE (NoSQL/Distributed):
+    - Basically Available: System guarantees availability even in the face of network partitions.
+    - Soft state: State of the system can change over time without user interaction.
+    - Eventual consistency: System becomes consistent over time when no updates are made.
+
+* CAP Theorem:
+  In a distributed data store, you can only guarantee two of the following three:
+  - Consistency (C): Every read receives the most recent write or an error.
+  - Availability (A): Every non-failing node returns a response (without guarantee of latest data).
+  - Partition Tolerance (P): System continues to operate despite arbitrary message loss/delay.
+  - Real-world Choice: Since network partitions (P) are inevitable, distributed databases must choose
+    between Consistency (CP, e.g. MongoDB, HBase) or Availability (AP, e.g. Cassandra, DynamoDB).
+
+* Database Optimization:
+  - Indexes: B-Tree / Hash tables matching search patterns. Speed up reads, slow down writes.
+  - Replication: Leader-Follower replication to offload read-heavy traffic to read replicas.
+  - Sharding (Horizontal Partitioning): Splitting tables horizontally across separate DB servers.
+  - Connection Pooling: Reusing a pool of active database connections to avoid TCP handshake overhead.
+
+
+5. CACHING STRATEGIES
+--------------------------------------------------------------------------------
+* Cache-Aside (Lazy Loading):
+  - Application checks cache. If miss, queries database, updates cache, and returns.
+  - Pros: Only caches requested data. Cache node failure is not fatal.
+  - Cons: Cache misses trigger latency, stale data if data changes directly in DB.
+
+* Write-Through:
+  - Application writes directly to the cache, which writes to the database synchronously.
+  - Pros: Cache never has stale data.
+  - Cons: Write latency is higher (dual-write overhead).
+
+* Write-Behind (Write-Back):
+  - Application writes to cache. Cache queue updates to database asynchronously.
+  - Pros: High-throughput write performance.
+  - Cons: Risk of data loss if cache fails before DB write completes.
+
+* Common Cache Vulnerabilities:
+  - Cache Stampede (Thundering Herd): High-concurrency cache key expires, causing thousands
+    of requests to hit the DB at once. Mitigated using lock/semaphore or background renewal.
+  - Cache Penetration: Requests for keys that do not exist (neither in cache nor DB) flood the DB.
+    Mitigated by caching null values or using Bloom Filters.
+  - Cache Avalanche: Multiple cached keys expire at the same time. Mitigated by adding
+    random jitter/skew to expiry times.
+
+
+6. MESSAGE QUEUES & EVENT-DRIVEN ARCHITECTURE
+--------------------------------------------------------------------------------
+* Message Queues vs. Event Streams:
+  - Message Queue (e.g., RabbitMQ): Message is delivered, processed, and acknowledged,
+    then deleted from queue. Good for task dispatching.
+  - Event Stream (e.g., Kafka): Append-only immutable log. Consumer tracks its own offset.
+    Events persist and can be replayed. Excellent for event sourcing and high-throughput streaming.
+
+* Delivery Guarantees:
+  - At-least-once: Messages may be duplicated, but never lost. Consumers must be **idempotent**.
+  - At-most-once: Messages are sent once; could be lost but never duplicated.
+  - Exactly-once: Complex orchestration ensures every message modifies target state exactly once.
+
+
+7. SCALABILITY, RESILIENCY & LOAD BALANCING
+--------------------------------------------------------------------------------
+* Horizontal vs. Vertical Scaling:
+  - Vertical: Increasing resources (CPU, RAM) of a single server. Limited ceiling.
+  - Horizontal: Adding more server nodes. Requires load balancing and stateless application servers.
+
+* Load Balancer:
+  - Routes traffic across multiple nodes.
+  - Algorithms: Round Robin, Least Connections, IP Hash.
+  - Reverse Proxy (e.g., Nginx): Client targets proxy, proxy queries backend. Handles TLS termination,
+    static asset hosting, and caching.
+
+* Resiliency Patterns:
+  - Circuit Breaker: Temporarily stops forwarding requests to a failing service (tripping to Open),
+    preventing cascading failures. Periodically tests downstream health (Half-Open) before closing.
+  - Bulkhead Pattern: Isolates resources (thread pools, memory) to prevent one failing service component
+    from consuming all system resources.
+
+
+8. MONITORING, LOGGING & OBSERVABILITY
+--------------------------------------------------------------------------------
+* Three Pillars of Observability:
+  1. Metrics: Aggregate numerical values measured over time (CPU, latency, error rate).
+  2. Logs: Timestamped discrete event records. Best formatted as structured JSON for easy indexing.
+  3. Traces: End-to-end representation of a request's journey through a distributed microservices graph
+     using correlated Trace IDs and Span IDs.
+================================================================================
