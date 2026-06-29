@@ -42,7 +42,7 @@ and Verification Middleware.
 
     // 2. Refresh Token: Long-lived (7 days)
     const refreshToken = jwt.sign(
-      { id: user.id },
+      { id: user.id, role: user.role },
       REFRESH_SECRET,
       { expiresIn: '7d' }
     );

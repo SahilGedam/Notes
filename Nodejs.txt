@@ -39,8 +39,9 @@
   Although JavaScript runs on a single thread, Node.js offloads heavy operations to the 
   Libuv thread pool.
   - Handles: File system (`fs`), cryptography (`crypto`), compression (`zlib`), and DNS lookups.
-  - Thread Pool Size: Default is 4 threads. Can be configured using the environment variable:
-    `process.env.UV_THREADPOOL_SIZE = 64;` (must be set before loading native libraries).
+  - Thread Pool Size: Default is 4 threads. Can be configured using the environment variable
+    `UV_THREADPOOL_SIZE=64 node app.js` (must be set in the shell before starting the process;
+    setting `process.env.UV_THREADPOOL_SIZE` inside the script has no effect as Libuv initializes before JS executes).
 
 
 2. CORE MODULES & APIs [Importance: 8.5/10]

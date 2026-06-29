@@ -149,7 +149,7 @@ Feature      | DELETE                         | TRUNCATE             | DROP
 --------------------------------------------------------------------------------
 Type         | DML                            | DDL                  | DDL
 Scope        | Selected rows (using WHERE)    | All rows             | Entire table structure
-Rollback?    | Yes (writes to transaction log)| No (bypasses log)    | No
+Rollback?    | Yes (writes to transaction log)| Yes (in PG/MSSQL); No (in MySQL/Oracle)| No
 Speed        | Slow (logs row-by-row)         | Fast                 | Fast
 Resets ID?   | No                             | Yes (Auto-increment) | Yes (Deletes table)
 --------------------------------------------------------------------------------

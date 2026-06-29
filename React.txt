@@ -291,8 +291,8 @@
   ```javascript
   import { debounce } from 'lodash';
 
-  const debouncedSearch = useCallback(
-    debounce((query) => apiSearch(query), 500),
+  const debouncedSearch = useMemo(
+    () => debounce((query) => apiSearch(query), 500),
     []
   );
   ```

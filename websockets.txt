@@ -110,11 +110,11 @@ The WebSocket object exposes a `readyState` property representing the connection
 
       return this.socket$.asObservable().pipe(
         // Catch connection errors and retry with a 3-second delay
+        retry({ delay: 3000 }),
         catchError(error => {
           console.error('WebSocket Error:', error);
           return EMPTY;
-        }),
-        retry({ delay: 3000 })
+        })
       );
     }
 

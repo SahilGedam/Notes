@@ -228,7 +228,7 @@ Real-Time       | Poll / SSE / custom WebSockets | Native Subscriptions via WebS
       const queryRef = this.apollo.watchQuery<any>({ query: GET_USERS });
       
       this.users$ = queryRef.valueChanges.pipe(
-        map(result => result.data.users)
+        map(result => result.data?.users || [])
       );
 
       this.loading$ = queryRef.valueChanges.pipe(
