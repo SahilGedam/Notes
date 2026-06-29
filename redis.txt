@@ -11,7 +11,7 @@
   - Primary uses: Caching, session management, message queues, and pub/sub message brokering.
 
 
-2. REDIS CORE DATA STRUCTURES
+2. REDIS CORE DATA STRUCTURES [Importance: 9/10]
 --------------------------------------------------------------------------------
 - **Strings**: Basic key-value pairs (holds text or binary up to 512MB).
   - Commands: `SET key val`, `GET key`, `INCR key`.
@@ -26,7 +26,7 @@
   - Commands: `ZADD leaderboard 100 "UserA" 150 "UserB"`, `ZRANGE leaderboard 0 -1`.
 
 
-3. CACHE EVICTION POLICIES
+3. CACHE EVICTION POLICIES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 When Redis exceeds its configured memory limit (`maxmemory`), it evicts keys based on 
 configured policies:
@@ -39,7 +39,7 @@ configured policies:
 - `volatile-ttl`: Evicts keys closest to expiration.
 
 
-4. SESSION STORE IMPLEMENTATION
+4. SESSION STORE IMPLEMENTATION [Importance: 8/10]
 --------------------------------------------------------------------------------
 Using Redis as a stateful session store for web backends:
 - **How it works**:
@@ -52,7 +52,7 @@ Using Redis as a stateful session store for web backends:
   5. On logout, the key is deleted: `DEL session:12345`.
 
 
-5. REDIS PUB/SUB MECHANICS
+5. REDIS PUB/SUB MECHANICS [Importance: 8/10]
 --------------------------------------------------------------------------------
 Enables real-time messaging patterns where publishers send messages to channels without 
 knowing who the subscribers are.

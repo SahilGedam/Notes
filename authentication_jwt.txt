@@ -139,7 +139,7 @@ and Verification Middleware.
   ```
 
 
-3. SECURITY BEST PRACTICES FOR JWTs
+3. SECURITY BEST PRACTICES FOR JWTs [Importance: 9/10]
 --------------------------------------------------------------------------------
 - **Secure Storage**:
   - Store the Access Token in client application memory (JavaScript state). Do not save 

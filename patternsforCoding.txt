@@ -2,7 +2,7 @@
                     CODING INTERVIEW PATTERNS & CHEAT SHEET
 ================================================================================
 
-1. MATHEMATICS & COMBINATORICS FORMULAS
+1. MATHEMATICS & COMBINATORICS FORMULAS [Importance: 6/10]
 --------------------------------------------------------------------------------
 * Subarrays & Substrings:
   - Total number of subarrays/substrings of size `n` (contiguous elements):
@@ -23,7 +23,7 @@
     `Formula = C(n, r) = n! / (r! * (n - r)!)`
 
 
-2. COMMON REGEX PATTERNS
+2. COMMON REGEX PATTERNS [Importance: 7/10]
 --------------------------------------------------------------------------------
 - Alphanumeric only: `^[a-zA-Z0-9]+$`
 - Alphabets only: `^[a-zA-Z]+$`
@@ -35,7 +35,7 @@
 - Valid URL Path: `^(https?:\/\/)?([\w.-]+)\.([a-z]{2,})(:\d{1,5})?(\/\S*)?$`
 
 
-3. COMMON STRING CLEANUP SNIPPETS (JAVASCRIPT)
+3. COMMON STRING CLEANUP SNIPPETS (JAVASCRIPT) [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Remove non-alphanumeric characters:
   `const clean = str.replace(/[^a-zA-Z0-9]/g, '');`
@@ -50,7 +50,7 @@
   `const singleSpaces = str.replace(/\s+/g, ' ').trim();`
 
 
-4. ESSENTIAL ALGORITHMIC PATTERNS
+4. ESSENTIAL ALGORITHMIC PATTERNS [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * 1. Two Pointers
   - How it works: Two indices starting at different positions (e.g. left/right ends or slow/fast) 

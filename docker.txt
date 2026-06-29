@@ -14,7 +14,7 @@ Resource Use  | High (pre-allocates RAM and CPU cores)  | Low (shares host resou
 --------------------------------------------------------------------------------
 
 
-2. DOCKERFILE DIRECTIVES
+2. DOCKERFILE DIRECTIVES [Importance: 8/10]
 --------------------------------------------------------------------------------
 A `Dockerfile` is a text document containing instructions to build a Docker Image.
 - `FROM`: Sets the base image (e.g. `node:20-alpine`).
@@ -27,7 +27,7 @@ A `Dockerfile` is a text document containing instructions to build a Docker Imag
 - `ENTRYPOINT`: Configures a container that will run as an executable.
 
 
-3. MULTI-STAGE BUILDS
+3. MULTI-STAGE BUILDS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Definition:
   Multi-stage builds use multiple `FROM` statements to discard temporary build-time tools 

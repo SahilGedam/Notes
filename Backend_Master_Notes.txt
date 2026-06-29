@@ -2,7 +2,7 @@
                       BACKEND DEVELOPER MASTER NOTES
 ================================================================================
 
-1. CLIENT-SERVER ARCHITECTURE & COMMUNICATIONS
+1. CLIENT-SERVER ARCHITECTURE & COMMUNICATIONS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Monolithic vs. Microservices Architecture:
   - Monolithic: Single, unified codebase and deployment unit. Easy to develop, test,
@@ -43,7 +43,7 @@
       when specific events occur. Fully asynchronous and event-driven.
 
 
-2. HTTP PROTOCOL DEEP DIVE
+2. HTTP PROTOCOL DEEP DIVE [Importance: 9/10]
 --------------------------------------------------------------------------------
 * HTTP Methods, Safety, and Idempotency:
   - Safe Method: Does not modify server state (read-only).
@@ -93,7 +93,7 @@
   - CORS Headers: `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, etc.
 
 
-3. AUTHENTICATION, AUTHORIZATION & SECURITY
+3. AUTHENTICATION, AUTHORIZATION & SECURITY [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Session-Based (Stateful) vs. JWT-Based (Stateless) Authentication:
   - Stateful: Server creates a session ID, stores it in memory/database (Redis),
@@ -125,7 +125,7 @@
   - CORS (Cross-Origin Resource Sharing): Enforcing explicit origin whitelists rather than wildcard `*`.
 
 
-4. DATABASE CONCEPTS & SYSTEM DESIGN
+4. DATABASE CONCEPTS & SYSTEM DESIGN [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * SQL vs. NoSQL Databases:
   - SQL (Relational): Relational schema, tabular tables, foreign key constraints.
@@ -159,7 +159,7 @@
   - Connection Pooling: Reusing a pool of active database connections to avoid TCP handshake overhead.
 
 
-5. CACHING STRATEGIES
+5. CACHING STRATEGIES [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Cache-Aside (Lazy Loading):
   - Application checks cache. If miss, queries database, updates cache, and returns.
@@ -185,7 +185,7 @@
     random jitter/skew to expiry times.
 
 
-6. MESSAGE QUEUES & EVENT-DRIVEN ARCHITECTURE
+6. MESSAGE QUEUES & EVENT-DRIVEN ARCHITECTURE [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Message Queues vs. Event Streams:
   - Message Queue (e.g., RabbitMQ): Message is delivered, processed, and acknowledged,
@@ -199,7 +199,7 @@
   - Exactly-once: Complex orchestration ensures every message modifies target state exactly once.
 
 
-7. SCALABILITY, RESILIENCY & LOAD BALANCING
+7. SCALABILITY, RESILIENCY & LOAD BALANCING [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Horizontal vs. Vertical Scaling:
   - Vertical: Increasing resources (CPU, RAM) of a single server. Limited ceiling.
@@ -218,7 +218,7 @@
     from consuming all system resources.
 
 
-8. MONITORING, LOGGING & OBSERVABILITY
+8. MONITORING, LOGGING & OBSERVABILITY [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Three Pillars of Observability:
   1. Metrics: Aggregate numerical values measured over time (CPU, latency, error rate).

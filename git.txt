@@ -19,7 +19,7 @@ Both commands integrate changes from one branch into another:
     been pushed to a shared/public repository.
 
 
-2. BRANCHING STRATEGIES
+2. BRANCHING STRATEGIES [Importance: 8/10]
 --------------------------------------------------------------------------------
 - **Git Flow**:
   - Uses multiple long-lived branches: `main` (production), `develop` (pre-production), 
@@ -33,7 +33,7 @@ Both commands integrate changes from one branch into another:
   - Best for: Continuous Delivery (CD), fast-moving teams.
 
 
-3. BASIC GIT COMMANDS
+3. BASIC GIT COMMANDS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Repository Setup & Configuration:
   - `git init`: Initializes a new local Git repository in the current directory.
@@ -67,7 +67,7 @@ Both commands integrate changes from one branch into another:
   - `git push -u origin <branch-name>`: Pushes commits and binds the local branch to the remote branch as upstream.
 
 
-4. INTERMEDIATE & ADVANCED GIT COMMANDS
+4. INTERMEDIATE & ADVANCED GIT COMMANDS [Importance: 9/10]
 --------------------------------------------------------------------------------
 - `git cherry-pick <commit-hash>`: Copies a specific commit from another branch and 
   applies it onto your current branch.
@@ -81,7 +81,7 @@ Both commands integrate changes from one branch into another:
   commit (safe way to undo history that has already been pushed to remote repositories).
 
 
-5. RESOLVING CONFLICTS
+5. RESOLVING CONFLICTS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * When conflicts happen:
   Occurs when two branches edit the same lines of a file, and Git is unable to automatically 

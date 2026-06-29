@@ -2,7 +2,7 @@
                            JAVASCRIPT MASTER NOTES
 ================================================================================
 
-1. JAVASCRIPT BASICS & EXECUTION CONTEXT
+1. JAVASCRIPT BASICS & EXECUTION CONTEXT [Importance: 9/10]
 --------------------------------------------------------------------------------
 * What is JavaScript?
   JavaScript is a lightweight, cross-platform, single-threaded, and just-in-time 
@@ -66,7 +66,7 @@
     harder to debug.
 
 
-2. DATA TYPES & COERCION
+2. DATA TYPES & COERCION [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Categories of Data Types:
   1. Primitive Types: Stored directly in the execution stack. They are immutable and 
@@ -155,7 +155,7 @@
   - `"default"`: Used when the operator is unsure (e.g. binary `+` or loose equality `==`).
 
 
-3. VARIABLES & SCOPING
+3. VARIABLES & SCOPING [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Scope Types:
   1. Global Scope: Variables declared outside any function or block, accessible 
@@ -202,7 +202,7 @@
   found, a `ReferenceError` is thrown.
 
 
-4. FUNCTIONS & CLOSURES
+4. FUNCTIONS & CLOSURES [Importance: 10/10]
 --------------------------------------------------------------------------------
 * Function Declarations vs. Expressions:
   - Function Declaration: Declared as a standalone statement. Hoisted.
@@ -337,7 +337,7 @@
     ```
 
 
-5. OBJECTS & MEMORY MODEL
+5. OBJECTS & MEMORY MODEL [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Object Basics:
   ```javascript
@@ -426,7 +426,7 @@
   - Function call: `obj.method?.()`
 
 
-6. OBJECT-ORIENTED JAVASCRIPT
+6. OBJECT-ORIENTED JAVASCRIPT [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Constructor Functions:
   Used to create objects with a shared blueprint.
@@ -482,7 +482,7 @@
   ```
 
 
-7. ASYNCHRONOUS JAVASCRIPT & PROMISES
+7. ASYNCHRONOUS JAVASCRIPT & PROMISES [Importance: 10/10]
 --------------------------------------------------------------------------------
 * Promises:
   An object representing the eventual completion or failure of an asynchronous operation.
@@ -541,7 +541,7 @@
     function was originally defined, which is safer inside promise/timeout callbacks.
 
 
-8. EVENT LOOP & BROWSER EVENTS
+8. EVENT LOOP & BROWSER EVENTS [Importance: 10/10]
 --------------------------------------------------------------------------------
 * Event Loop:
   The core mechanism that enables single-threaded, non-blocking asynchronous execution.
@@ -590,7 +590,7 @@
   ```
 
 
-9. DATA STRUCTURES & COLLECTIONS
+9. DATA STRUCTURES & COLLECTIONS [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Array Methods: Map, Filter, Reduce:
   - `map()`: Creates a new array by applying a function to each element.
@@ -636,7 +636,7 @@
     objects are deleted elsewhere. Non-enumerable.
 
 
-10. REGULAR EXPRESSIONS & STRING UTILITIES
+10. REGULAR EXPRESSIONS & STRING UTILITIES [Importance: 6/10]
 --------------------------------------------------------------------------------
 * charAt(index):
   Returns the character at the specified index in a string.
@@ -653,7 +653,7 @@
     ```
 
 
-11. ADVANCED OPTIMIZATION TECHNIQUES
+11. ADVANCED OPTIMIZATION TECHNIQUES [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Memoization:
   An optimization technique that caches function computation results.
@@ -746,7 +746,7 @@
   - Use plain `Object` when keys are strings and you need JSON serialization.
 
 
-13. WEAKREF
+13. WEAKREF [Importance: 5/10]
 --------------------------------------------------------------------------------
 * `WeakRef`:
   Holds a weak reference to an object without preventing it from being garbage-collected.
@@ -765,7 +765,7 @@
   - Do not rely on `WeakRef` for critical program logic — GC timing is non-deterministic.
 
 
-14. PROXY & REFLECT
+14. PROXY & REFLECT [Importance: 7/10]
 --------------------------------------------------------------------------------
 * Proxy:
   Wraps an object and intercepts fundamental operations (get, set, delete, etc.) via traps.
@@ -798,7 +798,7 @@
   - Key insight: `Reflect` methods mirror Proxy traps 1-to-1, making them natural partners.
 
 
-15. MODERN ARRAY UTILITIES
+15. MODERN ARRAY UTILITIES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * `Array.at(index)`:
   Accepts positive and negative integers. Negative integers count back from the end.
@@ -826,7 +826,7 @@
   ```
 
 
-16. ES MODULES (ESM)
+16. ES MODULES (ESM) [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Named vs. Default Exports:
   ```javascript
@@ -861,7 +861,7 @@
   | Tree-shakeable     | Yes                     | No                             |
 
 
-17. ERROR HANDLING PATTERNS
+17. ERROR HANDLING PATTERNS [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Runtime Error Types:
   - `ReferenceError`: Accessed a non-existent variable.

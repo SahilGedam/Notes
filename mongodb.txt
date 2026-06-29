@@ -23,7 +23,7 @@ Consistency   | Strong Consistency (ACID)      | Eventual Consistency (BASE)
       documents grow unboundedly (exceeding MongoDB's 16MB document size limit).
 
 
-2. MONGODB AGGREGATION FRAMEWORK
+2. MONGODB AGGREGATION FRAMEWORK [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Definition:
   The aggregation framework processes documents in a multi-stage pipeline, transforming 
@@ -78,7 +78,7 @@ Consistency   | Strong Consistency (ACID)      | Eventual Consistency (BASE)
   ```
 
 
-3. MONGOOSE ODM (OBJECT DOCUMENT MAPPER)
+3. MONGOOSE ODM (OBJECT DOCUMENT MAPPER) [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Schemas & Models:
   Mongoose wraps MongoDB driver to enforce structured schemas, validation, and middleware.
@@ -121,7 +121,7 @@ Consistency   | Strong Consistency (ACID)      | Eventual Consistency (BASE)
   ```
 
 
-4. INDEXING, REPLICATION & SHARDING
+4. INDEXING, REPLICATION & SHARDING [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Indexing:
   Increases query read speeds by sorting fields in a B-Tree structure.

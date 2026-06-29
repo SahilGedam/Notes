@@ -2,7 +2,7 @@
                      FRONTEND DEVELOPER MASTER INTERVIEW NOTES
 ================================================================================
 
-1. BROWSER INTERNALS
+1. BROWSER INTERNALS [Importance: 8/10]
 --------------------------------------------------------------------------------
 * What Happens When You Type a URL in the Browser Address Bar?
   1. URL Parsing: The browser checks if the input is a search query or a valid URL.
@@ -55,7 +55,7 @@
     and repaint (like `transform` and `opacity` which only trigger Composite).
 
 
-2. JAVASCRIPT FUNDAMENTALS (INTERVIEW CORE)
+2. JAVASCRIPT FUNDAMENTALS (INTERVIEW CORE) [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Execution Context:
   An abstract environment where JavaScript code is evaluated and executed.
@@ -106,7 +106,7 @@
   - Memory leaks occur when references to unused objects are accidentally kept in active scopes.
 
 
-3. BROWSER APIs
+3. BROWSER APIs [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Web Storage Comparison:
   -----------------------------------------------------------------------------
@@ -141,7 +141,7 @@
     attribute updates, text changes). Runs as a microtask.
 
 
-4. NETWORK & WEB FUNDAMENTALS
+4. NETWORK & WEB FUNDAMENTALS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * HTTP vs. HTTPS:
   - HTTP: Transfers data in plain text (Port 80).
@@ -179,7 +179,7 @@
   Ideal for real-time applications (chat, stock feeds).
 
 
-5. BROWSER CACHING
+5. BROWSER CACHING [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Cache-Control Header:
   - `no-store`: Do not cache anything.
@@ -206,7 +206,7 @@
     Allows custom offline fallback strategies (e.g. Cache First, Network First, Stale-While-Revalidate).
 
 
-6. PERFORMANCE OPTIMIZATION
+6. PERFORMANCE OPTIMIZATION [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Bundle Optimization:
   - Lazy Loading: Deferring loading of non-critical components/assets until needed.
@@ -271,7 +271,7 @@
     Target: <= 0.1).
 
 
-7. FRONTEND DESIGN PATTERNS
+7. FRONTEND DESIGN PATTERNS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Event Delegation:
   Attaching one event handler to a parent to manage events on children (uses event bubbling).
@@ -301,7 +301,7 @@
   - Modern preference: Progressive Enhancement — better accessibility and resilience.
 
 
-8. SECURITY
+8. SECURITY [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Cross-Site Scripting (XSS):
   Injecting malicious scripts into trusted websites.
@@ -336,7 +336,7 @@
     `httpOnly` (prevents JS access), `Secure` (HTTPS only), and `SameSite` flags.
 
 
-9. ACCESSIBILITY (a11y)
+9. ACCESSIBILITY (a11y) [Importance: 7/10]
 --------------------------------------------------------------------------------
 * Semantic HTML:
   Using appropriate tag meanings (e.g. `<main>`, `<nav>`, `<button>`) instead of generic 
@@ -354,7 +354,7 @@
     trapping it, then returning focus to the trigger button upon closing).
 
 
-10. MODERN FRONTEND ARCHITECTURE
+10. MODERN FRONTEND ARCHITECTURE [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Rendering Architectures:
   - SPA (Single Page Application) / CSR (Client-Side Rendering): Browser downloads 
@@ -376,7 +376,7 @@
     deployable micro-applications compiled together at runtime.
 
 
-11. FRONTEND SYSTEM DESIGN
+11. FRONTEND SYSTEM DESIGN [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Designing an Infinite Scroll Feature:
   - Layout: Virtual Scroll Container to reuse DOM elements.
@@ -399,7 +399,7 @@
     see stale data.
   - Offline First: Read cache first, fallback to network. Ideal for unstable connections.
 
-12. CSS & STYLING
+12. CSS & STYLING [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Specificity:
   The weight applied to a given CSS declaration. The browser determines which styles 

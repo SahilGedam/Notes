@@ -2,7 +2,7 @@
                      JAVASCRIPT METHODS & PROPERTIES
 ================================================================================
 
-1. ARRAY METHODS & PROPERTIES
+1. ARRAY METHODS & PROPERTIES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Property:
   - `length`: Returns or sets the number of elements in an array.
@@ -59,7 +59,7 @@
   - `Array.of(...items)`: Creates an array from arguments.
 
 
-2. STRING METHODS & PROPERTIES
+2. STRING METHODS & PROPERTIES [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Property:
   - `length`: Returns the code unit length of the string.
@@ -87,7 +87,7 @@
   - `match(regex)` / `search(regex)`: Matches against regular expressions.
 
 
-3. OBJECT METHODS
+3. OBJECT METHODS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Static Management & Mutations:
   - `Object.assign(target, ...sources)`: Copies enumerable properties to target.
@@ -112,7 +112,7 @@
   ```
 
 
-4. NUMBER METHODS
+4. NUMBER METHODS [Importance: 6/10]
 --------------------------------------------------------------------------------
 * Formatting & Conversion:
   - `toFixed(digits)`: Formats number to fixed-point decimal notation string.
@@ -125,7 +125,7 @@
   - `Number.isFinite(value)`: Checks if value is a finite number.
 
 
-5. MATH METHODS
+5. MATH METHODS [Importance: 5/10]
 --------------------------------------------------------------------------------
 * Math Operations:
   - `Math.abs(x)`: Returns the absolute value of `x`.

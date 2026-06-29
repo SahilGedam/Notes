@@ -2,7 +2,7 @@
                             TESTING & QUALITY ASSURANCE NOTES
 ================================================================================
 
-1. TESTING TERMINOLOGY: MOCKS, SPIES, STUBS, & DUMMIES
+1. TESTING TERMINOLOGY: MOCKS, SPIES, STUBS, & DUMMIES [Importance: 9/10]
 --------------------------------------------------------------------------------
 - **Mock**: Objects pre-programmed with expectations which form a specification of the 
   calls they are expected to receive (behavior verification).
@@ -35,7 +35,7 @@
   ```
 
 
-3. ANGULAR TESTBED & COMPONENT FIXTURE
+3. ANGULAR TESTBED & COMPONENT FIXTURE [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Angular TestBed:
   The primary Angular testing utility. Configures and initializes an environment to instantiate 
@@ -82,7 +82,7 @@
   - `fixture.nativeElement`: Exposes the raw DOM element of the component for query selectors.
 
 
-4. END-TO-END (E2E) TESTING: CYPRESS & PLAYWRIGHT
+4. END-TO-END (E2E) TESTING: CYPRESS & PLAYWRIGHT [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 E2E testing automates browser actions to test the entire application flow from end to end.
 

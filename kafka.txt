@@ -14,7 +14,7 @@
     aggregation, and high-throughput messaging.
 
 
-2. CORE ARCHITECTURE & COMPONENTS
+2. CORE ARCHITECTURE & COMPONENTS [Importance: 9/10]
 --------------------------------------------------------------------------------
 - **Producer**: Client applications that publish (write) events/messages to Kafka topics.
 - **Consumer**: Client applications that subscribe to (read and process) events.
@@ -33,7 +33,7 @@
   - Scale out: To read a topic with 4 partitions, you can run up to 4 consumers in a group.
 
 
-3. OFFSET MANAGEMENT & COMMIT STRATEGIES
+3. OFFSET MANAGEMENT & COMMIT STRATEGIES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 Consumers track their read position in each partition using offsets. Once processed, the consumer 
 "commits" the offset back to Kafka (in the internal `__consumer_offsets` topic).
@@ -47,7 +47,7 @@ Consumers track their read position in each partition using offsets. Once proces
     - *Asynchronous (`commitAsync`)*: Non-blocking write. (Fast, risk of offset order mismatch).
 
 
-4. MESSAGE DELIVERY GUARANTEES
+4. MESSAGE DELIVERY GUARANTEES [Importance: 9/10]
 --------------------------------------------------------------------------------
 * At-least-once (Common default):
   - Messages are guaranteed to be delivered, but duplicates can occur if a consumer processes 
@@ -76,7 +76,7 @@ Operational   | Managing two separate systems   | Single unified Kafka architect
 --------------------------------------------------------------------------------
 
 
-6. PARTITIONING & LOG COMPACTION
+6. PARTITIONING & LOG COMPACTION [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Partitioning Strategy:
   - If a message has no Key, Kafka distributes messages round-robin or sticky-assigns them.

@@ -43,7 +43,7 @@
     `process.env.UV_THREADPOOL_SIZE = 64;` (must be set before loading native libraries).
 
 
-2. CORE MODULES & APIs
+2. CORE MODULES & APIs [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * File System (`fs`):
   Handles file read/write operations.
@@ -78,7 +78,7 @@
   ```
 
 
-3. BUFFERS & STREAMS
+3. BUFFERS & STREAMS [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Buffers:
   Objects representing a fixed-size chunk of raw binary data allocated outside the V8 heap.
@@ -130,7 +130,7 @@
   - `res.json()`: Formats object payloads to JSON and sets correct `Content-Type: application/json`.
 
 
-5. CONCURRENCY & PROCESS MANAGEMENT
+5. CONCURRENCY & PROCESS MANAGEMENT [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Scaling via Cluster Module:
   The `cluster` module allows running multiple instances of a Node.js process (one per CPU core) 
@@ -179,7 +179,7 @@
     ```
 ================================================================================
 
-7. DATABASE INTEGRATION & ORMs (SEQUELIZE)
+7. DATABASE INTEGRATION & ORMs (SEQUELIZE) [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Database Connectors, Query Builders, and ORMs:
   - Native Driver / Connector (e.g. `pg`, `mysql2`): Low-level clients. You write raw SQL strings. 

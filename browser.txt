@@ -2,7 +2,7 @@
                             BROWSER APIs & RUNTIME NOTES
 ================================================================================
 
-1. DOM, BOM, & DOM NAVIGATION
+1. DOM, BOM, & DOM NAVIGATION [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * DOM (Document Object Model):
   - Represents all page content as objects that can be dynamically modified.
@@ -59,7 +59,7 @@
   ```
 
 
-3. BROWSER EVENTS & PROPAGATION
+3. BROWSER EVENTS & PROPAGATION [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Browser Events:
   An event is a signal that something has occurred. All DOM nodes generate signals.
@@ -84,7 +84,7 @@
   - `event.stopPropagation()`: Stops the event bubble from moving further up the hierarchy.
 
 
-4. WINDOW POPUPS & CROSS-WINDOW COMMUNICATION
+4. WINDOW POPUPS & CROSS-WINDOW COMMUNICATION [Importance: 6.5/10]
 --------------------------------------------------------------------------------
 * Window Popups (`window.open`):
   - Syntax: `window.open(url, name, params)`
@@ -110,7 +110,7 @@
     ```
 
 
-5. BINARY DATA & FILE APIs
+5. BINARY DATA & FILE APIs [Importance: 6/10]
 --------------------------------------------------------------------------------
 * TextDecoder and TextEncoder:
   - `TextDecoder`: Decodes binary buffers into actual JavaScript strings.
@@ -162,7 +162,7 @@
     3. Data URL (Base64): `readAsDataURL(blob)`
 
 
-6. THE FETCH API
+6. THE FETCH API [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Fetch Syntax:
   - Enables asynchronous network requests ("AJAX").
@@ -222,7 +222,7 @@
     ```
 
 
-7. CROSS-ORIGIN RESOURCE SHARING (CORS)
+7. CROSS-ORIGIN RESOURCE SHARING (CORS) [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Definition:
   CORS is a browser security mechanism that restricts cross-origin HTTP requests.
@@ -244,7 +244,7 @@
   - The actual request is then sent.
 
 
-8. URL OBJECTS & XMLHTTPREQUEST
+8. URL OBJECTS & XMLHTTPREQUEST [Importance: 7/10]
 --------------------------------------------------------------------------------
 * URL Object:
   - Convenient parser for path strings.
@@ -257,7 +257,7 @@
     resumable file uploads by querying uploaded byte counts from servers.
 
 
-9. POLLING, WEBSOCKETS, & SERVER-SENT EVENTS
+9. POLLING, WEBSOCKETS, & SERVER-SENT EVENTS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Regular Polling:
   - Sending requests at fixed intervals (e.g. every 10s).
@@ -285,7 +285,7 @@
   - Offers automatic reconnect with retry timeout and `Last-Event-ID` tracking.
 
 
-10. CLIENT-SIDE STORAGE
+10. CLIENT-SIDE STORAGE [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Cookies (`document.cookie`):
   - Small strings stored in the browser. Size limit is 4KB per cookie.

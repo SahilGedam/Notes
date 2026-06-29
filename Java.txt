@@ -1,0 +1,653 @@
+================================================================================
+                               JAVA MASTER NOTES
+         (Full Interview Prep for Java & Angular Devs — 3 Yrs Exp)
+================================================================================
+
+1. JVM ARCHITECTURE, MEMORY MANAGEMENT & GARBAGE COLLECTION [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+* What is JVM (Java Virtual Machine)?
+  JVM is an abstract computing machine that provides a runtime environment in which 
+  Java bytecode (.class) is executed. It is platform-dependent (different JVMs are 
+  built for Windows, macOS, and Linux) but enables platform independence for Java code.
+
+* Compilation and Execution Flow:
+  Source Code (.java) -> Compiler (javac) -> Bytecode (.class) -> JVM Class Loader 
+  -> Execution Engine (Interpreter + JIT Compiler + Garbage Collector) -> Machine Code.
+
+* Class Loader Subsystem:
+  Responsible for loading, linking, and initializing class files.
+  - Loading: Three main ClassLoaders (Bootstrap -> Extension/Platform -> Application). 
+    Uses the Delegation Principle: a ClassLoader delegates loading requests to its 
+    parent before trying to load the class itself.
+  - Linking: Verification (ensures bytecode safety) -> Preparation (allocates memory for 
+    static fields and initializes them to default values) -> Resolution (replaces symbolic 
+    references with direct memory references).
+  - Initialization: Executes static blocks and assigns initial values to static variables.
+
+* JVM Memory Areas (Run-Time Data Areas):
+  1. Method Area / Metaspace: Stores class-level structure (metadata, runtime constant pool, 
+     field/method data, static variables). Shared across all threads.
+     - Metaspace (Java 8+): Replaced the PermGen (Permanent Generation). It resides in 
+       native memory (off-heap) and resizes dynamically, reducing OutOfMemoryError (OOM) risks.
+  2. Heap Area: Stores all objects, arrays, and instance variables. Shared across all threads. 
+     This is the primary target of Garbage Collection.
+  3. JVM Stack: Stores local variables, reference variables, and partial results. Per-thread 
+     memory. Each method call creates a new Frame, which is pushed onto the stack and popped 
+     when the method returns.
+  4. PC (Program Counter) Register: Stores the memory address of the JVM instruction currently 
+     being executed. Per-thread memory.
+  5. Native Method Stack: Stores execution context for native methods written in C/C++ (accessed 
+     via JNI - Java Native Interface). Per-thread memory.
+
+* Garbage Collection (GC) Internals:
+  Garbage Collection is the automatic process of reclaiming heap memory by destroying 
+  unreachable objects.
+  
+  - Generational Hypothesis: Most objects die young. Therefore, the heap is split into:
+    - Young Generation: Eden Space and two Survivor Spaces (S0/S1 or From/To).
+      - New objects are allocated in Eden.
+      - Minor GC: When Eden fills, active objects are moved to S0/S1. Objects surviving 
+        multiple Minor GCs are promoted to the Old Generation (controlled by tenure threshold).
+    - Old/Tenured Generation: Stores long-lived objects.
+      - Major/Full GC: Cleans the Old Generation. Slower and halts application execution.
+
+  - GC Collector Algorithms:
+    1. Serial GC: Single-threaded, freezes application (Stop-The-World - STW). For small apps.
+    2. Parallel GC: Multi-threaded Young Gen collector. High throughput, but has STW pauses.
+    3. G1 (Garbage-First) GC (Default in Java 9+): Divides heap into equal-sized regions. 
+       Maintains a list of regions containing the most garbage and cleans them first to minimize 
+       pause times. Good balance of throughput and latency.
+    4. ZGC (Z Garbage Collector) (Java 15+): Scalable low-latency garbage collector. 
+       Performs expensive work concurrently without stopping application threads (STW pauses 
+       under 1 millisecond).
+
+  - Garbage Collection Code Trigger:
+    ```java
+    System.gc(); // Suggests JVM run GC, but does not guarantee execution. (Rating: 3/10)
+    ```
+
+
+2. TYPE SYSTEM, MEMORY ALLOCATION & STRING POOL [Importance: 9/10]
+--------------------------------------------------------------------------------
+* Primitive Types vs. Reference Types:
+  - Primitives (byte, short, int, long, float, double, char, boolean): Stored directly on 
+    the Stack. Highly efficient. Do not have methods or represent null values.
+  - Reference Types (Objects, Arrays, Interface instances): Stored on the Heap. The variables 
+    on the stack store references (memory addresses) pointing to these objects.
+
+* Autoboxing & Unboxing:
+  - Autoboxing: Automatic conversion of primitives to wrapper class objects (e.g., `int` -> `Integer`).
+  - Unboxing: Automatic conversion of wrappers back to primitives.
+  - Performance Trap: Avoid using wrappers in performance-critical loops due to memory overhead 
+    and implicit object creation.
+    ```java
+    // Autoboxing/Unboxing Behind the Scenes:
+    Integer obj = 10;          // Compiles to: Integer.valueOf(10)
+    int prim = obj;            // Compiles to: obj.intValue()
+    ```
+
+* Integer Cache:
+  Java caches Integer objects in the range `-128` to `127` to optimize memory. Calling `Integer.valueOf(val)` 
+  returns the cached instance in this range.
+  ```java
+  Integer a = 100;
+  Integer b = 100;
+  System.out.println(a == b); // true (pointing to same cached object)
+
+  Integer c = 200;
+  Integer d = 200;
+  System.out.println(c == d); // false (outside cache, two distinct heap objects)
+  System.out.println(c.equals(d)); // true (compares values)
+  ```
+
+* String Constant Pool (SCP) & Immutability:
+  - SCP: A special memory region within the heap where the JVM stores string literals. 
+    Prevents redundant string allocations.
+  - String Immutability: Once created, a `String` object's character sequence cannot be changed. 
+    - Why immutable? Security (passwords/network details), Thread-safety, and caching in the SCP.
+  - String Allocation Code Examples:
+    ```java
+    String s1 = "Java"; // Created in SCP
+    String s2 = "Java"; // References existing string in SCP
+    System.out.println(s1 == s2); // true (same reference)
+
+    String s3 = new String("Java"); // Forces creation of a new object on Heap + check/create in SCP
+    System.out.println(s1 == s3); // false (different locations in heap/SCP)
+    
+    String s4 = s3.intern(); // Returns the canonical representation from SCP
+    System.out.println(s1 == s4); // true
+    ```
+
+* String vs. StringBuilder vs. StringBuffer:
+  - `String`: Immutable. Slow concatenation (creates new objects).
+  - `StringBuilder` (Java 5+): Mutable. Fast concatenation. Non-thread-safe.
+  - `StringBuffer`: Mutable. Thread-safe (methods are synchronized). Slower than StringBuilder.
+
+* Java is STRICTLY Pass-by-Value:
+  Java always passes parameters by copying the value of the variable.
+  - For primitives: The value itself is copied. Changes inside the method do not affect the caller.
+  - For objects: The reference (memory address) copy is passed. Modifying the properties of the 
+    object via the reference alters the original object. Reassigning the parameter variable inside 
+    the method only changes the local copy of the reference and has no effect on the caller.
+  ```java
+  public class PassByValueDemo {
+      public static void main(String[] args) {
+          int count = 10;
+          Person person = new Person("Sahil");
+
+          modify(count, person);
+          System.out.println(count);       // Outputs 10 (primitive value unchanged)
+          System.out.println(person.name); // Outputs "Alice" (object state mutated)
+      }
+
+      static void modify(int x, Person p) {
+          x = 20;               // Local modification only
+          p.setName("Alice");   // Mutates original heap object
+          p = new Person("Bob"); // Reassigns local parameter copy; caller still points to "Alice"
+      }
+  }
+  ```
+
+* var (Local Variable Type Inference - Java 10+):
+  Allows declaring local variables without explicitly specifying their types. The compiler infers 
+  the type based on the initializer value.
+  - Rules: Only allowed for local variables with initializers. NOT allowed for class fields, 
+    method parameter types, or return types.
+  ```java
+  var list = new ArrayList<String>(); // Inferred as ArrayList<String>
+  // var x; // Compile Error: Cannot use 'var' on variable without initializer
+  ```
+
+
+3. OBJECT-ORIENTED PROGRAMMING (OOP) DEEP DIVE [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+* Pillars of OOP:
+  1. Inheritance: Reuse of properties/methods of an existing class in a subclass.
+  2. Polymorphism: Ability of an object to take many forms.
+     - Compile-time (Static binding): Method Overloading (same name, different arguments).
+     - Runtime (Dynamic binding): Method Overriding (same signature in parent and child; resolved 
+       at runtime based on the actual object type in the heap).
+  3. Abstraction: Hiding implementation details and showing only functional behavior.
+  4. Encapsulation: Binding data (fields) and code (methods) together and restricting direct 
+     access (using private fields and public getters/setters).
+
+* Abstract Class vs. Interface:
+  - Abstract Class: Represents a "is-a" relationship. Can have instance variables, constructors, 
+    non-abstract methods, and private members. A class can extend only one abstract class.
+  - Interface: Represents a "can-do" behavior contract. Historically had only abstract methods.
+    Since Java 8: Default methods, static methods.
+    Since Java 9: Private methods.
+    Does not have constructors or instance fields (only `public static final` constants). A class 
+    can implement multiple interfaces.
+
+* Interface Default, Static, & Private Methods:
+  - Default Methods (`default`): Allow adding new methods to interfaces without breaking implementing classes.
+  - Static Methods (`static`): Utility methods bound to the interface class, not implementing objects.
+  - Private Methods (`private`): Shared utility logic encapsulated within the interface class for use 
+    by default/private methods.
+  ```java
+  interface MyInterface {
+      void abstractMethod();
+
+      default void defaultMethod() {
+          log("Calling default method");
+      }
+
+      static void staticMethod() {
+          System.out.println("Static utility");
+      }
+
+      private void log(String message) { // Encapsulated helper
+          System.out.println("LOG: " + message);
+      }
+  }
+  ```
+
+* The Diamond Problem and Resolution:
+  Multiple inheritance of state is prohibited in Java. Multiple inheritance of behavior via default 
+  methods can lead to naming conflicts (Diamond Problem). If a class implements two interfaces 
+  containing the same default method signature, it must override the method explicitly to resolve the ambiguity.
+  ```java
+  interface A {
+      default void show() { System.out.println("A"); }
+  }
+  interface B {
+      default void show() { System.out.println("B"); }
+  }
+  class C implements A, B {
+      @Override
+      public void show() {
+          A.super.show(); // Resolves ambiguity by choosing A's implementation explicitly
+      }
+  }
+  ```
+
+* Composition vs. Inheritance:
+  - Inheritance: Represents a tight-coupling "is-a" relationship. Subclass behavior is dependent 
+    on parent code details, violating encapsulation.
+  - Composition: Represents a loose-coupling "has-a" relationship. Objects reference instances 
+    of other classes to borrow behaviors. Flexible and easy to swap implementations at runtime.
+  - Rule of Thumb: Prefer composition over inheritance.
+
+* SOLID Principles Overview:
+  - Single Responsibility Principle (SRP): A class should have only one reason to change.
+  - Open/Closed Principle (OCP): Classes should be open for extension but closed for modification.
+  - Liskov Substitution Principle (LSP): Subclasses must be substitutable for their superclasses.
+  - Interface Segregation Principle (ISP): Clients should not be forced to depend on interfaces they do not use.
+  - Dependency Inversion Principle (DIP): High-level modules should depend on abstractions, not concretions.
+
+
+4. EXCEPTION HANDLING [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+* Throwable Hierarchy:
+  - `Throwable` is the root class of all exceptions.
+    - `Error`: Serious system-level problems (e.g., `OutOfMemoryError`, `StackOverflowError`). 
+      Applications should not attempt to catch these.
+    - `Exception`: Application-level issues.
+      - Checked Exceptions (Compile-time): Subclasses of `Exception` excluding `RuntimeException` 
+        (e.g., `IOException`, `SQLException`). Must be declared in the method signature (`throws`) 
+        or handled using a `try-catch` block.
+      - Unchecked Exceptions (Runtime): Subclasses of `RuntimeException` (e.g., `NullPointerException`, 
+        `ArithmeticException`). Generally indicate programming errors and do not require compilation checks.
+
+* Try-Catch-Finally Execution Flow:
+  - `finally` block always executes after `try`/`catch` blocks, regardless of whether an exception 
+    is thrown or caught.
+  - Under what conditions will `finally` NOT execute?
+    - If `System.exit(0)` is called.
+    - JVM crashes or OS-level terminal kill.
+    - Infinite loops or resource lockups in `try`/`catch` blocks.
+  - Return Statement Trap: If a `return` statement is present in both `try`/`catch` and the `finally` 
+    block, the value in `finally` overrides the others.
+
+* Try-with-Resources (Java 7+):
+  Automatically closes resource objects that implement `java.lang.AutoCloseable` or `java.io.Closeable` 
+  at the end of the statement, eliminating boilerplates of manual resource cleanup in `finally` blocks.
+  ```java
+  // Traditional resource cleanup is error-prone.
+  // Modern Try-with-Resources implementation:
+  try (BufferedReader br = new BufferedReader(new FileReader("notes.txt"))) {
+      System.out.println(br.readLine());
+  } catch (IOException e) {
+      e.printStackTrace();
+  } // BufferedReader is closed automatically here, even if reading throws an exception.
+  ```
+
+
+5. JAVA COLLECTIONS FRAMEWORK INTERNALS [Importance: 10/10]
+--------------------------------------------------------------------------------
+* HashMap Internals:
+  A HashMap stores key-value pairs based on hashing algorithms.
+  - Core Structure: An array of Nodes (buckets).
+    ```java
+    static class Node<K,V> implements Map.Entry<K,V> {
+        final int hash;
+        final K key;
+        V value;
+        Node<K,V> next;
+    }
+    ```
+  - Put Operation Lifecycle:
+    1. Generates hash code for the key: `hash = key.hashCode()`.
+    2. Calculates target bucket index: `index = hash & (n - 1)` (where `n` is bucket array capacity).
+    3. If bucket is empty, creates a Node and inserts it.
+    4. Collision Resolution: If a collision occurs (multiple keys map to the same bucket index):
+       - Prior to Java 8: Nodes are appended to a singly-linked list.
+       - Java 8 Improvement (Treeify): If the linked list length exceeds `8` (`TREEIFY_THRESHOLD`) 
+         and total map capacity is at least `64`, the linked list is converted into a Self-Balancing 
+         Red-Black Tree. This improves lookup performance from $O(N)$ to $O(\log N)$ in high collision scenarios.
+  - Resizing & Load Factor:
+    - Default Initial Capacity: `16`.
+    - Default Load Factor: `0.75` (resizes when $16 \times 0.75 = 12$ entries are added).
+    - Capacity always doubles to ensure power-of-two capacity sizing, which speeds up indexing math.
+
+* ConcurrentHashMap Internals:
+  Designed for thread-safe concurrent operations without locking the entire map.
+  - Prior to Java 8 (Segment Locking): Lock divisions (Segments) partitioned the map. Threads 
+    acquired locks on individual segments, allowing parallel writes across different partitions.
+  - Java 8+ (Fine-Grained Bucket Level Synchronization):
+    - Uses Compare-And-Swap (CAS) operations to insert nodes into empty buckets without locking.
+    - If a bucket is not empty, it synchronizes (locks) only the first node of the bucket. Other 
+      buckets remain accessible for concurrent writes.
+    - No read-lock overhead (read operations are non-blocking via volatile variables).
+
+* Fail-Fast vs. Fail-Safe Iterators:
+  - Fail-Fast (e.g., `ArrayList`, `HashSet` iterators):
+    - Read directly from the underlying collection.
+    - Throws `ConcurrentModificationException` immediately if the collection is structurally modified 
+      (add/remove operations) during iteration.
+    - Tracks changes using a modification counter (`modCount`).
+  - Fail-Safe / Weakly Consistent (e.g., `CopyOnWriteArrayList`, `ConcurrentHashMap` iterators):
+    - Iterate over a copy of the collection or reference a weakly consistent view of the structure.
+    - Do not throw `ConcurrentModificationException` when modifications occur during iteration.
+
+* ArrayList Resizing Mechanism:
+  - Backed by a dynamic array.
+  - Default Initial Capacity: `10` (allocated on first element insertion).
+  - Resizing rule: When full, a new array is allocated with $1.5\times$ capacity (`oldCapacity + (oldCapacity >> 1)`), 
+    and elements are copied over using `System.arraycopy()`.
+
+
+6. JAVA 8+ FUNCTIONAL PROGRAMMING [Importance: 10/10]
+--------------------------------------------------------------------------------
+* Lambda Expressions:
+  Provide a clean and concise syntax to represent instance implementations of single abstract method 
+  interfaces (Functional Interfaces). Enables passing behavior as method parameters.
+
+* Functional Interfaces (`@FunctionalInterface`):
+  Interfaces containing exactly one abstract method. Can have any number of default and static methods.
+  - Core Built-in Functional Interfaces:
+    1. `Predicate<T>`: Evaluates a value and returns a boolean.
+       `test(T t)`
+    2. `Function<T, R>`: Transforms an input type to an output type.
+       `apply(T t)`
+    3. `Consumer<T>`: Consumes a value without returning results.
+       `accept(T t)`
+    4. `Supplier<T>`: Returns a value without accepting parameters.
+       `get()`
+    5. `BiFunction<T, U, R>`: Transforms two inputs into an output.
+       `apply(T t, U u)`
+
+* Stream API Internals:
+  A sequence of elements supporting sequential and parallel aggregate processing pipelines. Streams 
+  do not store data; they pull elements from a source (Collection, Array) through a pipeline.
+  - Pipeline Structure:
+    1. Source Configuration.
+    2. Intermediate Operations (Lazy): Operations that return a new Stream. They are not executed 
+       until a terminal operation is called. They build a pipeline of execution steps.
+       - Examples: `filter()`, `map()`, `flatMap()`, `sorted()`, `distinct()`, `peek()`.
+    3. Terminal Operations (Eager): Operations that trigger execution of the stream pipeline and 
+       produce concrete results (Collection, primitive, or side effect). Consumes the stream.
+       - Examples: `collect()`, `forEach()`, `reduce()`, `count()`, `findFirst()`, `anyMatch()`.
+
+* Stream API Code Examples:
+  ```java
+  List<String> names = Arrays.asList("Sahil", "Amit", "Aman", "Rahul");
+
+  // Filter names starting with 'A', transform to uppercase, and collect in a list:
+  List<String> processed = names.stream()
+      .filter(name -> name.startsWith("A")) // Intermediate (Lazy)
+      .map(String::toUpperCase)              // Intermediate (Lazy) - Method Reference usage
+      .collect(Collectors.toList());        // Terminal (Eager)
+
+  System.out.println(processed); // [AMIT, AMAN]
+  ```
+
+* map() vs. flatMap():
+  - `map()`: Transforms each element into another object. Used for 1-to-1 transformations.
+  - `flatMap()`: Flattens nested streams (e.g. `Stream<List<T>>` -> `Stream<T>`). Used for 
+    1-to-many transformations.
+  ```java
+  // flatMap Example:
+  List<List<String>> nested = Arrays.asList(
+      Arrays.asList("A", "B"),
+      Arrays.asList("C", "D")
+  );
+  List<String> flattened = nested.stream()
+      .flatMap(Collection::stream) // Flattens lists into a single stream
+      .collect(Collectors.toList()); // [A, B, C, D]
+  ```
+
+* Optional Class:
+  A container object which may or may not contain a non-null value. Introduced to avoid null checks 
+  and prevent `NullPointerException` (NPE) bugs.
+  - Creation API: `Optional.of(val)` (throws NPE if null), `Optional.ofNullable(val)` (safe for nulls), 
+    `Optional.empty()`.
+  - Fetching API: `orElse(fallback)` (evaluates fallback eagerly), `orElseGet(() -> fallback)` (evaluates fallback lazily).
+  ```java
+  Optional<String> optional = Optional.ofNullable(null);
+  String result = optional.orElseGet(() -> "Default Value");
+  ```
+
+
+7. MULTITHREADING, CONCURRENCY & EXECUTORS [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+* Thread Creation:
+  - Extending `Thread` class.
+  - Implementing `Runnable` interface (recommended, since Java supports single inheritance of classes).
+  - Implementing `Callable` interface (can return a result and throw checked exceptions; run via executor).
+
+* Thread Lifecycle States:
+  `New` -> `Runnable` (ready to run/running) -> `Blocked` (waiting for monitor lock) 
+  -> `Waiting` (waiting indefinitely for another thread's signal) 
+  -> `Timed_Waiting` (waiting for a specified duration) -> `Terminated` (execution finished).
+
+* Synchronization & Locks:
+  - `synchronized` Keyword: Acquires an intrinsic lock (monitor) on a method or code block. 
+    Prevents thread interference and guarantees mutual exclusion.
+    - Class Lock (Static synchronized): Locks the static class definition.
+    - Object Lock (Instance synchronized): Locks the specific object instance.
+  - ReentrantLock: A more flexible alternative to `synchronized`. Offers timeouts, lock polling, 
+    and fair scheduling locks.
+
+* Volatile Keyword:
+  Guarantees visibility of variable changes across multiple threads.
+  - Threads cache variables in local CPU registries for performance. Marking a variable as `volatile` 
+    forces the JVM to read and write its value directly from/to Main Memory, bypassing thread caches.
+  - Note: `volatile` does NOT guarantee atomicity (e.g., `count++` is not safe; use atomic wrappers like `AtomicInteger`).
+
+* ThreadLocal Class:
+  Provides thread-local variables. Each thread accessing a `ThreadLocal` gets its own independently 
+  initialized copy of the variable.
+  - Useful for storing execution context (e.g., User Sessions, Database Transaction IDs).
+  - CRITICAL WARNING: Memory leaks can occur in thread-pool environments if `remove()` is not called 
+    explicitly in a `finally` block. Because pool threads are reused, the ThreadLocal reference is 
+    not garbage-collected automatically.
+
+* Executor Framework & Thread Pools:
+  Manages worker threads, avoiding overhead from manually instantiating threads for every job.
+  - Core Thread Pools (`Executors` factories):
+    - `newFixedThreadPool(n)`: Limits pool capacity to a fixed number of threads. Unbound task queue.
+    - `newCachedThreadPool()`: Creates threads as needed and reclaims idle threads. Good for short, asynchronous tasks.
+    - `newSingleThreadExecutor()`: Single worker thread. Guarantees sequential task execution.
+    - `newScheduledThreadPool(n)`: Executes commands after a delay or periodically.
+  - Core Pool Internals (`ThreadPoolExecutor`):
+    Configure properties: `corePoolSize`, `maximumPoolSize`, `keepAliveTime`, and `workQueue` (BlockingQueue).
+
+* CompletableFuture (Java 8+):
+  A Future that supports manual completion, pipeline chaining, and execution callbacks. Resolves 
+  callback hell in asynchronous programming.
+  ```java
+  CompletableFuture.supplyAsync(() -> "Data fetched")
+      .thenApply(data -> data + " & Processed")
+      .thenAccept(System.out::println); // Executed asynchronously
+  ```
+
+* Virtual Threads (Java 21 Project Loom):
+  Lightweight threads managed by the JVM instead of the operating system.
+  - Traditional Platform Threads map 1-to-1 to OS threads, which are expensive to create and store.
+  - Virtual Threads are mapped many-to-one to platform carrier threads. They are cheap to create 
+    (millions can run concurrently). When a virtual thread performs blocking I/O, the JVM yields 
+    its carrier thread for other work, maximizing server hardware utilization.
+  ```java
+  // Creating a Virtual Thread:
+  Thread vThread = Thread.ofVirtual().start(() -> {
+      System.out.println("Running on virtual thread: " + Thread.currentThread().isVirtual());
+  });
+  ```
+
+
+8. MODERN JAVA FEATURES (JAVA 9 - 21) [Importance: 9/10]
+--------------------------------------------------------------------------------
+* Records (Java 14 Preview, 16 Stable):
+  Immutable data transfer classes that automatically generate constructor, getters, `equals()`, 
+  `hashCode()`, and `toString()`. Removes boilerplate code.
+  ```java
+  public record UserDto(String username, String email) {}
+  // Usage:
+  UserDto user = new UserDto("sahil", "sahil@example.com");
+  System.out.println(user.username()); // Getter (Note: no 'get' prefix)
+  ```
+
+* Sealed Classes & Interfaces (Java 17):
+  Restrict which other classes or interfaces can extend or implement them.
+  ```java
+  public sealed class Shape permits Circle, Square {}
+  public final class Circle extends Shape {}
+  public final class Square extends Shape {}
+  ```
+
+* Pattern Matching for switch (Java 21):
+  Extends switch statements and expressions to work with arbitrary types and perform 
+  type pattern matching directly.
+  ```java
+  static String formatterPatternSwitch(Object obj) {
+      return switch (obj) {
+          case Integer i -> String.format("int %d", i);
+          case Long l    -> String.format("long %d", l);
+          case Double d  -> String.format("double %f", d);
+          case String s  -> String.format("String %s", s);
+          default        -> obj.toString();
+      };
+  }
+  ```
+
+* Text Blocks (Java 15):
+  Allows writing multiline strings without string concatenation or escape characters.
+  ```java
+  String json = """
+      {
+          "name": "Sahil",
+          "role": "Developer"
+      }
+      """;
+  ```
+
+
+9. CORE JAVA ANNOTATIONS & RATINGS [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+* `@Override` [Interview Importance Rating: 10/10]
+  - Type: Compile-time check.
+  - Purpose: Indicates that a method overrides a method declared in a superclass or interface. 
+    Prevents spelling mistakes and signature mismatch errors.
+
+* `@Deprecated` [Interview Importance Rating: 6/10]
+  - Type: Marker annotation.
+  - Purpose: Warns developers that the annotated element is outdated and may be removed in future 
+    versions. Suggests alternatives.
+
+* `@SuppressWarnings` [Interview Importance Rating: 6/10]
+  - Type: Parameterized compiler directive.
+  - Purpose: Suppresses compiler warnings specified by the argument values (e.g., `@SuppressWarnings("unchecked")`).
+
+* `@FunctionalInterface` [Interview Importance Rating: 9/10]
+  - Type: Compile-time check.
+  - Purpose: Explicitly flags an interface as functional (having exactly one abstract method). 
+    If a second abstract method is added, the compiler throws an error.
+
+* `@SafeVarargs` [Interview Importance Rating: 5/10]
+  - Type: Compiler directive.
+  - Purpose: Asserts that a method's varargs parameter does not perform unsafe operations on generic types, 
+    suppressing warnings about heap pollution. Must be applied only to static, final, or private methods.
+
+* `@Retention` [Interview Importance Rating: 8/10]
+  - Type: Meta-annotation.
+  - Purpose: Specifies how long the custom annotation type should be retained.
+    - `RetentionPolicy.SOURCE`: Discarded by compiler (e.g. `@Override`).
+    - `RetentionPolicy.CLASS`: Recorded in class file, ignored by JVM.
+    - `RetentionPolicy.RUNTIME`: Retained by JVM at runtime; accessible via Reflection.
+
+* `@Target` [Interview Importance Rating: 8/10]
+  - Type: Meta-annotation.
+  - Purpose: Specifies the syntactic elements of Java programs that a custom annotation can be applied to 
+    (e.g., `ElementType.METHOD`, `ElementType.FIELD`, `ElementType.TYPE`).
+
+* `@Inherited` [Interview Importance Rating: 5/10]
+  - Type: Meta-annotation.
+  - Purpose: Indicates that an annotation type is automatically inherited by subclasses of the annotated class.
+
+* `@Documented` [Interview Importance Rating: 4/10]
+  - Type: Meta-annotation.
+  - Purpose: Indicates that the custom annotation should be documented by Javadoc or similar generation tools.
+
+* `@Repeatable` [Interview Importance Rating: 6/10]
+  - Type: Meta-annotation (Java 8+).
+  - Purpose: Permits applying the same annotation multiple times to a single declaration.
+
+* `@Resource` [Interview Importance Rating: 9/10]
+  - Type: Dependency Injection (JSR-250 standard).
+  - Purpose: Injects dependencies by Name first. If no matching name is found, it falls back to Type. 
+    (Frequently compared in interviews: `@Autowired` resolves by Type first, whereas `@Resource` resolves by Name first).
+
+* `@Inject` [Interview Importance Rating: 8.5/10]
+  - Type: Dependency Injection (JSR-330 standard).
+  - Purpose: Standard Java dependency injection annotation, equivalent to Spring's `@Autowired` (resolves by Type first). 
+    Requires `jakarta.inject` or `javax.inject` package dependencies.
+
+
+10. FREQUENTLY ASKED INTERVIEW QUESTIONS [Importance: 10/10]
+--------------------------------------------------------------------------------
+* Q1: How does HashMap handle collisions under the hood, and what changed in Java 8?
+  - A: In Java, HashMap resolves collisions using chaining. When two keys map to the same bucket index:
+    - Prior to Java 8: They were stored in a singly-linked list. Lookup was $O(N)$ in the worst case.
+    - Java 8+: If the bucket's linked list length exceeds `8` (`TREEIFY_THRESHOLD`) AND the map's capacity 
+      is at least `64`, the list is converted to a Self-Balancing Red-Black Tree. This guarantees a worst-case 
+      lookup complexity of $O(\log N)$. If the node count drops to `6` during resizing, it converts back to a linked list.
+
+* Q2: Explain the differences between fail-fast and fail-safe iterators.
+  - A: 
+    - Fail-Fast Iterators (e.g., `ArrayList`, `HashMap` iterators): Operate directly on the original collection. 
+      They track structural changes via a `modCount` variable. If the collection is structurally modified 
+      (elements added/removed) during iteration by another thread or directly on the map, it throws a 
+      `ConcurrentModificationException` immediately.
+    - Fail-Safe/Weakly Consistent Iterators (e.g., `CopyOnWriteArrayList`, `ConcurrentHashMap` iterators): 
+      Operate on a cloned copy or a weakly consistent view of the collection. They do not throw exceptions 
+      on modifications, but might not reflect changes made during iteration.
+
+* Q3: Is Java strictly pass-by-value or pass-by-reference? Prove it.
+  - A: Java is 100% pass-by-value. It passes the value of the variable, not the reference.
+    - For primitives: The literal value is copied.
+    - For objects: The value of the reference variable (the memory address) is copied.
+    - Proof: If you pass an object to a method and assign a new object inside it (`obj = new Object()`), 
+      the caller's reference does not change. If it were pass-by-reference, the caller's reference would point to the new object.
+
+* Q4: Why are String objects immutable in Java?
+  - A:
+    1. String Constant Pool (SCP): If strings were mutable, changing a string value for one reference would 
+       silently modify it for other references sharing the same literal space in the pool.
+    2. Security: Strings are widely used as database URLs, usernames, file paths, and passwords. Mutability 
+       could lead to security vulnerabilities where parameters are altered mid-operation.
+    3. Thread-safety: Immutability automatically makes String instances thread-safe.
+    4. Caching HashCode: The hash code of a String is cached upon creation, making it highly efficient when used as a key in a HashMap.
+
+* Q5: What are Virtual Threads (Java 21) and how do they differ from Platform Threads?
+  - A:
+    - Platform Threads: Map 1-to-1 to operating system (OS) threads. They are resource-heavy, expensive to create, 
+      and limited in number (usually a few thousands).
+    - Virtual Threads: Lightweight threads managed by the JVM (Project Loom). Millions of virtual threads can be active 
+      simultaneously. They run on top of platform threads (carrier threads). When a virtual thread performs a blocking I/O 
+      operation, it releases its carrier thread to run other virtual threads. This maximizes resource utilization for 
+      I/O-heavy applications.
+
+* Q6: What is the purpose of the `volatile` keyword in Java?
+  - A: The `volatile` keyword guarantees visibility and prevents instruction reordering for a variable across multiple threads.
+    - Visibility: When one thread modifies a `volatile` variable, the change is immediately flushed to main memory.
+    - Consistency: All other threads reading that variable will see the latest value (not a stale value from their CPU cache).
+    - Limitation: `volatile` does not provide atomicity for compound operations (e.g., `volatile int x = x + 1` is still not atomic). For atomic operations, use `java.util.concurrent.atomic` classes.
+
+* Q7: When would you use `HashMap` vs. `ConcurrentHashMap`?
+  - A:
+    - `HashMap`: Use in single-threaded environments or when thread-safety is handled externally. It is faster due to less overhead.
+    - `ConcurrentHashMap`: Use in multi-threaded environments where multiple threads access the map concurrently. It uses fine-grained locking (segmented locking or lock striping) to provide thread-safety without locking the entire map, offering much better performance than `Collections.synchronizedMap(new HashMap<>())`.
+
+* Q8: Explain the difference between `synchronized` methods and `ReentrantLock`.
+  - A: Both provide mutual exclusion, but `ReentrantLock` is more flexible:
+    - `synchronized`: Implicit locking/unlocking managed by the JVM (easier to use, but less control).
+    - `ReentrantLock`: Explicit locking (`lock()`/`unlock()`).
+      - Offers try-locking (`tryLock()`), which returns `false` instead of blocking if the lock is held by another thread.
+      - Supports timeouts for acquiring locks.
+      - Can be fair (FIFO order) or unfair (barging/starvation possible).
+      - Allows interruptible waiting.
+    - Caveat: With `ReentrantLock`, you MUST release the lock in a `finally` block to prevent deadlocks.
+
+* Q9: What is "String Interning" in Java?
+  - A: String Interning is an optimization technique where the Java runtime maintains a special pool (String Constant Pool or SCP) of String literals. When a new String object is created, the runtime checks if an equivalent String already exists in the pool. If so, it returns a reference to the existing pool object instead of creating a new one.
+    - Literal Creation: `String s = "hello";` (interned by default).
+    - Explicit Interning: `String s = new String("hello").intern();` (forces the JVM to check the pool).
+
+* Q10: Can you explain the `hashCode()` and `equals()` contract?
+  - A: If two objects are equal (i.e., `obj1.equals(obj2)` returns true), then their hash codes MUST be equal (`obj1.hashCode() == obj2.hashCode()`). The reverse is not necessarily true.
+    - Rule 1: If `equals()` is modified, `hashCode()` MUST also be modified.
+    - Rule 2: If `equals()` is not used, `hashCode()` is not needed.
+    - Rule 3: Two objects with the same hash code do not need to be equal.
+    - Implementation Tip: Use `Objects.hash(field1, field2, ...)` to generate consistent hash codes.

@@ -2,7 +2,7 @@
                            ANGULAR MASTER NOTES (v2 to v20)
 ================================================================================
 
-1. ANGULAR BASICS & ARCHITECTURE
+1. ANGULAR BASICS & ARCHITECTURE [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * What is Angular?
   Angular is an open-source, front-end web framework developed and maintained by 
@@ -51,7 +51,7 @@
   ```
 
 
-2. DIRECTIVES & PIPES
+2. DIRECTIVES & PIPES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Directives:
   Directives are classes that add custom behavior to elements in the DOM.
@@ -139,7 +139,7 @@
     expensive).
 
 
-3. DATA BINDING & COMPONENT COMMUNICATION
+3. DATA BINDING & COMPONENT COMMUNICATION [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Data Binding Types:
   - String Interpolation (`{{ value }}`): One-way from Component to View.
@@ -205,7 +205,7 @@
     slot matching.
 
 
-4. LIFECYCLE HOOKS
+4. LIFECYCLE HOOKS [Importance: 9/10]
 --------------------------------------------------------------------------------
 * When a component is created, Angular runs it through a series of lifecycle phases:
 
@@ -283,7 +283,7 @@
     as inputs are not yet available in the constructor.
 
 
-5. CHANGE DETECTION & PERFORMANCE OPTIMIZATION
+5. CHANGE DETECTION & PERFORMANCE OPTIMIZATION [Importance: 10/10]
 --------------------------------------------------------------------------------
 * Change Detection Strategies:
   1. Default Strategy: Angular checks every component in the tree from top to bottom 
@@ -373,7 +373,7 @@
      ```
 
 
-6. ROUTING & NAVIGATION
+6. ROUTING & NAVIGATION [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Routing Setup:
   ```typescript
@@ -458,7 +458,7 @@
     ```
 
 
-7. DEPENDENCY INJECTION (DI)
+7. DEPENDENCY INJECTION (DI) [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * DI Pattern:
   Angular uses dependency injection to supply components, directives, and services 
@@ -478,7 +478,7 @@
      ```
 
 
-8. HTTP CLIENT & ERROR HANDLING
+8. HTTP CLIENT & ERROR HANDLING [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * HttpClient:
   The reactive HTTP client from `@angular/common/http` that wraps request APIs and 
@@ -521,7 +521,7 @@
        ```
 
 
-9. FORMS IN ANGULAR
+9. FORMS IN ANGULAR [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Reactive Forms:
   Model-driven forms where the form structure is built in TypeScript and mapped to the template.
@@ -602,7 +602,7 @@
   ```
 
 
-10. RxJS & REACTIVE PROGRAMMING
+10. RxJS & REACTIVE PROGRAMMING [Importance: 10/10]
 --------------------------------------------------------------------------------
 * Promises vs. Observables:
   - Promise: Emits a single value, execution starts immediately (not lazy), 
@@ -656,7 +656,7 @@
   4. `AsyncPipe` in templates: Handles subscription and unsubscription automatically.
 
 
-11. CODE SPLITTING & LAZY LOADING
+11. CODE SPLITTING & LAZY LOADING [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Code Splitting:
   Dividing JavaScript code into smaller chunks (modules/components) so that the 
@@ -725,7 +725,7 @@
      ```
 
 
-12. MODERN ANGULAR (v16 - v20) ADDITIONS
+12. MODERN ANGULAR (v16 - v20) ADDITIONS [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Angular Signals:
   A fine-grained reactivity system introduced in v16. Updates only the specific DOM 
@@ -877,7 +877,7 @@
   ```
 
 
-13. DIRECTIVES — ADVANCED FEATURES
+13. DIRECTIVES — ADVANCED FEATURES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * `HostListener` & `HostBinding`:
   Used inside a directive or component to listen to host element events or bind

@@ -26,7 +26,7 @@
   - Complex side-effects (e.g. concurrent HTTP fetching, polling, web sockets).
 
 
-2. CORE NGRX PILLARS
+2. CORE NGRX PILLARS [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Actions:
   Plain objects that express an *event* or a request to change state.
@@ -52,7 +52,7 @@
   by listening for specific actions, running logic, and dispatching a new action with the result.
 
 
-3. KEY DEVELOPMENT RULES
+3. KEY DEVELOPMENT RULES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 - Reducers must be pure: Never call asynchronous APIs or mutate state inputs in a reducer.
 - Descriptiveness: Action names should clearly specify the source context (e.g. `[Page Name] Event`).
@@ -60,7 +60,7 @@
 - State is immutable: Use array/object spreads (`[...arr]`, `{ ...obj }`) when returning new states.
 
 
-4. COMPLETE EXAMPLE: SYNC COUNTER (STORE & SELECTORS)
+4. COMPLETE EXAMPLE: SYNC COUNTER (STORE & SELECTORS) [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Actions (`counter.actions.ts`):
   ```typescript
@@ -141,7 +141,7 @@
   ```
 
 
-5. COMPLETE EXAMPLE: ASYNC DATA FETCHING (EFFECTS)
+5. COMPLETE EXAMPLE: ASYNC DATA FETCHING (EFFECTS) [Importance: 9/10]
 --------------------------------------------------------------------------------
 * User Actions (`user.actions.ts`):
   ```typescript
@@ -193,7 +193,7 @@
   ```
 
 
-6. NGRX STORE & EFFECTS REGISTRATION (STANDALONE)
+6. NGRX STORE & EFFECTS REGISTRATION (STANDALONE) [Importance: 9/10]
 --------------------------------------------------------------------------------
 Configure and bootstrap NgRx state services inside your application configuration:
 ```typescript

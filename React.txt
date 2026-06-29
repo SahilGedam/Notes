@@ -2,7 +2,7 @@
                             REACT MASTER NOTES
 ================================================================================
 
-1. REACT BASICS & VIRTUAL DOM ARCHITECTURE
+1. REACT BASICS & VIRTUAL DOM ARCHITECTURE [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * What is React?
   React is an open-source, component-based front-end JavaScript library developed by 
@@ -26,7 +26,7 @@
   with the app. This avoids reloading entire web pages, yielding desktop-like performance.
 
 
-2. COMPONENTS & JSX SYNTAX
+2. COMPONENTS & JSX SYNTAX [Importance: 7/10]
 --------------------------------------------------------------------------------
 * JSX (JavaScript XML):
   JSX is a syntax extension for JavaScript that looks like HTML. It allows developers 
@@ -59,7 +59,7 @@
   ```
 
 
-3. LIFECYCLE HOOKS & SIDE EFFECTS (useEffect)
+3. LIFECYCLE HOOKS & SIDE EFFECTS (useEffect) [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Side Effects:
   Operations that interact with the outside world (e.g. data fetching, DOM manipulation, 
@@ -104,7 +104,7 @@
   to prevent visual flickers.
 
 
-4. STATE MANAGEMENT & HOOKS
+4. STATE MANAGEMENT & HOOKS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * `useState`:
   Declares a state variable inside functional components.
@@ -140,7 +140,7 @@
   ```
 
 
-5. COMPONENT COMMUNICATION
+5. COMPONENT COMMUNICATION [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Data Flow:
   Data always flows unidirectionally from parent to child (via `props`).
@@ -174,7 +174,7 @@
   ```
 
 
-6. CONTEXT API & GLOBAL STATE
+6. CONTEXT API & GLOBAL STATE [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Context API:
   Enables sharing state globally across components without manual "prop-drilling" through 
@@ -192,7 +192,7 @@
     unnecessary re-renders on components.
 
 
-7. FORMS IN REACT
+7. FORMS IN REACT [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Controlled Components:
   Form input values are driven strictly by React state.
@@ -212,7 +212,7 @@
   ```
 
 
-8. PERFORMANCE OPTIMIZATION
+8. PERFORMANCE OPTIMIZATION [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * `React.memo`:
   A higher-order component that shallowly compares props and skips re-rendering if props 
@@ -236,7 +236,7 @@
   when handling thousands of list rows (using libraries like `react-window`).
 
 
-9. ROUTING (REACT ROUTER)
+9. ROUTING (REACT ROUTER) [Importance: 7/10]
 --------------------------------------------------------------------------------
 * Basic Setup (React Router v6+):
   ```jsx
@@ -262,7 +262,7 @@
     ```
 
 
-10. CODE SPLITTING & SUSPENSE
+10. CODE SPLITTING & SUSPENSE [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Dynamic Import (`React.lazy`):
   Allows components to be loaded lazily in separate chunks only when rendered.
@@ -279,7 +279,7 @@
   ```
 
 
-11. EVENT HANDLING & SYNTHETIC EVENTS
+11. EVENT HANDLING & SYNTHETIC EVENTS [Importance: 7/10]
 --------------------------------------------------------------------------------
 * SyntheticEvent:
   React wraps native browser events in a cross-browser helper called `SyntheticEvent` to 
@@ -298,7 +298,7 @@
   ```
 
 
-12. MODERN REACT ADDITIONS (REACT 18 & 19)
+12. MODERN REACT ADDITIONS (REACT 18 & 19) [Importance: 8/10]
 --------------------------------------------------------------------------------
 * Server Components (RSC vs Client Components):
   - React Server Components (RSC): Rendered on the server. Zero impact on client bundle size 

@@ -1,0 +1,467 @@
+================================================================================
+                           SPRING BOOT MASTER NOTES
+         (Full Interview Prep for Java & Angular Devs — 3 Yrs Exp)
+================================================================================
+
+1. SPRING CORE FRAMEWORK & IOC CONTAINER [Importance: 10/10]
+--------------------------------------------------------------------------------
+* Inversion of Control (IoC):
+  A design principle in which the control of object creation, configuration, and lifecycle 
+  is transferred from the application code to a container framework (Spring IoC Container). 
+  Promotes loose coupling and testability.
+
+* Dependency Injection (DI) Types:
+  The process of passing dependencies into an object. Spring supports three main types:
+  1. Constructor Injection (Recommended): Dependencies are provided via class constructor.
+     - Advantages: Guarantees dependencies are immutable, prevents null-pointer risks (non-nullable), 
+       and facilitates easy unit testing without reflection.
+  2. Setter Injection: Dependencies are provided via setter methods.
+     - Advantages: Good for optional or mutable dependencies.
+  3. Field Injection (Not Recommended): Annotated directly on private fields.
+     - Disadvantages: Relies on reflection, hides dependencies from constructors, makes unit 
+       testing harder, and can hide circular dependency bugs.
+
+* Bean Lifecycle Phases:
+  Instantiation -> Populate Properties (DI) -> Name/Factory/BeanFactory Aware callbacks -> 
+  Pre-Initialization (`BeanPostProcessor` - `postProcessBeforeInitialization`) -> 
+  Initialization (`@PostConstruct` callback, `InitializingBean.afterPropertiesSet()`, custom `init-method`) -> 
+  Post-Initialization (`BeanPostProcessor` - `postProcessAfterInitialization`) -> 
+  Ready for use -> 
+  Destruction (`@PreDestroy` callback, `DisposableBean.destroy()`, custom `destroy-method`).
+
+* Bean Scopes:
+  1. `singleton` (Default): Single bean instance shared across the entire IoC container.
+  2. `prototype`: A new bean instance is created every time it is requested from the container.
+  3. `request` (Web scope): A new bean instance is created for each HTTP request.
+  4. `session` (Web scope): A new bean instance is created for each HTTP session.
+  5. `application` (Web scope): Single instance shared across a ServletContext lifecycle.
+  6. `websocket` (Web scope): Bound to a WebSocket session lifecycle.
+
+* Singleton Bean injecting a Prototype Bean (Scoped Proxy Problem):
+  Since a singleton bean is instantiated only once, its dependencies are injected only once. 
+  If it depends on a prototype bean, the prototype bean is injected once and never refreshed, 
+  negating its prototype scope.
+  - Resolution: Use `@Lookup` method injection or configure the prototype bean with a scoped proxy: 
+    `@Scope(value = ConfigurableBeanFactory.SCOPE_PROTOTYPE, proxyMode = ScopedProxyMode.TARGET_CLASS)`.
+
+
+2. SPRING BOOT CORE MECHANISMS [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+* What is Spring Boot?
+  An extension of the Spring framework that eliminates boilerplate XML and Java configuration. 
+  Provides opinionated "starter" dependencies, automatic configuration, and embedded servlet containers 
+  to build production-ready standalone applications.
+
+* Under the Hood: Auto-Configuration:
+  How does Spring Boot know what beans to configure?
+  - The `@SpringBootApplication` annotation contains `@EnableAutoConfiguration`.
+  - The container scans `META-INF/spring.factories` (or new imports in Spring Boot 3) to load potential 
+    configuration classes.
+  - It filters these classes using Conditional Annotations (e.g., `@ConditionalOnClass`, 
+    `@ConditionalOnMissingBean`).
+  - If a required library (like H2 database driver) is found on the classpath, the container configures 
+    related beans (like DataSource) automatically.
+
+* `@SpringBootApplication` Meta-Annotations Breakdown:
+  1. `@SpringBootConfiguration`: Declares the class as a source of bean definitions.
+  2. `@EnableAutoConfiguration`: Enables Spring Boot's automatic configuration mechanism.
+  3. `@ComponentScan`: Tells Spring to scan the current package and its sub-packages for 
+     components (`@Component`, `@Service`, `@Repository`, `@Controller`).
+
+* Embedded Servlet Container Bootstrapping:
+  - Spring Boot packages an embedded web server (Tomcat, Jetty, or Undertow) inside the executable JAR.
+  - When the `main` method invokes `SpringApplication.run()`, the JVM initializes an 
+    `AnnotationConfigServletWebServerApplicationContext`.
+  - This context bootstraps the embedded Tomcat container programmatically during initialization, 
+    binding it to port 8080 by default. No external WAR deployments are required.
+
+* Externalized Configuration Hierarchy:
+  Spring Boot allows overriding property values from external sources. The load priority order is:
+  1. Command-line arguments (e.g. `--server.port=9090`).
+  2. JVM System Properties (`-Dserver.port=9090`).
+  3. OS Environment Variables (`SERVER_PORT=9090`).
+  4. Application properties outside the packaged jar (`/config` folder).
+  5. Application properties packaged inside the jar (`application.yml` / `application.properties`).
+
+
+3. SPRING MVC & REST APIs [Importance: 10/10]
+--------------------------------------------------------------------------------
+* DispatcherServlet (Front Controller Workflow):
+  All client requests pass through a central servlet:
+  1. Client sends HTTP request -> `DispatcherServlet` intercepts it.
+  2. `DispatcherServlet` consults `HandlerMapping` to identify the appropriate Controller method.
+  3. `DispatcherServlet` calls `HandlerAdapter` to execute the selected Controller method.
+  4. Controller executes business logic and returns a model name/data or serializable object.
+  5. If returning an API response, `HttpMessageConverter` (like Jackson) serializes the object 
+     directly into JSON/XML, bypassing view resolution.
+
+* Controller vs. RestController:
+  - `@Controller`: Traditional MVC controller. Returns View names (HTML pages). Uses `@ResponseBody` 
+    explicitly on methods returning serialized data.
+  - `@RestController`: Specialized controller for REST APIs. Combines `@Controller` and `@ResponseBody`. 
+    All methods automatically serialize return values directly into HTTP response bodies.
+
+* Content Negotiation:
+  The mechanism that determines what format (JSON, XML) the API response should use based on the 
+  client request headers (`Accept: application/json` or `Accept: application/xml`). Handles mapping 
+  via default configured `HttpMessageConverter` instances.
+
+* CORS (Cross-Origin Resource Sharing):
+  A security feature implemented by browsers. To allow an Angular frontend on `localhost:4200` to 
+  call a Spring Boot API on `localhost:8080`, CORS must be configured.
+  - Controller Level: Apply `@CrossOrigin(origins = "http://localhost:4200")`.
+  - Global Level: Register a `WebMvcConfigurer` bean with custom mapping rules.
+
+
+4. SPRING DATA JPA & HIBERNATE INTERNALS [Importance: 10/10]
+--------------------------------------------------------------------------------
+* Object-Relational Mapping (ORM) & JPA:
+  JPA (Java Persistence API) is a specification defining how to manage relational data in Java. 
+  Hibernate is a concrete implementation of the JPA specification.
+
+* Entity Lifecycle States:
+  1. Transient: Object instantiated but not associated with a database session or database row.
+  2. Managed (Persistent): Object associated with a session and has a database row. Modifications 
+     to this object are tracked and flushed to the database automatically.
+  3. Detached: Object was managed, but the session has closed. Changes are no longer tracked.
+  4. Removed: Object marked for deletion within the session. Deleted from the database upon commit.
+
+* N+1 Query Problem & Resolutions:
+  Occurs when fetching an entity along with its associated collections. If you query $N$ parents, 
+  Hibernate generates $1$ query for parents and $N$ individual queries to fetch children, killing database performance.
+  - Resolution 1: Join Fetch in JPQL/HQL.
+    ```java
+    @Query("SELECT u FROM User u JOIN FETCH u.addresses")
+    List<User> findAllWithAddresses(); // Fetches all parents and children in a single SQL JOIN query.
+    ```
+  - Resolution 2: `@EntityGraph`.
+    ```java
+    @EntityGraph(attributePaths = {"addresses"})
+    List<User> findAll();
+    ```
+
+* Eager vs. Lazy Fetching:
+  - Eager Fetching (`FetchType.EAGER`): Loads associated relations immediately with the parent entity. 
+    Can cause performance issues if lists are large.
+  - Lazy Fetching (`FetchType.LAZY`): Loads relations on demand when they are accessed. 
+    Throws `LazyInitializationException` if the Hibernate session is closed before access.
+
+* Transaction Management (`@Transactional`):
+  Declares container-managed transactional boundaries on classes or methods.
+  - Propagation Levels:
+    - `REQUIRED` (Default): Joins the active transaction if one exists; creates a new one if none.
+    - `REQUIRES_NEW`: Always suspends the current transaction and starts a new independent transaction.
+    - `MANDATORY`: Requires an active transaction to exist; throws an exception if none.
+  - Isolation Levels:
+    - `READ_UNCOMMITTED`: Allows dirty reads (reading uncommitted changes from other transactions).
+    - `READ_COMMITTED` (Default in most DBs): Prevents dirty reads.
+    - `REPEATABLE_READ`: Prevents non-repeatable reads (data read twice inside a transaction is guaranteed to match).
+    - `SERIALIZABLE`: Highest isolation, complete lock synchronization. Prevents phantom reads.
+  - Proxy Self-Invocation Issue:
+    - `@Transactional` relies on AOP proxies. If method A calls method B (annotated with `@Transactional`) 
+      internally within the same class, the transaction interceptor is bypassed, and no transaction is created. 
+      Method B must be called from a different bean class to trigger the proxy wrapper.
+
+* Dirty Checking:
+  Hibernate tracks changes made to managed entities. At transaction commit time, it automatically 
+  compares entity state with its original state and generates SQL UPDATE statements without needing 
+  to invoke `save()` explicitly.
+
+
+5. VALIDATION & EXCEPTION HANDLING [Importance: 9/10]
+--------------------------------------------------------------------------------
+* JSR-380 (Jakarta Bean Validation):
+  Validates fields using standard annotations (e.g. `@NotNull`, `@NotBlank`, `@Size`).
+  Triggered in controllers using `@Valid` or `@Validated`.
+
+* Global Exception Handling Workflow:
+  Allows catching application-wide exceptions and formatting standard error payloads:
+  ```java
+  @RestControllerAdvice // Combines @ControllerAdvice and @ResponseBody
+  public class GlobalExceptionHandler {
+
+      @ExceptionHandler(ResourceNotFoundException.class)
+      public ResponseEntity<ErrorResponse> handleNotFound(ResourceNotFoundException ex) {
+          ErrorResponse response = new ErrorResponse("NOT_FOUND", ex.getMessage());
+          return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+      }
+
+      @ExceptionHandler(MethodArgumentNotValidException.class)
+      public ResponseEntity<Map<String, String>> handleValidation(MethodArgumentNotValidException ex) {
+          Map<String, String> errors = new HashMap<>();
+          ex.getBindingResult().getFieldErrors().forEach(error -> 
+              errors.put(error.getField(), error.getDefaultMessage()));
+          return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+      }
+  }
+  ```
+
+
+6. MICROSERVICES & SPRING CLOUD [Importance: 9/10]
+--------------------------------------------------------------------------------
+* Eureka Service Discovery:
+  Allows services to find and communicate with each other dynamically without hardcoding IP addresses 
+  and ports.
+  - Service Registry: Central server where microservices register their metadata upon startup.
+  - Service Client: Microservices query Eureka to locate target instances.
+
+* Config Server:
+  Provides centralized configuration management across all microservices. Config files are stored 
+  in a version-controlled repository (Git) and served via HTTP.
+
+* Spring Cloud Gateway:
+  A single entry point (reverse proxy) routing external clients to internal microservices. Handles 
+  routing rules, authentication, logging, and rate-limiting.
+
+* Feign Clients:
+  A declarative REST client builder. Simulates calling local methods while executing HTTP requests 
+  under the hood:
+  ```java
+  @FeignClient(name = "user-service")
+  public interface UserClient {
+      @GetMapping("/users/{id}")
+      UserDto getUserById(@PathVariable("id") Long id);
+  }
+  ```
+
+* Resilience4j (Circuit Breaker Pattern):
+  Prevents cascading service failures in microservice chains.
+  - States:
+    - Closed: Normal execution. Requests pass through.
+    - Open: Target service is failing. Requests fail fast immediately, triggering fallback methods.
+    - Half-Open: Probe state testing if the target service has recovered.
+
+
+7. SPRING SECURITY & JWT [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+* SecurityFilterChain:
+  Spring Security is built on a chain of Servlet Filters. The `SecurityFilterChain` bean defines 
+  which URLs are public and which require authentication/roles.
+  ```java
+  @Configuration
+  @EnableWebSecurity
+  public class SecurityConfig {
+      @Bean
+      public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+          http.csrf(csrf -> csrf.disable())
+              .authorizeHttpRequests(auth -> auth
+                  .requestMatchers("/api/auth/**").permitAll()
+                  .anyRequest().authenticated()
+              )
+              .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+          return http.build();
+      }
+  }
+  ```
+
+* Stateless Authentication with JWT:
+  1. Client sends credentials to `/api/auth/login`.
+  2. Server validates credentials, generates a JSON Web Token (JWT) signed with a secret key, 
+     and returns it to the client.
+  3. Client stores the token (typically in localStorage or HttpOnly cookies).
+  4. For subsequent requests, client includes the token in the `Authorization: Bearer <token>` header.
+  5. A custom OncePerRequestFilter intercepts requests, extracts the JWT, verifies its signature, 
+     and loads user details into the Spring Security Context.
+
+
+8. SPRING BOOT TESTING [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+* MockMvc:
+  Allows testing REST Controller endpoints without starting a full HTTP web server, simulating 
+  request execution.
+
+* Test Slices:
+  - `@SpringBootTest`: Loads the complete application context. Good for integration tests.
+  - `@WebMvcTest(MyController.class)`: Loads only MVC infrastructure (controllers, filters, converters). 
+    Requires mocking database dependencies.
+  - `@DataJpaTest`: Loads only JPA configuration, setting up an in-memory database (H2) and active transactions.
+
+* Mocking: `@Mock` vs. `@MockBean`:
+  - `@Mock`: standard Mockito annotation. Creates a mock object. Used in pure JUnit unit tests.
+  - `@MockBean`: Spring Boot annotation. Creates a mock object and registers it as a bean in the Spring 
+    ApplicationContext, replacing any existing beans of that type.
+
+
+9. ACTUATOR & MONITORING [Importance: 8/10]
+--------------------------------------------------------------------------------
+* Spring Boot Actuator:
+  Provides production-ready features (endpoints) to monitor and interact with applications.
+  - Useful Endpoints:
+    - `/actuator/health`: Shows application status (UP/DOWN).
+    - `/actuator/metrics`: Exposes internal application statistics.
+    - `/actuator/env`: Exposes environment properties.
+
+* Custom Health Indicator:
+  ```java
+  @Component
+  public class DbConnectionHealthIndicator implements HealthIndicator {
+      @Override
+      public Health health() {
+          boolean isDbActive = checkDbConnection();
+          return isDbActive ? Health.up().build() : Health.down().withDetail("Error", "DB connection lost").build();
+      }
+  }
+  ```
+
+
+10. COMPREHENSIVE ANNOTATIONS RATING & INDEX [Importance: 10/10]
+--------------------------------------------------------------------------------
+
+* SPRING CORE ANNOTATIONS:
+  - `@Component` [Rating: 10/10]: Marks a class as a candidate for Spring auto-detection and bean creation.
+  - `@Service` [Rating: 10/10]: Specialization of `@Component` for service business layers.
+  - `@Repository` [Rating: 10/10]: Specialization of `@Component` for DAO/database layers; translates 
+    JDBC exceptions to Spring exceptions.
+  - `@Controller` [Rating: 9/10]: Marks a class as a web controller returning view templates.
+  - `@RestController` [Rating: 10/10]: Combines `@Controller` and `@ResponseBody` for JSON/XML REST APIs.
+  - `@Autowired` [Rating: 10/10]: Marks a constructor, field, or setter method for auto-dependency injection.
+  - `@Qualifier` [Rating: 10/10]: Used alongside `@Autowired` to specify which exact bean class to inject 
+    when multiple beans implement the same interface.
+  - `@Primary` [Rating: 9/10]: Gives preference to a specific bean when multiple candidates are available.
+  - `@Value` [Rating: 9/10]: Injects property values from configuration files directly into fields.
+  - `@Configuration` [Rating: 10/10]: Marks a class as a source of bean configurations.
+  - `@Bean` [Rating: 10/10]: Declares a method-level bean instance managed by the IoC container.
+  - `@Scope` [Rating: 8/10]: Defines the lifecycle scope of a bean.
+  - `@Lazy` [Rating: 7/10]: Delays bean instantiation until it is first requested, reducing startup times.
+  - `@Profile` [Rating: 8/10]: Restricts bean loading to matching active environment profiles (e.g. `@Profile("prod")`).
+  - `@PropertySource` [Rating: 7/10]: Declares custom properties files to be loaded into Spring Environment.
+  - `@PostConstruct` [Rating: 9/10]: Executed once immediately after bean initialization and property injection.
+  - `@PreDestroy` [Rating: 8/10]: Executed just before a bean is removed from the IoC container.
+  - `@DependsOn` [Rating: 6/10]: Controls bean initialization order by forcing dependent beans to initialize first.
+  - `@Import` [Rating: 7/10]: Imports configuration classes containing bean definitions explicitly.
+  - `@Async` [Rating: 8.5/10]: Runs the annotated method in a separate thread asynchronously. Requires `@EnableAsync`.
+  - `@Scheduled` [Rating: 8/10]: Executes a method periodically, using cron or fixed delays. Requires `@EnableScheduling`.
+  - `@Cacheable` [Rating: 9/10]: Caches the method result based on parameter keys. Requires `@EnableCaching`.
+  - `@CachePut` [Rating: 8/10]: Forces method execution and updates the target cache with the returned value.
+  - `@CacheEvict` [Rating: 8/10]: Clears matching keys or the entire cache repository.
+  - `@EventListener` [Rating: 7.5/10]: Binds a method to listen for specific ApplicationEvents.
+
+* SPRING BOOT ANNOTATIONS:
+  - `@SpringBootApplication` [Rating: 10/10]: Encompasses configurations, auto-configurations, and component scanning.
+  - `@ConfigurationProperties` [Rating: 9/10]: Binds configuration property groups directly to structured Java objects.
+  - `@ConditionalOnProperty` [Rating: 8/10]: Loads a bean conditionally based on property presence or value.
+  - `@ConditionalOnClass` [Rating: 8/10]: Loads a bean conditionally only if the specified class exists on the classpath.
+  - `@ConditionalOnMissingBean` [Rating: 9/10]: Loads a bean conditionally only if no other bean of that type exists.
+
+* SPRING WEB / REST ANNOTATIONS:
+  - `@RequestMapping` [Rating: 8/10]: Maps web requests to handler classes or methods.
+  - `@GetMapping` / `@PostMapping` / `@PutMapping` / `@DeleteMapping` [Rating: 10/10]: Shortcuts mapping specific HTTP verbs.
+  - `@PathVariable` [Rating: 10/10]: Extracts variables directly from the URI path.
+  - `@RequestParam` [Rating: 10/10]: Extracts query parameters from the request URL.
+  - `@RequestBody` [Rating: 10/10]: Binds the incoming JSON HTTP request body to a Java object parameter.
+  - `@ResponseBody` [Rating: 8/10]: Tells Spring to serialize return values directly into the HTTP response body.
+  - `@RequestHeader` [Rating: 8/10]: Binds individual HTTP header values to method parameters.
+  - `@CookieValue` [Rating: 6/10]: Binds HTTP cookies to method parameters.
+  - `@ResponseStatus` [Rating: 8/10]: Marks a controller method or custom exception with a fixed HTTP Status code.
+  - `@ExceptionHandler` [Rating: 10/10]: Declares exception handler methods within a class.
+  - `@ControllerAdvice` / `@RestControllerAdvice` [Rating: 10/10]: Declares global class interceptors for exceptions/models.
+
+* SPRING DATA JPA / HIBERNATE ANNOTATIONS:
+  - `@Transactional` [Rating: 10/10]: Defines transaction boundaries, isolation levels, and rollback rules.
+  - `@Entity` [Rating: 10/10]: Declares a class as a JPA database entity.
+  - `@Table` [Rating: 8/10]: Specifies the database table name associated with an entity.
+  - `@Id` [Rating: 10/10]: Declares the primary key field of an entity.
+  - `@GeneratedValue` [Rating: 9/10]: Configures primary key generation strategies (e.g. Identity, Sequence).
+  - `@Column` [Rating: 8/10]: Customizes database column properties (nullable, length, unique).
+  - `@Transient` [Rating: 9/10]: Excludes a field from database serialization/deserialization mapping.
+  - `@Lob` [Rating: 7/10]: Declares a large object field (CLOB/BLOB) in the database.
+  - `@Enumerated` [Rating: 9/10]: Persists Enum types as either ordinals (numbers) or String text.
+  - `@Version` [Rating: 8/10]: Enables optimistic locking, preventing dirty overwrites in concurrent transactions.
+  - `@OneToOne` / `@OneToMany` / `@ManyToOne` / `@ManyToMany` [Rating: 10/10]: Define ORM table relationship mappings.
+  - `@JoinColumn` [Rating: 10/10]: Customizes foreign key columns in parent/child entities.
+  - `@JoinTable` [Rating: 9/10]: Customizes intermediary junction tables for `@ManyToMany` relationships.
+  - `@MappedSuperclass` [Rating: 9/10]: Declares shared database columns in parent classes without creating a table for them.
+  - `@Query` [Rating: 10/10]: Binds custom SQL or JPQL statements directly to repository methods.
+  - `@Modifying` [Rating: 9/10]: Required on `@Query` methods performing updates/deletes in database rows.
+  - `@Param` [Rating: 9/10]: Binds method parameters to named parameters in SQL queries.
+  - `@Embeddable` [Rating: 8/10]: Declares a class whose instances are stored as an intrinsic part of an entity.
+  - `@Embedded` [Rating: 8/10]: Specifies a persistent field whose type is an embeddable class.
+  - `@PrePersist` / `@PostPersist` / `@PreUpdate` / `@PostUpdate` [Rating: 8/10]: Callback annotations for entity lifecycle states.
+  - `@CreatedDate` / `@LastModifiedDate` [Rating: 9/10]: Automatically audits creation and modification times on entities.
+  - `@Inheritance` [Rating: 8/10]: Defines inheritance mapping strategies for object hierarchies.
+
+* VALIDATION ANNOTATIONS (JSR-380 / Jakarta Validation):
+  - `@Valid` [Rating: 10/10]: Triggers object validation inside controllers.
+  - `@Validated` [Rating: 9/10]: Triggers group validation and parameter validation on classes.
+  - `@NotNull` [Rating: 10/10]: Asserts that a value is not null.
+  - `@NotEmpty` [Rating: 10/10]: Asserts that a collection, string, or array is not null and has a size greater than 0.
+  - `@NotBlank` [Rating: 10/10]: Asserts that a string is not null, not empty, and contains at least one non-whitespace character.
+  - `@Size` [Rating: 8/10]: Validates length/size constraints.
+  - `@Pattern` [Rating: 9/10]: Validates a string matches a given regular expression.
+
+* SPRING SECURITY ANNOTATIONS:
+  - `@EnableMethodSecurity` [Rating: 9/10]: Enables method-level security checking.
+  - `@PreAuthorize` [Rating: 10/10]: Restricts method execution based on Spring Expression Language (SpEL) checks.
+  - `@Secured` [Rating: 7/10]: Restricts method access based on simple role strings.
+  - `@RolesAllowed` [Rating: 7/10]: JSR-250 standard equivalent to `@Secured`.
+
+* SPRING BOOT TESTING ANNOTATIONS:
+  - `@SpringBootTest` [Rating: 9/10]: Loads the full application context for integration testing.
+  - `@WebMvcTest` [Rating: 8.5/10]: Loads only the MVC slice (controllers, config) to isolate web layer testing.
+  - `@DataJpaTest` [Rating: 8.5/10]: Configures in-memory DB slices with active transactions for JPA repository tests.
+  - `@MockBean` [Rating: 9/10]: Registers a mock object to replace a real bean within the ApplicationContext.
+  - `@SpyBean` [Rating: 7.5/10]: Wraps an existing Spring bean with a Mockito Spy proxy.
+  - `@TestConfiguration` [Rating: 7/10]: Defines custom lightweight bean configurations for isolated testing.
+
+* LOMBOK ANNOTATIONS:
+  - `@Data` [Rating: 10/10]: Generates getters, setters, toString, equals, and hashCode automatically.
+  - `@Getter` / `@Setter` [Rating: 9/10]: Generates accessors on class or field levels.
+  - `@NoArgsConstructor` / `@AllArgsConstructor` / `@RequiredArgsConstructor` [Rating: 9/10]: Generates target class constructors.
+  - `@Builder` [Rating: 9.5/10]: Generates the Builder design pattern code for object creation.
+  - `@Slf4j` [Rating: 10/10]: Generates a private static final SLF4J logger instance in the class.
+
+
+11. FREQUENTLY ASKED INTERVIEW QUESTIONS [Importance: 10/10]
+--------------------------------------------------------------------------------
+* Q1: Explain the Spring Bean Lifecycle and the role of BeanPostProcessors.
+  - A: The Bean Lifecycle consists of:
+    1. Instantiation: Creates the bean instance in memory.
+    2. Populate Properties: Performs dependency injection (`@Autowired` values).
+    3. Aware Callbacks: Invokes `BeanNameAware`, `BeanFactoryAware`, etc.
+    4. BeanPostProcessor (Before Init): Invokes `postProcessBeforeInitialization` on custom post-processors.
+    5. Initialization: Calls methods annotated with `@PostConstruct`, `InitializingBean.afterPropertiesSet()`, or custom `init-method`.
+    6. BeanPostProcessor (After Init): Invokes `postProcessAfterInitialization`. (This is where AOP proxies are created!).
+    7. Ready: Bean is ready for use.
+    8. Destruction: Calls `@PreDestroy`, `DisposableBean.destroy()`, or custom `destroy-method` when application shuts down.
+
+* Q2: How does Spring Boot's Auto-configuration work under the hood?
+  - A: When a Spring Boot application starts, the class annotated with `@SpringBootApplication` is processed:
+    1. It triggers `@EnableAutoConfiguration`, which uses the `AutoConfigurationImportSelector` to load key configuration 
+       classes from `META-INF/spring-autoconfigure-metadata.properties` or registry configurations (Spring Boot 3).
+    2. It scans classpath libraries and conditionally instantiates beans using `@Conditional` annotations:
+       - `@ConditionalOnClass`: Checks if a specific library class is present on the classpath.
+       - `@ConditionalOnMissingBean`: Ensures that a default auto-configured bean is created only if the user has 
+         not declared a custom bean of that type.
+
+* Q3: What is the N+1 select problem in Spring Data JPA/Hibernate, and how do you resolve it?
+  - A: The N+1 problem occurs when fetching an entity with lazy-loaded collections. If you query $N$ parents (e.g., users), 
+    Hibernate issues $1$ query to fetch parents, and then $N$ separate queries to load children for each parent when accessed.
+    - Resolution 1: Join Fetch. Use `@Query("SELECT u FROM User u JOIN FETCH u.addresses")` to force a SQL `JOIN` 
+      and load all data in $1$ query.
+    - Resolution 2: `@EntityGraph`. Annotate repository method with `@EntityGraph(attributePaths = {"addresses"})` 
+      to instruct Hibernate to eagerly fetch target collections in a single query.
+
+* Q4: Explain Transaction Propagation levels, particularly REQUIRED vs REQUIRES_NEW.
+  - A: Propagation levels define how transactions behave across method boundaries:
+    - `REQUIRED` (Default): Joins the active transaction if one exists; creates a new one if none.
+    - `REQUIRES_NEW`: Always suspends the current transaction and starts a new independent transaction. If the new 
+      transaction rolls back, it does not affect the suspended one (unless exceptions are propagated).
+    - Note (Self-Invocation Issue): If method A calls method B (annotated with `@Transactional(propagation = Propagation.REQUIRES_NEW)`) 
+      internally within the same class, the transaction is ignored. This is because calls must traverse the AOP proxy 
+      wrapper class to execute transactional interceptors.
+
+* Q5: How do you handle Global Exceptions in a Spring Boot REST API?
+  - A: Annotate a class with `@RestControllerAdvice`. Inside it, define methods annotated with `@ExceptionHandler` 
+    to catch specific exceptions (e.g. `ResourceNotFoundException.class`, `MethodArgumentNotValidException.class`). 
+    These methods can construct a custom structured JSON response payload and return it wrapped in a `ResponseEntity` 
+    with the appropriate HTTP status code.
+
+* Q6: What is the Scoped Proxy Problem in Spring, and how is it resolved?
+  - A: If you inject a `prototype` scoped bean directly into a `singleton` scoped bean, the dependency is injected 
+    only once during singleton bean instantiation. The singleton bean continues to reuse the same prototype bean instance 
+    forever, defeating the prototype scope.
+    - Resolution: Configure the prototype bean with `@Scope(value = "prototype", proxyMode = ScopedProxyMode.TARGET_CLASS)`. 
+      This injects a dynamic proxy object instead of the actual instance. Every time the singleton bean invokes a method 
+      on the proxy, the proxy requests a new instance from the container.
+
+

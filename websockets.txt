@@ -18,7 +18,7 @@
     with minimal framing data.
 
 
-2. REAL-TIME COMMUNICATIONS PROTOCOLS COMPARISON
+2. REAL-TIME COMMUNICATIONS PROTOCOLS COMPARISON [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 Feature       | Short Polling    | Long Polling     | WebSockets        | Server-Sent Events (SSE)
@@ -33,7 +33,7 @@ Use Cases     | Inactive widgets | Chat fallback    | Gaming, Live chats| Stock 
 --------------------------------------------------------------------------------
 
 
-3. THE WEBSOCKET HANDSHAKE PROTOCOL
+3. THE WEBSOCKET HANDSHAKE PROTOCOL [Importance: 8/10]
 --------------------------------------------------------------------------------
 WebSockets start their lifecycle as a standard HTTP/1.1 request. The client requests to 
 "Upgrade" the protocol:
@@ -57,7 +57,7 @@ WebSockets start their lifecycle as a standard HTTP/1.1 request. The client requ
    ```
 
 
-4. WEBSOCKET CONNECTION LIFECYCLE & READYSTATES
+4. WEBSOCKET CONNECTION LIFECYCLE & READYSTATES [Importance: 8/10]
 --------------------------------------------------------------------------------
 The WebSocket object exposes a `readyState` property representing the connection status:
 - `0` (`CONNECTING`): Connection is not yet open.
@@ -66,7 +66,7 @@ The WebSocket object exposes a `readyState` property representing the connection
 - `3` (`CLOSED`): Connection is closed or could not be opened.
 
 
-5. MODERN ALTERNATIVES & COMPLEMENTARY TECHNOLOGIES
+5. MODERN ALTERNATIVES & COMPLEMENTARY TECHNOLOGIES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 - **Server-Sent Events (SSE)**: Standard HTTP-based push notifications from server to client.
   Very simple to implement but strictly unidirectional.
@@ -78,7 +78,7 @@ The WebSocket object exposes a `readyState` property representing the connection
   clients even when the application tab is closed (orchestrated via Service Workers).
 
 
-6. ANGULAR WEBSOCKET INTEGRATION
+6. ANGULAR WEBSOCKET INTEGRATION [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Robust Angular Service (`websocket.service.ts`):
   Using RxJS `webSocket` subject is the cleanest way to integrate sockets into Angular's 

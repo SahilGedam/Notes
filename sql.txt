@@ -2,7 +2,7 @@
                             SQL & RDBMS MASTER NOTES
 ================================================================================
 
-1. DATABASE CLASSIFICATIONS & SQL COMMAND TYPES
+1. DATABASE CLASSIFICATIONS & SQL COMMAND TYPES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * DBMS vs. RDBMS:
   - DBMS (Database Management System): Software used to store, manage, and retrieve data 
@@ -23,7 +23,7 @@
     Commands: `COMMIT`, `ROLLBACK`, `SAVEPOINT`.
 
 
-2. DATABASE CONSTRAINTS
+2. DATABASE CONSTRAINTS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 Constraints enforce data integrity rules on columns:
 - `NOT NULL`: Restricts null values from being inserted into the column.
@@ -36,7 +36,7 @@ Constraints enforce data integrity rules on columns:
   integrity (prevents orphaned records).
 
 
-3. QUERY EXECUTION ORDER (FWGHSOL)
+3. QUERY EXECUTION ORDER (FWGHSOL) [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 Although queries are written starting with `SELECT`, the database engine executes the clauses 
 in the following logical order:
@@ -51,7 +51,7 @@ in the following logical order:
 8. **LIMIT / OFFSET**: Restricts the size of the final returned rows.
 
 
-4. JOINS & SET OPERATIONS
+4. JOINS & SET OPERATIONS [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * JOINS (Combining tables horizontally based on columns):
   - `INNER JOIN`: Returns records that have matching keys in both tables.
@@ -75,7 +75,7 @@ in the following logical order:
   - `MINUS` / `EXCEPT`: Returns rows from the first query that do not exist in the second query.
 
 
-5. NORMALIZATION & DENORMALIZATION
+5. NORMALIZATION & DENORMALIZATION [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Normalization:
   The systematic process of organizing data attributes to avoid redundancy, anomalies, 
@@ -93,7 +93,7 @@ in the following logical order:
   queries (bypasses expensive joins) at the cost of slower writes and higher storage.
 
 
-6. DATABASE OBJECTS
+6. DATABASE OBJECTS [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Index:
   A data structure (often B-Tree or Hash) used to speed up queries.
@@ -112,7 +112,7 @@ in the following logical order:
   events (e.g., `BEFORE INSERT`, `AFTER UPDATE`, or `DELETE`) on a table.
 
 
-7. TRANSACTIONS & ACID PROPERTIES
+7. TRANSACTIONS & ACID PROPERTIES [Importance: 10/10]
 --------------------------------------------------------------------------------
 * ACID Properties:
   - **Atomicity**: The entire transaction completes successfully, or the database rollbacks 

@@ -22,7 +22,7 @@ Union/Tuple   | Cannot define Union/Tuple types directly| Can define Union, Tupl
   ```
 
 
-2. GENERICS & GENERIC CONSTRAINTS
+2. GENERICS & GENERIC CONSTRAINTS [Importance: 9/10]
 --------------------------------------------------------------------------------
 * Definition:
   Generics allow creating reusable components that work with a variety of types rather than 
@@ -51,7 +51,7 @@ Union/Tuple   | Cannot define Union/Tuple types directly| Can define Union, Tupl
   ```
 
 
-3. TYPESCRIPT UTILITY TYPES
+3. TYPESCRIPT UTILITY TYPES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 TypeScript provides built-in transformations to simplify common type operations:
 - `Partial<T>`: Constructs a type with all properties of `T` set to optional.
@@ -74,7 +74,7 @@ TypeScript provides built-in transformations to simplify common type operations:
   ```
 
 
-4. TSCONFIG COMPILER FLAGS
+4. TSCONFIG COMPILER FLAGS [Importance: 7/10]
 --------------------------------------------------------------------------------
 Key properties configured inside `tsconfig.json`:
 - `target`: Output JavaScript version (e.g. `es2022`, `es6`, `es5`).
@@ -85,7 +85,7 @@ Key properties configured inside `tsconfig.json`:
 - `noUnusedLocals` / `noUnusedParameters`: Throws error if local variables or parameters are unused.
 
 
-5. DECORATORS & TYPE GUARDS
+5. DECORATORS & TYPE GUARDS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * Type Guards:
   Functions or operators that perform runtime checks to narrow down a type within a block:

@@ -40,7 +40,7 @@ Real-Time       | Poll / SSE / custom WebSockets | Native Subscriptions via WebS
 --------------------------------------------------------------------------------
 
 
-3. SCHEMA & TYPE SYSTEM (SDL)
+3. SCHEMA & TYPE SYSTEM (SDL) [Importance: 7.5/10]
 --------------------------------------------------------------------------------
 * Schema Definition Language (SDL):
   Describes the capabilities of the API, declaring types, fields, and operations.
@@ -85,7 +85,7 @@ Real-Time       | Poll / SSE / custom WebSockets | Native Subscriptions via WebS
   - Every field in a query corresponds to a resolver function.
 
 
-4. CLIENT-SIDE GRAPHQL CONCEPTS
+4. CLIENT-SIDE GRAPHQL CONCEPTS [Importance: 7/10]
 --------------------------------------------------------------------------------
 * Tagged Template Literals:
   GraphQL queries are parsed using the `gql` tag helper. **Always enclose queries in backticks (`` ` ``).**
@@ -280,7 +280,7 @@ Real-Time       | Poll / SSE / custom WebSockets | Native Subscriptions via WebS
   ```
 
 
-6. PERFORMANCE & CACHING GOTCHAS
+6. PERFORMANCE & CACHING GOTCHAS [Importance: 8/10]
 --------------------------------------------------------------------------------
 * N+1 Query Problem:
   Occurs when the parent resolver runs once (1 query) and child field resolvers run N times 
