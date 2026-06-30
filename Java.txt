@@ -330,23 +330,81 @@
 
 6. JAVA 8+ FUNCTIONAL PROGRAMMING [Importance: 10/10]
 --------------------------------------------------------------------------------
-* Lambda Expressions:
-  Provide a clean and concise syntax to represent instance implementations of single abstract method 
-  interfaces (Functional Interfaces). Enables passing behavior as method parameters.
+* Lambda Expressions (Concept & Detailed Coding):
+  - Purpose: Provides a clear and concise syntax to implement Functional Interfaces (single abstract method interfaces) inline, enabling functional programming by passing behaviors as method arguments.
+  - Basic Syntax: `(parameters) -> { body }`
+  - Shorthands:
+    1. Zero Parameters: `() -> System.out.println("Hello");`
+    2. Single Parameter (omit parenthesis): `name -> System.out.println(name);`
+    3. Block Body vs. Expression:
+       - Expression (implicit return, no braces): `(a, b) -> a + b;`
+       - Block (explicit return required, uses braces): `(a, b) -> { int sum = a + b; return sum; };`
+  - Under the Hood (Compilation Mechanism):
+    - Traditional Anonymous Classes: Compiles into a separate class file (e.g. `Outer$1.class`). The JVM loads and initializes this class at startup, creating object overhead and higher memory footprints.
+    - Lambdas: Compiles using the `invokedynamic` (Indy) JVM instruction (introduced in Java 7). At runtime, the JVM uses a bootstrap method (`LambdaMetafactory.metafactory`) to dynamically generate a lightweight proxy class implementing the functional interface, bypassing disk-bound class loading and compile-time class bloating.
 
-* Functional Interfaces (`@FunctionalInterface`):
-  Interfaces containing exactly one abstract method. Can have any number of default and static methods.
-  - Core Built-in Functional Interfaces:
-    1. `Predicate<T>`: Evaluates a value and returns a boolean.
-       `test(T t)`
-    2. `Function<T, R>`: Transforms an input type to an output type.
-       `apply(T t)`
-    3. `Consumer<T>`: Consumes a value without returning results.
-       `accept(T t)`
-    4. `Supplier<T>`: Returns a value without accepting parameters.
-       `get()`
-    5. `BiFunction<T, U, R>`: Transforms two inputs into an output.
-       `apply(T t, U u)`
+* Custom Functional Interfaces (@FunctionalInterface):
+  - Define custom interfaces with exactly one abstract method. Can have multiple default/static/private methods.
+  - Coding Example:
+    ```java
+    @FunctionalInterface
+    public interface MathOperation {
+        int operate(int a, int b); // Abstract method
+        
+        default void log(int a, int b, int result) {
+            System.out.println(a + " op " + b + " = " + result);
+        }
+    }
+    
+    // Usage in code:
+    public class LambdaDemo {
+        public static void main(String[] args) {
+            // Implementation of operate method using a lambda
+            MathOperation addition = (a, b) -> a + b;
+            MathOperation subtraction = (a, b) -> a - b;
+            
+            int result1 = addition.operate(10, 5); // Returns 15
+            int result2 = subtraction.operate(10, 5); // Returns 5
+        }
+    }
+    ```
+
+* Built-in Functional Interfaces & Usage Code:
+  Spring and Core Java APIs utilize standard functional interfaces from `java.util.function`:
+  1. `Predicate<T>`: Accepts one argument, returns `boolean`. Used for filtering.
+     `Predicate<String> isEmpty = s -> s.isEmpty();`
+  2. `Function<T, R>`: Accepts one argument of type `T`, returns result of type `R`. Used for transformation.
+     `Function<String, Integer> lengthFunc = s -> s.length();`
+  3. `Consumer<T>`: Accepts one argument, returns `void`. Used for actions/side-effects.
+     `Consumer<String> printer = s -> System.out.println(s);`
+  4. `Supplier<T>`: Accepts no arguments, returns a value of type `T`. Used for lazy generation.
+     `Supplier<Double> randomVal = () -> Math.random();`
+  5. `BiFunction<T, U, R>`: Accepts two arguments (types `T` & `U`), returns result of type `R`.
+     `BiFunction<Integer, Integer, Integer> multiply = (x, y) -> x * y;`
+  6. `UnaryOperator<T>` & `BinaryOperator<T>`: Specializations of Function/BiFunction where input and output types are identical.
+     `UnaryOperator<Integer> square = x -> x * x;`
+
+* Variable Capture & Closure Rules:
+  - Effectively Final Rule: Local variables accessed inside a Lambda expression must be `final` or *effectively final* (assigned only once).
+    - Why? Local variables reside on the thread stack and are destroyed when the enclosing method exits. The Lambda instance resides on the heap and can survive after the method execution completes (e.g. running inside an executor thread). To handle this, the JVM copies the local variable's value into the Lambda's instance fields. If the original local variable were allowed to change, the copy inside the Lambda would mismatch, creating inconsistency.
+  - Instance & Static Variables: Do not have this restriction because they reside on the heap (enclosing class instance or class definition), meaning their lifetime is managed alongside the Lambda's execution.
+  - `this` Context: Inside a Lambda, the `this` keyword refers to the enclosing class instance containing the Lambda definition. In contrast, inside an Anonymous Inner Class, `this` refers to the inner class instance itself.
+
+* Method References (Syntax & Types):
+  Method references are compact shorthands for Lambdas that execute a single existing method.
+  - Formats:
+    1. Reference to a Static Method: `ContainingClass::methodName`
+       - Lambda: `(x) -> Math.abs(x)`
+       - Method Ref: `Math::abs`
+    2. Reference to an Instance Method of a Specific Object: `instanceRef::methodName`
+       - Lambda: `(str) -> System.out.println(str)`
+       - Method Ref: `System.out::println`
+    3. Reference to an Instance Method of an Arbitrary Object of a Specific Type: `ClassName::methodName`
+       - Lambda: `(str) -> str.toLowerCase()`
+       - Method Ref: `String::toLowerCase`
+    4. Reference to a Constructor: `ClassName::new`
+       - Lambda: `() -> new ArrayList<String>()`
+       - Method Ref: `ArrayList::new`
 
 * Stream API Internals:
   A sequence of elements supporting sequential and parallel aggregate processing pipelines. Streams 
@@ -399,6 +457,71 @@
   String result = optional.orElseGet(() -> "Default Value");
   ```
 
+* Advanced Streams API Coding Recipes:
+  1. Grouping Elements (groupingBy):
+     - Scenario: Group employees by department.
+       ```java
+       Map<String, List<Employee>> empByDept = employees.stream()
+           .collect(Collectors.groupingBy(Employee::getDepartment));
+       ```
+     - Scenario: Count the number of employees in each department.
+       ```java
+       Map<String, Long> empCountByDept = employees.stream()
+           .collect(Collectors.groupingBy(Employee::getDepartment, Collectors.counting()));
+       ```
+     - Scenario: Find the highest-paid employee in each department.
+       ```java
+       Map<String, Optional<Employee>> maxSalaryByDept = employees.stream()
+           .collect(Collectors.groupingBy(
+               Employee::getDepartment,
+               Collectors.maxBy(Comparator.comparingDouble(Employee::getSalary))
+           ));
+       ```
+  2. Partitioning Elements (partitioningBy):
+     - Scenario: Split employees into two groups: those earning > 50,000 and those earning less.
+       ```java
+       Map<Boolean, List<Employee>> partitionedEmps = employees.stream()
+           .collect(Collectors.partitioningBy(e -> e.getSalary() > 50000));
+       // partitionedEmps.get(true) retrieves high earners, partitionedEmps.get(false) retrieves low earners.
+       ```
+  3. Custom Multi-Field Sorting:
+     - Scenario: Sort employees by Department, then by Salary in descending order.
+       ```java
+       List<Employee> sortedEmps = employees.stream()
+           .sorted(Comparator.comparing(Employee::getDepartment)
+               .thenComparing(Employee::getSalary, Comparator.reverseOrder()))
+           .collect(Collectors.toList());
+       ```
+  4. Finding Character/Word Frequencies and Duplicates:
+     - Scenario: Given a string, find the frequency of each character (ignoring spaces).
+       ```java
+       String input = "interview preparation";
+       Map<Character, Long> charFrequencies = input.chars()
+           .mapToObj(c -> (char) c)
+           .filter(c -> c != ' ')
+           .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+       ```
+     - Scenario: Given a string, find all duplicate characters.
+       ```java
+       List<Character> duplicates = input.chars()
+           .mapToObj(c -> (char) c)
+           .filter(c -> c != ' ')
+           .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+           .entrySet().stream()
+           .filter(entry -> entry.getValue() > 1)
+           .map(Map.Entry::getKey)
+           .collect(Collectors.toList());
+       ```
+  5. FlatMapping Lists of Objects:
+     - Scenario: Extract a flat, unique list of project names from all departments.
+       ```java
+       List<String> uniqueProjects = departments.stream()
+           .flatMap(dept -> dept.getProjects().stream()) // Flattens Stream<List<String>> to Stream<String>
+           .distinct()
+           .collect(Collectors.toList());
+       ```
+
+
 
 7. MULTITHREADING, CONCURRENCY & EXECUTORS [Importance: 9.5/10]
 --------------------------------------------------------------------------------
@@ -444,14 +567,115 @@
   - Core Pool Internals (`ThreadPoolExecutor`):
     Configure properties: `corePoolSize`, `maximumPoolSize`, `keepAliveTime`, and `workQueue` (BlockingQueue).
 
-* CompletableFuture (Java 8+):
-  A Future that supports manual completion, pipeline chaining, and execution callbacks. Resolves 
-  callback hell in asynchronous programming.
-  ```java
-  CompletableFuture.supplyAsync(() -> "Data fetched")
-      .thenApply(data -> data + " & Processed")
-      .thenAccept(System.out::println); // Executed asynchronously
-  ```
+* CompletableFuture & Parallel Async Operations:
+  - Overview: A class introduced in Java 8 implementing `Future` and `CompletionStage`, enabling asynchronous, non-blocking task pipeline chains.
+  - Basic Example:
+    ```java
+    CompletableFuture.supplyAsync(() -> "Fetch Data")
+        .thenApply(data -> data + " & Processed")
+        .thenAccept(System.out::println);
+    ```
+  - Executing & Combining Tasks in Parallel (`thenCombine`):
+    - Scenario: Fetch user profile and user orders from two separate service APIs in parallel, and combine the results when both are ready.
+    ```java
+    CompletableFuture<String> profileFuture = CompletableFuture.supplyAsync(() -> fetchProfile());
+    CompletableFuture<List<Order>> ordersFuture = CompletableFuture.supplyAsync(() -> fetchOrders());
+
+    CompletableFuture<UserDashboard> dashboardFuture = profileFuture
+        .thenCombine(ordersFuture, (profile, orders) -> new UserDashboard(profile, orders));
+
+    UserDashboard dashboard = dashboardFuture.join(); // Blocks until both complete
+    ```
+  - Waiting for Multiple Futures (`allOf`):
+    - Scenario: Trigger 3 independent background tasks and wait for all to finish before proceeding.
+    ```java
+    CompletableFuture<Void> task1 = CompletableFuture.runAsync(() -> doWork(1));
+    CompletableFuture<Void> task2 = CompletableFuture.runAsync(() -> doWork(2));
+    CompletableFuture<Void> task3 = CompletableFuture.runAsync(() -> doWork(3));
+
+    CompletableFuture<Void> allTasks = CompletableFuture.allOf(task1, task2, task3);
+    allTasks.join(); // Blocks until all three tasks finish
+    ```
+  - Exception Handling in Futures (`exceptionally` & `handle`):
+    - `exceptionally()`: Catches exceptions in the pipeline and returns a fallback value.
+    - `handle()`: BiFunction processing both successful results and exceptions.
+    ```java
+    CompletableFuture.supplyAsync(() -> {
+        if (true) throw new RuntimeException("API Failure");
+        return "Success";
+    }).exceptionally(ex -> {
+        System.out.println("Error: " + ex.getMessage());
+        return "Fallback Static Data"; // Recovery result
+    }).thenAccept(System.out::println);
+    ```
+
+* Concurrency Coding: Producer-Consumer Queue:
+  A core interview coding problem requiring threads to coordinate data access inside a bounded queue.
+  1. Implementation using wait() and notifyAll() (Intrinsic Locks):
+     ```java
+     public class CustomQueue<T> {
+         private final Queue<T> queue = new LinkedList<>();
+         private final int capacity;
+
+         public CustomQueue(int capacity) { this.capacity = capacity; }
+
+         public synchronized void produce(T item) throws InterruptedException {
+             while (queue.size() == capacity) {
+                 wait(); // Release lock, wait until items are consumed
+             }
+             queue.add(item);
+             notifyAll(); // Wake up threads waiting to consume
+         }
+
+         public synchronized T consume() throws InterruptedException {
+             while (queue.isEmpty()) {
+                 wait(); // Release lock, wait until items are produced
+             }
+             T item = queue.poll();
+             notifyAll(); // Wake up threads waiting to produce
+             return item;
+         }
+     }
+     ```
+  2. Implementation using ReentrantLock and Conditions (Explicit Locks):
+     ```java
+     public class CustomQueueWithLocks<T> {
+         private final Queue<T> queue = new LinkedList<>();
+         private final int capacity;
+         private final ReentrantLock lock = new ReentrantLock();
+         private final Condition notFull = lock.newCondition();
+         private final Condition notEmpty = lock.newCondition();
+
+         public CustomQueueWithLocks(int capacity) { this.capacity = capacity; }
+
+         public void produce(T item) throws InterruptedException {
+             lock.lock();
+             try {
+                 while (queue.size() == capacity) {
+                     notFull.await(); // Waits and releases lock
+                 }
+                 queue.add(item);
+                 notEmpty.signalAll(); // Signal consumer threads
+             } finally {
+                 lock.unlock();
+             }
+         }
+
+         public T consume() throws InterruptedException {
+             lock.lock();
+             try {
+                 while (queue.isEmpty()) {
+                     notEmpty.await(); // Waits and releases lock
+                 }
+                 T item = queue.poll();
+                 notFull.signalAll(); // Signal producer threads
+                 return item;
+             } finally {
+                 lock.unlock();
+             }
+         }
+     }
+     ```
 
 * Virtual Threads (Java 21 Project Loom):
   Lightweight threads managed by the JVM instead of the operating system.
@@ -465,6 +689,7 @@
       System.out.println("Running on virtual thread: " + Thread.currentThread().isVirtual());
   });
   ```
+
 
 
 8. MODERN JAVA FEATURES (JAVA 9 - 21) [Importance: 9/10]
@@ -514,7 +739,91 @@
   ```
 
 
-9. CORE JAVA ANNOTATIONS & RATINGS [Importance: 8.5/10]
+9. ENTERPRISE DESIGN PATTERNS [Importance: 9/10]
+--------------------------------------------------------------------------------
+* The Singleton Design Pattern:
+  Ensures that a class has only one instance and provides a global point of access to it.
+  
+  1. Double-Checked Locking (Lazy & Thread-Safe):
+     - Uses `volatile` to prevent instruction reordering issues by the compiler/CPU during instance creation.
+     ```java
+     public class DoubleCheckedSingleton {
+         private static volatile DoubleCheckedSingleton instance;
+
+         private DoubleCheckedSingleton() {
+             // Protect against reflection instantiation
+             if (instance != null) {
+                 throw new RuntimeException("Use getInstance() method to get the single instance.");
+             }
+         }
+
+         public static DoubleCheckedSingleton getInstance() {
+             if (instance == null) { // First check (no synchronization)
+                 synchronized (DoubleCheckedSingleton.class) {
+                     if (instance == null) { // Second check (synchronized)
+                         instance = new DoubleCheckedSingleton();
+                     }
+                 }
+             }
+             return instance;
+         }
+     }
+     ```
+     
+  2. Bill Pugh Singleton (Recommended for Lazy Loading):
+     - Uses a static inner helper class. The helper class is not loaded into memory until `getInstance()` is called, achieving lazy loading. Thread safety is guaranteed by the JVM class-loading mechanism without synchronization overhead.
+     ```java
+     public class BillPughSingleton {
+         private BillPughSingleton() {}
+
+         private static class SingletonHelper {
+             private static final BillPughSingleton INSTANCE = new BillPughSingleton();
+         }
+
+         public static BillPughSingleton getInstance() {
+             return SingletonHelper.INSTANCE;
+         }
+     }
+     ```
+     
+  3. Enum Singleton (Simplest & Safest):
+     - Thread-safe by default, lazily loaded, and inherently protected against all reflection and serialization attacks.
+     ```java
+     public enum EnumSingleton {
+         INSTANCE;
+         
+         public void performAction() {
+             System.out.println("Enum Singleton action");
+         }
+     }
+     ```
+
+* Protecting Singletons from Coding Attacks:
+  In senior interviews, you are often asked to show how code can break a Singleton and how to write defenses against it:
+  1. Reflection Attack:
+     - Attack: Access private constructor using reflection:
+       `Constructor<DoubleCheckedSingleton> constructor = DoubleCheckedSingleton.class.getDeclaredConstructor(); constructor.setAccessible(true);`
+     - Protection: Throw an exception inside the constructor if the instance is already instantiated.
+  2. Serialization/Deserialization Attack:
+     - Attack: Deserializing a singleton instance generates a completely new instance in memory.
+     - Protection: Implement the `readResolve()` hook method to return the existing instance.
+       ```java
+       protected Object readResolve() {
+           return getInstance(); // Returns the existing instance, discarding deserialized object
+       }
+       ```
+  3. Cloning Attack:
+     - Attack: If the singleton implements `Cloneable`, calling `clone()` creates a duplicate instance.
+     - Protection: Override `clone()` and throw `CloneNotSupportedException`.
+       ```java
+       @Override
+       protected Object clone() throws CloneNotSupportedException {
+           throw new CloneNotSupportedException("Singleton class cannot be cloned");
+       }
+       ```
+
+
+10. CORE JAVA ANNOTATIONS & RATINGS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
 * `@Override` [Interview Importance Rating: 10/10]
   - Type: Compile-time check.
@@ -575,7 +884,7 @@
     Requires `jakarta.inject` or `javax.inject` package dependencies.
 
 
-10. FREQUENTLY ASKED INTERVIEW QUESTIONS [Importance: 10/10]
+11. FREQUENTLY ASKED INTERVIEW QUESTIONS [Importance: 10/10]
 --------------------------------------------------------------------------------
 * Q1: How does HashMap handle collisions under the hood, and what changed in Java 8?
   - A: In Java, HashMap resolves collisions using chaining. When two keys map to the same bucket index:

@@ -167,6 +167,27 @@
   compares entity state with its original state and generates SQL UPDATE statements without needing 
   to invoke `save()` explicitly.
 
+* JPA Performance & Optimization Techniques:
+  1. Pagination vs. Slice:
+     - `Page<T>`: Triggers an extra `select count(...)` query to calculate total elements/pages. This count query can be extremely slow on large tables.
+     - `Slice<T>`: Queries only `pageSize + 1` elements. It doesn't calculate the total size, only checking if a "next" page is available (by checking if the extra element was returned). Recommended for endless scroll/infinite scroll UI components.
+  2. Projections (Interface-based vs. Class-based DTO):
+     - Interface-based: Declares an interface with getter methods matching result aliases. Spring creates a runtime proxy.
+     - Class-based (DTO Constructor Expression): Uses `SELECT new com.example.UserDto(u.id, u.username) FROM User u`. Bypasses loading whole entities into Hibernate persistence context (L1 cache), reducing memory and skipping dirty check comparison overhead.
+  3. JDBC Batching:
+     - Enable batching in `application.yml` to bundle inserts/updates:
+       `spring.jpa.properties.hibernate.jdbc.batch_size=20`
+       `spring.jpa.properties.hibernate.order_inserts=true`
+       `spring.jpa.properties.hibernate.order_updates=true`
+     - Caveat: `@GeneratedValue(strategy = GenerationType.IDENTITY)` disables Hibernate's batching. Because IDENTITY relies on database-generated primary keys, Hibernate must execute each SQL INSERT immediately to get the ID. Use `SEQUENCE` generator or UUIDs to enable batching.
+  4. Read-Only Transactions:
+     - `@Transactional(readOnly = true)`: Tells Hibernate to skip dirty check snapshotting (dirty checking cache) and avoid database locks, optimizing query performance.
+  5. Caching Levels (L1 vs. L2 Cache):
+     - First-Level (L1) Cache: Bound to the Hibernate Session (`EntityManager`). Enabled by default. Guarantees that query execution within the same transaction/session returns the identical cached instance for the same ID.
+     - Second-Level (L2) Cache: Global cache (e.g., Ehcache, Redis) shared across sessions/transactions. Caches entity data by ID. Must be explicitly enabled.
+  6. Bulk Modifying Operations:
+     - Use `@Modifying` and `@Query("UPDATE User u SET u.active = false WHERE u.lastLogin < :date")`. Bypasses entity lifecycle states and writes directly. Use `@Modifying(clearAutomatically = true)` to avoid stale entities in the persistence context.
+
 
 5. VALIDATION & EXCEPTION HANDLING [Importance: 9/10]
 --------------------------------------------------------------------------------
@@ -196,40 +217,186 @@
   }
   ```
 
+* Extending `ResponseEntityExceptionHandler`:
+  To customize default HTTP exceptions thrown by Spring MVC (like `HttpRequestMethodNotSupportedException`, `HttpMediaTypeNotSupportedException`), extend `ResponseEntityExceptionHandler` instead of writing individual `@ExceptionHandler` methods from scratch. It provides hook methods (e.g., `handleMethodArgumentNotValid`) that you can override to format responses consistently.
 
-6. MICROSERVICES & SPRING CLOUD [Importance: 9/10]
+* Handling Filter-Level Exceptions (Spring Security Filter exceptions):
+  - Problem: Filters (such as custom JWT authorization filters) execute before Spring's `DispatcherServlet`. Since `@ControllerAdvice` / `@RestControllerAdvice` are registered inside the `DispatcherServlet` lifecycle, exceptions thrown in filters (e.g. ExpiredJwtException) bypass the global exception handler and return default web server error containers.
+  - Resolution 1 (Delegating to Resolver): Inject Spring's `HandlerExceptionResolver` bean into the filter, catch the exception, and delegate it to the resolver. This routes the exception back to the ControllerAdvice:
+    ```java
+    @Component
+    public class JwtAuthenticationFilter extends OncePerRequestFilter {
+        @Autowired
+        @Qualifier("handlerExceptionResolver")
+        private HandlerExceptionResolver resolver;
+
+        @Override
+        protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) {
+            try {
+                // validate JWT token
+                filterChain.doFilter(request, response);
+            } catch (Exception ex) {
+                // Delegate to Global Exception Handler
+                resolver.resolveException(request, response, null, ex);
+            }
+        }
+    }
+    ```
+  - Resolution 2 (Security Exception EntryPoints): Configure custom `AuthenticationEntryPoint` (for 401 Unauthorized exceptions) and `AccessDeniedHandler` (for 403 Forbidden exceptions) beans, and register them in the `SecurityFilterChain` definition to serialize custom error responses.
+
+
+6. SPRING CLOUD INFRASTRUCTURE & IMPLEMENTATION [Importance: 9.5/10]
 --------------------------------------------------------------------------------
-* Eureka Service Discovery:
-  Allows services to find and communicate with each other dynamically without hardcoding IP addresses 
-  and ports.
-  - Service Registry: Central server where microservices register their metadata upon startup.
-  - Service Client: Microservices query Eureka to locate target instances.
+* Eureka Service Discovery & Registry:
+  - Purpose: Dynamically registers and locates service instances, avoiding hardcoding hostnames/IPs.
+  - Heartbeats & Health Checks: Clients send heartbeat requests to Eureka every 30 seconds (default). If no heartbeat is received for 90 seconds, Eureka removes the instance.
+  - Client-Side Caching: Clients cache the registry database locally, allowing communication to continue even if the Eureka Server crashes.
+  - Eureka Self-Preservation Mode: If network issues occur, Eureka might stop receiving heartbeats from many services. Instead of evicting them (which would break communication), Eureka enters self-preservation mode, keeping all current registrations active. Triggered if the rate of renewed heartbeats drops below 85% (`eureka.server.renewal-percent-threshold=0.85`).
+  - Annotations: `@EnableEurekaServer` on the Registry server, `@EnableDiscoveryClient` (or just adding client dependency) on clients.
 
-* Config Server:
-  Provides centralized configuration management across all microservices. Config files are stored 
-  in a version-controlled repository (Git) and served via HTTP.
+* Centralized Configuration (Spring Cloud Config Server):
+  - Purpose: Externalizes configuration across environments (Dev, QA, Prod) in a Git, SVN, or Vault backend.
+  - Dynamic Configuration Refresh:
+    1. Annotate Beans using dynamic properties with `@RefreshScope`.
+    2. Trigger refresh manually by sending an HTTP POST request to `/actuator/refresh` on individual services.
+    3. Automate refresh via Spring Cloud Bus: When configuration changes in Git, a webhook notifies the Config Server. Config Server publishes a refresh event to an event broker (RabbitMQ/Kafka). All microservice instances subscribed to the bus receive the event and refresh their properties dynamically.
 
-* Spring Cloud Gateway:
-  A single entry point (reverse proxy) routing external clients to internal microservices. Handles 
-  routing rules, authentication, logging, and rate-limiting.
+* API Gateway (Spring Cloud Gateway):
+  - Purpose: Single entry point (reverse proxy) built on Spring WebFlux (non-blocking Netty engine).
+  - Core Concepts:
+    1. Route: Defined by an ID, a destination URI, predicates, and filters.
+    2. Predicate: Evaluates HTTP request conditions (path, headers, host, method, query params).
+    3. Filter: Modifies requests before forwarding downstream or responses before returning.
+  - Writing a Custom Gateway Filter:
+    ```java
+    @Component
+    public class CustomLoggingFilter extends AbstractGatewayFilterFactory<CustomLoggingFilter.Config> {
+        public CustomLoggingFilter() { super(Config.class); }
+        @Override
+        public GatewayFilter apply(Config config) {
+            return (exchange, chain) -> {
+                // Pre-filter: Log Request URI
+                System.out.println("Request Path: " + exchange.getRequest().getURI().getPath());
+                return chain.filter(exchange).then(Mono.fromRunnable(() -> {
+                    // Post-filter: Log Response Status
+                    System.out.println("Response Status: " + exchange.getResponse().getStatusCode());
+                }));
+            };
+        }
+        public static class Config { }
+    }
+    ```
+  - Rate Limiting: Configured at the Gateway using the `RequestRateLimiter` filter, backed by Redis and the Token Bucket Algorithm. Requires defining a `KeyResolver` bean (e.g., rate limit by client IP or authenticated username).
 
-* Feign Clients:
-  A declarative REST client builder. Simulates calling local methods while executing HTTP requests 
-  under the hood:
-  ```java
-  @FeignClient(name = "user-service")
-  public interface UserClient {
-      @GetMapping("/users/{id}")
-      UserDto getUserById(@PathVariable("id") Long id);
-  }
-  ```
+* Declarative HTTP Clients & Load Balancing:
+  - Feign Client: Declarative, blocking REST client. Annotate an interface with `@FeignClient(name="inventory-service")` and define standard Spring MVC mappings.
+  - WebClient: Modern, non-blocking, reactive HTTP client. Part of Spring WebFlux, handles reactive streams (Mono/Flux).
+  - Spring Cloud LoadBalancer: Replaced Netflix Ribbon. Performs client-side load balancing (Round-Robin or Random) by fetching service registry details from Eureka and routing requests across healthy instances.
 
-* Resilience4j (Circuit Breaker Pattern):
-  Prevents cascading service failures in microservice chains.
-  - States:
-    - Closed: Normal execution. Requests pass through.
-    - Open: Target service is failing. Requests fail fast immediately, triggering fallback methods.
-    - Half-Open: Probe state testing if the target service has recovered.
+* Resilience4j (Fault Tolerance & Self-Healing):
+  - Circuit Breaker: Prevents cascading failures.
+    - Configurations:
+      - `failureRateThreshold` (e.g. 50%): Triggers the state change to OPEN if failures exceed this percentage.
+      - `slidingWindowSize` (e.g. 100 requests): Number of calls recorded to evaluate the failure rate.
+      - `waitDurationInOpenState` (e.g. 10000ms): Time to wait before moving from OPEN to HALF-OPEN.
+      - `slowCallRateThreshold` (e.g. 75%) & `slowCallDurationThreshold` (e.g. 2000ms): Triggers OPEN state if slow calls exceed the threshold.
+  - Bulkhead: Restricts concurrent executions to isolate failures.
+    - Semaphore Bulkhead: Restricts concurrent threads executing a block.
+    - Thread-Pool Bulkhead: Uses isolated thread pools and bounded queues for target execution.
+  - Retry & RateLimiter: Automatically retries failed operations (with backoff configurations) and limits execution rates per time window.
+
+
+6.5 DISTRIBUTED SYSTEMS DESIGN PATTERNS [Importance: 10/10]
+--------------------------------------------------------------------------------
+* Data Consistency & Databases in Microservices:
+  - Database-per-Service: Every service owns its database. Prevents coupling but breaks SQL Joins.
+  - API Composition (Orchestration Join): The caller (or API Gateway) queries multiple microservices sequentially or in parallel and merges the payloads. Good for low data volumes; high network overhead.
+  - CQRS (Command Query Responsibility Segregation): Separates write operations (commands) from read operations (queries).
+    - Writes go to the transactional database (Command Side).
+    - An event-driven broker (Kafka/RabbitMQ) syncs writes to a read-optimized query database (like Elasticsearch or a denormalized SQL table) (Query Side).
+    - Queries hit the read-optimized DB, resolving joins instantly.
+  - Event Sourcing: State is persisted as a sequence of immutable events (event log) rather than the current state. State is reconstructed by replaying the events.
+
+* Distributed Transactions (Saga Pattern):
+  - Sagas manage transactions across multiple services using a series of local transactions. If one step fails, the Saga executes compensating transactions (reversals) to roll back the previous steps.
+  - Choreography Saga (Event-Driven):
+    1. Order Service creates an order in PENDING status and publishes an `OrderCreated` event.
+    2. Payment Service consumes the event, processes payment, and publishes `PaymentAuthorized` (or `PaymentFailed`).
+    3. Inventory Service consumes `PaymentAuthorized`, reserves stock, and publishes `StockReserved`.
+    - Pros: Highly decoupled, simple to set up.
+    - Cons: Hard to debug, risk of cyclic dependencies.
+  - Orchestration Saga (Central Coordinator):
+    1. Order Service acts as the Orchestrator, storing the Saga state.
+    2. Orchestrator calls Payment Service. Payment Service responds with success.
+    3. Orchestrator calls Inventory Service. Inventory fails (e.g., out of stock).
+    4. Orchestrator triggers compensating actions: calls Payment Service to refund.
+    - Pros: Single point of control, prevents cycles.
+    - Cons: High coupling of orchestrator logic, single point of failure for the Saga state machine.
+
+* Transactional Messaging (Outbox Pattern):
+  - Problem: A service performs a database write (e.g., saves an order) and publishes an event to Kafka (e.g., `OrderCreated`). If the DB write succeeds but the Kafka broker is down, the system becomes inconsistent. If Kafka succeeds but the DB rolls back, you publish a ghost event.
+  - Solution (Transactional Outbox):
+    1. Inside the same database transaction, write the business data to the `orders` table AND write an event record to an `outbox` table. Since they are in the same DB, ACID guarantees both succeed or fail.
+    2. A background process (Message Relayer) reads the `outbox` table.
+       - Option A (Polling Publisher): A scheduled task queries the `outbox` table and publishes messages to Kafka, then deletes them.
+       - Option B (Change Data Capture - CDC): Tools like Debezium monitor the database transaction log (binlog/WAL) directly, capturing inserts into the `outbox` table and pushing them to Kafka with sub-millisecond latency.
+  - Ensures At-Least-Once Delivery. Consumers must implement idempotency (de-duplication using event IDs).
+
+* Distributed Security & Token Propagation:
+  - Centralized Security Architecture:
+    1. Client authenticates via API Gateway (OAuth2 Client) against an Identity Provider (e.g., Keycloak, Okta).
+    2. Gateway receives the opaque authorization code, exchanges it for an Access Token (JWT), and manages sessions.
+    3. When routing requests downstream, the Gateway attaches the JWT in the `Authorization: Bearer <token>` header.
+    4. Downstream services validate the JWT signature locally using the Identity Provider's public keys (JWKS endpoint) to avoid network calls.
+  - Token Propagation / Header Customization:
+    - To pass user context (e.g., authenticated User ID, roles) downstream, the Gateway can decode the JWT and inject headers:
+      `exchange.mutate().request(r -> r.header("X-User-Id", userId).header("X-User-Roles", roles)).build();`
+    - Feign Client Token Propagation: Write a custom `RequestInterceptor` bean to copy the incoming JWT bearer header to outbound Feign requests:
+      ```java
+      @Component
+      public class FeignClientInterceptor implements RequestInterceptor {
+          @Override
+          public void apply(RequestTemplate template) {
+              ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+              if (attributes != null) {
+                  String token = attributes.getRequest().getHeader("Authorization");
+                  if (token != null) {
+                      template.header("Authorization", token);
+                  }
+              }
+          }
+      }
+      ```
+
+* Distributed Tracing & Observability:
+  - In Spring Boot 3, Micrometer Tracing (replacing Spring Cloud Sleuth) creates and propagates context.
+  - Concepts:
+    - Trace ID: A unique identifier that is shared by all microservices processing a single upstream request. It spans the entire request network lifecycle.
+    - Span ID: A unique identifier representing a single unit of work (e.g., an HTTP call, database query) within a single microservice.
+  - Header Propagation: Spans propagate across HTTP boundaries using standardized headers (like W3C Trace Context or B3 Propagation headers: `X-B3-TraceId`, `X-B3-SpanId`).
+  - Actuator Health Endpoints for Kubernetes:
+    - `/actuator/health/liveness`: Indicates if the container is running. If unhealthy, Kubernetes restarts the pod.
+    - `/actuator/health/readiness`: Indicates if the service is ready to accept traffic. If unhealthy, Kubernetes removes it from the service load balancer routing.
+
+* Containerization & Layered Builds:
+  - Docker Layered JARs: Standard Spring Boot fat JARs copy all application classes and third-party dependencies into a single layer. Any source code change invalidates the entire layer, causing Docker to re-download all dependencies.
+  - Solution: Use Layered JARs in the Dockerfile. It splits the JAR into four layers: `dependencies`, `spring-boot-loader`, `snapshot-dependencies`, and `application`. Only the `application` layer changes on code updates, reducing build and deployment times.
+    ```dockerfile
+    FROM eclipse-temurin:17-jre-alpine as builder
+    WORKDIR application
+    ARG JAR_FILE=target/*.jar
+    COPY ${JAR_FILE} application.jar
+    RUN java -Djarmode=layertools -jar application.jar extract
+
+    FROM eclipse-temurin:17-jre-alpine
+    WORKDIR application
+    COPY --from=builder application/dependencies/ ./
+    COPY --from=builder application/spring-boot-loader/ ./
+    COPY --from=builder application/snapshot-dependencies/ ./
+    COPY --from=builder application/application/ ./
+    ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
+    ```
+
 
 
 7. SPRING SECURITY & JWT [Importance: 9.5/10]
@@ -262,6 +429,28 @@
   4. For subsequent requests, client includes the token in the `Authorization: Bearer <token>` header.
   5. A custom OncePerRequestFilter intercepts requests, extracts the JWT, verifies its signature, 
      and loads user details into the Spring Security Context.
+
+* Spring Security Architecture & Filter Chain Internals:
+  - DelegatingFilterProxy & FilterChainProxy: Spring Security resides inside standard Servlet Filters. The `DelegatingFilterProxy` acts as the bridge, capturing servlet request flows and delegating control to Spring's `FilterChainProxy` bean containing the security filter chains.
+  - Core Authentication Workflow Components:
+    1. `SecurityContextHolder`: Global holder linking thread execution context to the `SecurityContext` containing user security metadata.
+    2. `SecurityContext`: Holds the active `Authentication` token representing the authenticated user.
+    3. `Authentication`: Contains the user principal (e.g., username/UserDetails), credentials (e.g., passwords/tokens), and authorities (granted roles as `GrantedAuthority`).
+    4. `AuthenticationManager` (default: `ProviderManager`): Orchestrator that delegates authentication attempts to one or more configured `AuthenticationProvider` instances.
+    5. `AuthenticationProvider`: Performs target authentication checking. E.g., `DaoAuthenticationProvider` checks passwords against a database.
+    6. `UserDetailsService`: Core service interface matching database records with usernames and returning a `UserDetails` instance.
+  - Password Hashing:
+    Configure a `BCryptPasswordEncoder` bean. BCrypt uses a one-way hashing algorithm with random salting internally. The salt is embedded within the output string itself, which protects against dictionary/rainbow-table attacks.
+  - Method-Level Security:
+    Enable via `@EnableMethodSecurity`.
+    - `@PreAuthorize("hasRole('ADMIN') or #username == authentication.principal.username")`: Inspects permissions *before* running methods using SpEL.
+    - `@PostAuthorize("returnObject.owner == authentication.name")`: Inspects permissions *after* method completion, evaluating target returned values.
+  - Authentication EntryPoints vs. AccessDeniedHandlers:
+    - `AuthenticationEntryPoint` (401 Unauthorized): Triggered when an unauthenticated request attempts to access secure endpoints.
+    - `AccessDeniedHandler` (403 Forbidden): Triggered when an authenticated user attempts to access endpoints for which they lack authority.
+  - CSRF (Cross-Site Request Forgery):
+    - CSRF exploits the browser's default behavior of automatically attaching credentials (cookies) to outbound HTTP requests.
+    - For stateless APIs utilizing JWTs passed via the `Authorization: Bearer <token>` header, the browser does not attach the token automatically. Therefore, CSRF attacks cannot succeed, and disabling `csrf` in Spring Security config is standard and secure.
 
 
 8. SPRING BOOT TESTING [Importance: 8.5/10]
@@ -464,4 +653,107 @@
       This injects a dynamic proxy object instead of the actual instance. Every time the singleton bean invokes a method 
       on the proxy, the proxy requests a new instance from the container.
 
+* Q7: How do you handle exceptions thrown in custom Spring Security filters (before DispatcherServlet)?
+  - A: Since `@ControllerAdvice` only catches exceptions originating within the `DispatcherServlet` scope, it cannot capture exceptions thrown in filters (e.g., during JWT parsing inside a custom `OncePerRequestFilter`).
+    1. Method 1 (Delegation): Inject the `HandlerExceptionResolver` bean (specifically the `handlerExceptionResolver` name) into your filter, catch the exception, and delegate:
+       `resolver.resolveException(request, response, null, ex);`
+       This forwards the exception to your `@RestControllerAdvice`.
+    2. Method 2 (Custom EntryPoints): Register custom implementations of `AuthenticationEntryPoint` (401 Unauthorized) or `AccessDeniedHandler` (403 Forbidden) directly in the `SecurityFilterChain` settings:
+       `http.exceptionHandling(ex -> ex.authenticationEntryPoint(myEntryPoint).accessDeniedHandler(myDeniedHandler))`
+
+* Q8: What is the performance difference between `Page` and `Slice` in Spring Data JPA pagination?
+  - A: 
+    - `Page<T>` returns a page of data and also issues an extra, independent `select count(...)` query to calculate the total number of records and pages. For large database tables, this count query triggers a full table scan or index scan, causing severe performance degradation.
+    - `Slice<T>` only queries `pageSize + 1` records. By checking if the extra element is returned, it determines if a "next page" exists without performing a count query, saving database resources. Recommended for endless scroll/mobile feeds where total count is not needed.
+
+* Q9: What is the step-by-step architectural workflow to decompose a monolith into microservices?
+  - A:
+    1. Domain Analysis: Define bounded contexts using Domain-Driven Design (DDD) to isolate domain modules (e.g., billing, inventory).
+    2. API Gateway & Registry Setup: Spin up an API Gateway (Spring Cloud Gateway) and a service registry (Eureka) to manage routing and discovery.
+    3. Strangler Fig Pattern: Incrementally slice off logic blocks from the monolith and deploy them as microservices. Route client traffic for these routes through the API Gateway, slowly strangling the monolith.
+    4. Database De-composition (Database-per-Service): Deccouple the shared database. Each microservice gets its own private database.
+    5. Handle Distributed Joins: Implement API Composition (gateway-level joins) or CQRS patterns (publishing events to build read-optimized databases).
+    6. Handle Distributed Transactions: Implement the Saga Pattern (Orchestration or Choreography) using compensating transactions to undo actions in case of failures.
+    7. Distributed Tracing: Configure TraceIds and SpanIds (using Micrometer & Zipkin/Jaeger) to maintain end-to-end observability.
+
+* Q10: What are Projections in Spring Data JPA and how do they optimize performance?
+  - A: Projections allow fetching only a subset of columns from the database instead of loading the entire entity object.
+    - Interface-based: You declare an interface with getters matching the alias names in the database select query. Spring creates dynamic proxies.
+    - Class-based (DTOs): You write a Java class (or Record) with a constructor and use a constructor expression:
+      `@Query("SELECT new com.example.UserDto(u.id, u.email) FROM User u")`
+    - Performance Benefit: It generates a selective `SELECT id, email ...` query instead of `SELECT * ...`, saving network bandwidth. Additionally, because DTO objects are not managed by Hibernate's entity manager, they bypass the L1 cache and dirty-checking snapshot comparisons, reducing memory and CPU usage.
+
+* Q11: Why does `@GeneratedValue(strategy = GenerationType.IDENTITY)` disable JDBC batch inserts in Hibernate, and how do you resolve it?
+  - A:
+    - Reason: To support batching, Hibernate needs to execute multiple SQL inserts together and retrieve IDs at the end. However, the `IDENTITY` generation strategy relies on the database's auto-increment feature. Hibernate must execute each insert statement immediately to obtain the generated primary key (so it can assign it to the entity object). This makes batching impossible.
+    - Resolution:
+      1. Switch to `GenerationType.SEQUENCE` (if using PostgreSQL, Oracle) or a custom ID generation strategy (like UUIDs). This allows Hibernate to pre-fetch a batch of IDs using sequence generators before executing inserts.
+      2. For bulk insert performance optimization, use Spring's `JdbcTemplate.batchUpdate(...)` directly, bypassing Hibernate entirely for those operations.
+
+* Q12: Explain the internal Authentication flow in Spring Security.
+  - A:
+    1. HTTP Request arrives and passes through the security filter chain.
+    2. A filter (e.g. `UsernamePasswordAuthenticationFilter`) extracts user credentials from the request and wraps them into an unauthenticated `Authentication` token (e.g., `UsernamePasswordAuthenticationToken`).
+    3. The filter passes this token to the `AuthenticationManager` (usually `ProviderManager`).
+    4. The `AuthenticationManager` iterates through its list of `AuthenticationProvider`s.
+    5. A provider (e.g., `DaoAuthenticationProvider`) accepts the token, retrieves user details from a database using a `UserDetailsService`, hashes and compares the passwords.
+    6. If matches, the provider returns a fully authenticated `Authentication` token containing user authorities.
+    7. The filter receives the authenticated token and saves it in the `SecurityContext` via `SecurityContextHolder.getContext().setAuthentication(auth)`.
+
+* Q13: What is Eureka Self-Preservation Mode, and why is it crucial in a production microservices cluster?
+  - A: 
+    - Scenario: In production, a temporary network glitch might prevent microservices from sending heartbeat signals to the Eureka server, even though the services are perfectly healthy and running.
+    - Behavior: By default, Eureka expects heartbeats every 30 seconds. If it doesn't receive a heartbeat within 90 seconds, it evicts the instance. If a network partition occurs, Eureka would evict healthy instances, causing a cascade of failures.
+    - Self-Preservation: To prevent this, if the number of renewed heartbeats drops below the expected threshold (default: 85% of total registered instances), Eureka enters "Self-Preservation Mode." It freezes the registry eviction process and keeps all current registered services active.
+    - Result: It prioritizes Availability over Consistency (AP system under the CAP Theorem), ensuring services can still attempt to call each other, assuming the network partition will resolve soon.
+
+* Q14: How does Spring Cloud Config dynamically propagate configuration changes without restarting the microservices?
+  - A:
+    1. Annotate target Spring Beans that read configurations with `@RefreshScope`. This instructs Spring to recreate the bean when a refresh event occurs.
+    2. When property files are updated in the Config Server (e.g., in a Git repository), send an HTTP POST request to the `/actuator/refresh` endpoint of the microservice.
+    3. To refresh all services at once, configure **Spring Cloud Bus** backed by a message broker (RabbitMQ or Kafka):
+       - Connect Config Server and all microservices to the common Message Bus.
+       - A Git Webhook triggers a notification to the Config Server upon code push.
+       - Config Server publishes a `RefreshRemoteApplicationEvent` to the bus.
+       - All microservices subscribed to the bus receive this event, clearing their `@RefreshScope` bean caches and re-injecting the updated properties immediately.
+
+* Q15: Explain the Transactional Outbox Pattern and why it is preferred over direct messaging inside a database transaction.
+  - A:
+    - Problem: If a service saves an entity to the database and then directly publishes an event to a message broker (like Kafka) inside the same execution block, you risk a partial failure:
+      - If the database write commits but Kafka is down, the message is lost (data inconsistency).
+      - If Kafka succeeds but the database transaction rolls back, you publish a "ghost event" for data that doesn't exist.
+    - Solution:
+      1. Write the business data to the transactional table (e.g., `orders`) and write an event record to an `outbox` table within the same database transaction. Since they share the same DB transaction, they are guaranteed to either both commit or both roll back (ACID).
+      2. A separate background process (Message Relayer) continuously reads from the `outbox` table.
+      3. It publishes the event to the message broker.
+      4. Once publishing is acknowledged, the relayer deletes or marks the outbox record as processed.
+      - Optimization: Use Change Data Capture (CDC) tools like Debezium to read database transaction logs (WAL/binlog) directly to publish events with minimal database overhead.
+
+* Q16: How do you implement a distributed tracing solution in Spring Boot 3, and what is the difference between a Trace ID and a Span ID?
+  - A:
+    - Implementation: Spring Boot 3 uses **Micrometer Tracing** (which replaced Spring Cloud Sleuth) combined with a reporter library like Zipkin or Jaeger. Adding these dependencies automatically configures tracer beans.
+    - Trace ID: A single unique identifier representing the entire end-to-end request chain across multiple microservices. All logs and spans generated during this request share the exact same Trace ID.
+    - Span ID: A unique identifier representing a single segment of work within a specific microservice (e.g., a database lookup or an HTTP call downstream). A single Trace contains multiple nested Spans.
+    - Propagation: Distributed tracing propagation works by injecting the trace context headers (e.g., W3C format `traceparent` or B3 headers) into outbound HTTP requests (using Feign, WebClient, etc.). Downstream services extract these headers to continue the trace session.
+
+* Q17: What are Kubernetes Liveness and Readiness Probes, and how do you expose them in a Spring Boot application?
+  - A:
+    - Liveness Probe: Determines if a container is running. If it fails, Kubernetes kills the container and starts a new one.
+    - Readiness Probe: Determines if a container is ready to accept HTTP traffic. If it fails, Kubernetes removes the pod from the service's endpoint load balancer routing.
+    - Spring Boot Exposure: Spring Boot Actuator automatically exposes separate endpoints when running in a Kubernetes environment:
+      - Liveness: `/actuator/health/liveness` (returns 200 OK if JVM is running).
+      - Readiness: `/actuator/health/readiness` (returns 200 OK only if database connections, message brokers, and other components are initialized).
+      - Enable in config: `management.endpoint.health.probes.enabled=true`.
+
+* Q18: Compare Choreography and Orchestration Saga Patterns. In what scenario would you prefer one over the other?
+  - A:
+    - Choreography Saga (Event-Driven):
+      - Workflow: There is no central controller. Each service executes its local transaction, and publishes events that trigger transactions in other services.
+      - Pros: Highly decoupled; simple to implement for small workflows.
+      - Cons: Hard to understand the entire transaction flow; risk of cyclic dependencies; difficult to write integration tests.
+    - Orchestration Saga (Command-Driven):
+      - Workflow: A central "Orchestrator" service defines the workflow steps and explicitly commands each service to execute its local transaction (and commands compensating actions if any step fails).
+      - Pros: Centralized control; clear visualization of the state machine; prevents cyclic dependencies.
+      - Cons: Higher coupling as the orchestrator must know about all participant APIs; potential single point of failure if the orchestrator state store goes down.
+    - Selection Rule: Prefer **Choreography** for simple workflows with 2 to 4 microservices. Prefer **Orchestration** for complex business processes with many steps, loops, or complex conditional rollbacks.
 
