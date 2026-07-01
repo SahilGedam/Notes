@@ -99,3 +99,34 @@
   - Time Complexity: `O(V + E)` (where V is vertices, E is edges)
   - Space Complexity: `O(V)`
 ================================================================================
+
+5. CLEAN CODE & PROGRAMMING PRINCIPLES [Importance: 9/10]
+--------------------------------------------------------------------------------
+Writing clean, maintainable, and readable code is essential for professional backend development.
+
+* SOLID Principles:
+  1. **Single Responsibility Principle (SRP)**:
+     - *Rule*: A class/module should have only one reason to change.
+     - *Example*: Do not compute billing totals and format a PDF receipt inside the same class. Split them into `BillingService` and `ReceiptFormatter`.
+  2. **Open/Closed Principle (OCP)**:
+     - *Rule*: Software entities (classes, modules, functions) should be open for extension but closed for modification.
+     - *Example*: Use interfaces or abstract base classes. To add a new payment gateway (e.g. Stripe), write a `StripePaymentProvider implements PaymentProvider` rather than modifying a conditional `switch` block in the existing `PaymentService` class.
+  3. **Liskov Substitution Principle (LSP)**:
+     - *Rule*: Subtypes must be substitutable for their base types without altering correctness.
+     - *Example*: A derived class must not violate the contracts of the parent class (e.g. throwing a `NotImplementedException` for methods defined in the interface, or altering validation logic constraints unexpectedly).
+  4. **Interface Segregation Principle (ISP)**:
+     - *Rule*: Clients should not be forced to depend on interfaces they do not use.
+     - *Example*: Split a bloated interface `Worker` containing `writeCode()`, `manageTeam()`, and `designMockups()` into small, focused interfaces like `Developer`, `Manager`, and `Designer`.
+  5. **Dependency Inversion Principle (DIP)**:
+     - *Rule*: High-level modules should not depend on low-level modules; both should depend on abstractions (interfaces).
+     - *Example*: A high-level `OrderController` should depend on an interface `OrderService` rather than a concrete implementation `OrderServiceImpl`.
+
+* Coding Acronyms:
+  - **DRY (Don't Repeat Yourself)**: Avoid code duplication. Extract redundant lines/logic into reusable helper functions or helper classes to simplify updates.
+  - **KISS (Keep It Simple, Stupid)**: Avoid over-engineering. Write simple, clear, readable code instead of complex, clever one-liners that are hard for peers to debug.
+  - **YAGNI (You Aren't Gonna Need It)**: Do not implement features or architectural patterns until they are actually needed. Focus on current requirements rather than speculative future features.
+
+* Naming Conventions & Code Reuse:
+  - Use descriptive, meaningful names: avoid single-character variables (e.g., `let u` vs `let user`), and write clear verbs for functions (`getUserById()` vs `data()`).
+  - Favor Composition over Inheritance to achieve modular code reuse without tight-coupling dependencies.
+================================================================================

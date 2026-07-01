@@ -99,3 +99,62 @@ E2E testing automates browser actions to test the entire application flow from e
     rich code generators.
   - Cons: Requires node engine setup, runs out-of-process.
 ================================================================================
+
+5. BACKEND INTEGRATION TESTING [Importance: 9/10]
+--------------------------------------------------------------------------------
+While unit testing tests a class/function in isolation by mocking all dependencies, 
+Integration Testing verifies that multiple units (e.g. Controller, Service, and 
+Database/External APIs) work together correctly.
+
+* Key Integration Testing Patterns:
+  - **In-Memory / Real Databases**: Avoid testing against your production database. Instead:
+    - *In-Memory Database*: Use lightweight databases (e.g., H2 database for Java/Spring Boot, sqlite memory mode) to run tests.
+      - *Caveat*: SQL syntax variations (H2 behaves differently than MySQL/PostgreSQL in functions, keys, and schemas).
+    - *Testcontainers (Recommended)*: A library that spins up lightweight, throwaway instances of real databases (Docker containers) during test suites execution. Ensures tests run against identical production database engines.
+  - **Mocking Downstream APIs**: Use tools like MockWebServer (Java) or Nock (Node.js) to mock responses from external HTTP services instead of hitting real APIs during tests.
+  - **Supertest (Node.js API Testing)**: In Express projects, `supertest` spins up the application server in memory and runs HTTP assertions:
+    ```javascript
+    const request = require('supertest');
+    const app = require('./app');
+
+    describe('GET /users', () => {
+      it('should return a list of users', async () => {
+        const res = await request(app)
+          .get('/api/users')
+          .set('Accept', 'application/json');
+        expect(res.statusCode).toEqual(200);
+        expect(res.body).toBeInstanceOf(Array);
+      });
+    });
+    ```
+  - **Transactional Rollback**: In database integration tests, wrap each test execution in a database transaction and roll it back when the test completes (`@Transactional` in Spring Boot). This ensures the test database remains clean/isolated between test cases.
+
+
+6. API TESTING & POSTMAN [Importance: 8/10]
+--------------------------------------------------------------------------------
+Postman is a popular API client used to build, test, and document HTTP requests.
+
+* Postman Core Testing Features:
+  - **Collections**: Grouping related API requests (endpoints) for a service.
+  - **Environments**: Declaring key-value variables (e.g., `{{baseUrl}}`, `{{token}}`) to easily switch between Local, QA, and Production target hosts.
+  - **Chaining Requests**: Saving variables dynamically from one response to use in the next request:
+    - Example: Capture JWT token on Login response and save it as a Collection Variable:
+      ```javascript
+      const response = pm.response.json();
+      pm.collectionVariables.set("jwt_token", response.accessToken);
+      ```
+    - Use in subsequent headers: `Authorization: Bearer {{jwt_token}}`
+  - **Postman Assertions**: Writing JavaScript assertions in the "Tests" tab of a request to automate validation:
+    ```javascript
+    pm.test("Status code is 200", function () {
+        pm.response.to.have.status(200);
+    });
+
+    pm.test("Response contains user details", function () {
+        const jsonData = pm.response.json();
+        pm.expect(jsonData.name).to.eql("Sahil");
+        pm.expect(jsonData.role).to.exist;
+    });
+    ```
+  - **Newman (CLI Runner)**: Command-line runner for Postman collections, allowing you to run Postman collections in CI/CD pipelines: `newman run my_collection.json -e my_env.json`.
+================================================================================

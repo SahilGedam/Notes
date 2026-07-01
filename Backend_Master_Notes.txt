@@ -4,8 +4,8 @@
 
 1. CLIENT-SERVER ARCHITECTURE & COMMUNICATIONS [Importance: 8.5/10]
 --------------------------------------------------------------------------------
-* Monolithic vs. Microservices Architecture:
-  - Monolithic: Single, unified codebase and deployment unit. Easy to develop, test,
+* Monolith vs Microservices Architecture:
+  - Monolith: Single, unified codebase and deployment unit. Easy to develop, test,
     and deploy initially, but harder to scale, maintain, and adopt new technologies
     as the application grows.
   - Microservices: Application split into small, autonomous, loosely coupled services.
@@ -16,10 +16,36 @@
       operational overhead, and distributed debugging.
 
 * API Architectures:
-  - REST (Representational State Transfer):
-    - Resource-oriented API design constraint.
-    - Key constraints: Client-server, Statelessness, Cacheability, Uniform Interface,
-      Layered System, and Code on Demand.
+  - REST Principles (Representational State Transfer):
+    - Resource-oriented API architectural style driven by 6 core constraints:
+      1. Client-Server: Separation of UI/concerns from database/storage concern.
+      2. Stateless: Every HTTP request must contain all context needed to process it. No session stored on server.
+      3. Cacheable: Responses must state if they can be cached to prevent client resource reloading.
+      4. Uniform Interface: Standard URIs, resource representation manipulations (e.g. JSON), self-descriptive messages, and HATEOAS.
+      5. Layered System: Clients interact with gateways, proxies, or load balancers transparently.
+      6. Code on Demand (Optional): Sending executable scripts (like JS) to client dynamically.
+    - REST Resource Naming & Nested Resources:
+      - Use plural nouns for resource endpoints: `/users`, `/products`, `/orders`.
+      - Represent hierarchical relationships using nested resources: `/users/5/orders` (gets orders belonging to user 5).
+      - Maintain clean resource naming: avoid verbs in URIs (e.g., use `POST /users` instead of `POST /createUser`).
+    - CRUD Mapping: Mapping DB CRUD operations to standard HTTP verbs:
+      - Create -> `POST /resources`
+      - Read -> `GET /resources` or `GET /resources/:id`
+      - Update (Replace) -> `PUT /resources/:id` (idempotent, replaces entire object)
+      - Update (Modify) -> `PATCH /resources/:id` (non-idempotent/idempotent, modifies specific fields)
+      - Delete -> `DELETE /resources/:id` (idempotent)
+    - HATEOAS (Hypermedia As The Engine Of Application State):
+      - A REST principle where responses return hypermedia links to guide the client on valid operations they can perform next.
+      - Example JSON:
+        {
+          "id": 42,
+          "name": "Widget",
+          "price": 19.99,
+          "_links": {
+            "self": { "href": "/products/42" },
+            "purchase": { "href": "/products/42/checkout", "method": "POST" }
+          }
+        }
     - Suffers from over-fetching (retrieving unnecessary fields) or under-fetching
       (requiring multiple endpoints/requests for a single view).
   - GraphQL:
@@ -92,6 +118,26 @@
   - `Cache-Control`: Caching directives (e.g., `no-cache`, `max-age=3600`).
   - CORS Headers: `Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, etc.
 
+* Server-side validation vs Client-side validation:
+  - Client-side validation (HTML/JS) runs in the browser, providing instant feedback but is easily bypassed by intercepting requests.
+  - Server-side validation is the final mandatory defense line to validate data schemas, required fields, and sanitize inputs before persistence.
+
+* HTTP Request Lifecycle (Detailed Step-by-Step):
+  1. URL Parsing & DNS Resolution: Browser parses scheme, host, port, path. It checks caches (browser, OS, router, ISP) for the host's IP. If not found, recursive DNS query: Root Domain (.) -> TLD (.com) -> Authoritative Nameserver -> returns IP.
+  2. TCP 3-Way Handshake: Client and server establish connection via Layer 4 TCP protocol: SYN -> SYN-ACK -> ACK.
+  3. TLS/SSL Handshake (Secure HTTPS): Client and server negotiate cipher suites. Server presents certificate (checked against browser trust store). A symmetric session key is generated via Diffie-Hellman/ECDH for encrypting the session.
+  4. HTTP Request Transmission: Client sends the request packet (Request Line, Headers, and Body) over the encrypted TLS socket.
+  5. Load Balancing & Reverse Proxy: Traffic hits the gateway (Nginx, ALB). The reverse proxy terminates TLS, handles caching, and forwards the raw request to the target backend application instance.
+  6. Application Processing: Web application routing framework (e.g. Express or Spring Boot) passes request through middlewares (CORS, Rate Limit, Auth verification, Body parsers, validation) to Controller -> Service -> Repository -> Database Query.
+  7. HTTP Response Generation: Controller formats data into a DTO and serializes it to JSON. Server writes status code, headers (Content-Type: application/json), and the body string to socket.
+  8. Connection Reuse or Teardown: If header `Connection: keep-alive` (default in HTTP/1.1 and 2), TCP socket remains open to process next requests. Otherwise, TCP teardown occurs (FIN -> ACK -> FIN -> ACK).
+
+* URI vs URL:
+  - URI (Universal Resource Identifier): Unique identifier for a resource (name, locator, or both).
+  - URL (Universal Resource Locator): A subset of URI that specifies the resource identifier AND the access protocol/mechanism to locate it (e.g., `https://example.com/index.html`).
+  - URN (Universal Resource Name): A subset of URI that identifies a resource by a persistent name in a namespace, without location info (e.g., `urn:isbn:0451524934`).
+  - Principle: All URLs are URIs, but not all URIs are URLs.
+
 
 3. AUTHENTICATION, AUTHORIZATION & SECURITY [Importance: 9.5/10]
 --------------------------------------------------------------------------------
@@ -158,9 +204,15 @@
   - Sharding (Horizontal Partitioning): Splitting tables horizontally across separate DB servers.
   - Connection Pooling: Reusing a pool of active database connections to avoid TCP handshake overhead.
 
+* Repository Pattern:
+  - Abstracts data access logic behind a collection-like interface, decoupling business logic from ORM frameworks or raw queries.
+
 
 5. CACHING STRATEGIES [Importance: 9/10]
 --------------------------------------------------------------------------------
+* Why cache?
+  - Reduces read latency, offloads database traffic, and increases throughput of highly repetitive reads.
+
 * Cache-Aside (Lazy Loading):
   - Application checks cache. If miss, queries database, updates cache, and returns.
   - Pros: Only caches requested data. Cache node failure is not fatal.
@@ -187,6 +239,9 @@
 
 6. MESSAGE QUEUES & EVENT-DRIVEN ARCHITECTURE [Importance: 8.5/10]
 --------------------------------------------------------------------------------
+* Why queues?
+  - Decouples services, buffers high traffic spikes, scales consumer workers horizontally, and processes tasks asynchronously.
+
 * Message Queues vs. Event Streams:
   - Message Queue (e.g., RabbitMQ): Message is delivered, processed, and acknowledged,
     then deleted from queue. Good for task dispatching.
@@ -220,9 +275,63 @@
 
 8. MONITORING, LOGGING & OBSERVABILITY [Importance: 7.5/10]
 --------------------------------------------------------------------------------
+* Why Logging?
+  - Records execution context, trace errors, monitors system health, and audits state changes.
+
 * Three Pillars of Observability:
   1. Metrics: Aggregate numerical values measured over time (CPU, latency, error rate).
   2. Logs: Timestamped discrete event records. Best formatted as structured JSON for easy indexing.
   3. Traces: End-to-end representation of a request's journey through a distributed microservices graph
      using correlated Trace IDs and Span IDs.
+
+* Structured Logging vs. Unstructured Logging:
+  - Unstructured Logging: Logs written as free-form strings: `[INFO] User 5 logged in from 192.168.1.1 at 12:00`. Hard to parse/search.
+  - Structured Logging: Logs written in a structured format (usually JSON) containing defined fields:
+    `{"timestamp": "2026-07-01T12:00:00Z", "level": "INFO", "message": "User login success", "userId": 5, "ipAddress": "192.168.1.1"}`
+  - Benefit: Essential for central log aggregators (ELK, Splunk, Datadog) to index, filter, query, and trigger alerts on specific fields.
+
+* Meaningful Error Messages & Logging Errors (Security vs. Debugging):
+  - Rule of Thumb: **Never leak implementation details to the client**. Stack traces, database schema details, or raw exception messages in HTTP responses (e.g. `SQL Grammatical Error: Table 'users' not found`) can be exploited by attackers.
+  - Production Pattern:
+    1. Client-Side: Return clean, sanitized, standard error formats:
+       `{"statusCode": 400, "errorCode": "INVALID_INPUT", "message": "The username must be alphanumeric.", "timestamp": "..."}`
+    2. Backend Logs: Log the complete exception object, trace context, and stack trace internally for debugging. Link client response to internal logs using a `correlationId` or `traceId`.
+
+
+9. BACKGROUND JOBS & TASK SCHEDULERS [Importance: 8/10]
+--------------------------------------------------------------------------------
+* Why Background Jobs?
+  - Offloads resource-intensive or long-running tasks (e.g. sending emails, generating PDF reports, processing video uploads) from the HTTP request-response cycle to keep APIs responsive (avoiding 504 Gateway Timeouts).
+
+* Core Components:
+  - **Scheduler**: Triggers tasks based on time schedules (e.g. Cron jobs like `0 0 * * *` for daily midnight reports).
+  - **Task/Job Queue**: A persistent message store (Redis, RabbitMQ, DB table) where jobs are queued.
+  - **Worker**: Autonomous background processes/threads that poll the queue, pull jobs, and execute them.
+
+* Retry Strategies & Retries with Exponential Backoff:
+  - Background jobs can fail due to transient errors (external API timeout, database lock).
+  - **Retry with Exponential Backoff**: Instead of retrying immediately (which can overload failing downstream systems - thundering herd), wait times increase exponentially with each attempt (e.g. 2s, 4s, 8s, 16s...) up to a max threshold.
+  - **Jitter**: Adding random noise (jitter) to the backoff interval prevents all retried jobs from hitting downstream servers at the exact same millisecond.
+
+
+10. ADVANCED DISTRIBUTED ARCHITECTURE & SYSTEM DESIGN BASICS [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+* Distributed Transactions:
+  - In microservices (database-per-service), traditional transactional locks (ACID) cannot scale.
+  - **Two-Phase Commit (2PC)**: A coordinator queries all nodes to prepare writes (Phase 1), then commands them to commit (Phase 2). Highly blocking and vulnerable to coordinator crashes.
+  - **Saga Pattern**: Translates a business transaction into a chain of local transactions.
+    - *Choreography*: Services emit events; other services listen and execute local transactions asynchronously.
+    - *Orchestration*: A central coordinator service tells each participant which transaction to execute.
+    - *Compensating Transactions*: If any step fails, the Saga coordinates rollback actions in reverse to restore consistency (eventual consistency).
+  - **Transactional Outbox Pattern**:
+    - Ensures atomicity between database updates and message broker event publishing.
+    - A local database transaction writes the update to a business table AND appends an event to an `Outbox` table.
+    - An independent "Outbox Poll" process reads the Outbox table and publishes events to RabbitMQ/Kafka, ensuring at-least-once delivery without distributed locks.
+
+* Common System Design Blueprint Components:
+  - **Rate Limiter**: Controls traffic rate. Algorithms: Token Bucket (supports bursts), Leaky Bucket (smooths outflow), Sliding Window.
+  - **URL Shortener**: Client sends long URL -> Server generates hash (Base62 encoding of an auto-incrementing ID or key generation service) -> Saves in DB (SQL/NoSQL) -> Returns short link. Redirects via HTTP 301 (Moved Permanently, cached) or 302 (Found, tracked).
+  - **Notification Service**: Central service handling Push (Websockets/APNS/FCM), Email (SMTP/SendGrid), SMS (Twilio). Uses priority queues, templates engine, and rate limiting to avoid spamming.
+  - **Chat System**: Uses WebSockets for persistent bidirectional links. WebSockets Gateway routes connections. Uses a fast database (Redis for sessions/presence, Cassandra/HBase for messaging history).
+  - **File Upload System**: Client asks backend for a **Presigned URL** (S3/GCS) -> Client uploads file directly to Cloud Storage (bypasses backend to save memory) -> Cloud Storage triggers webhook to notify backend -> CDN serves files with edge caching.
 ================================================================================

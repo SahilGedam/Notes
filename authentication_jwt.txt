@@ -152,3 +152,37 @@ and Verification Middleware.
   - If a refresh token is compromised or a user logs out, delete the key from the 
     active session store (Redis) to reject subsequent refresh attempts.
 ================================================================================
+
+4. AUTHENTICATION vs. AUTHORIZATION [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+Feature       | Authentication (AuthN)            | Authorization (AuthZ)
+--------------------------------------------------------------------------------
+Goal          | Verifies *who* a user is.         | Verifies *what* a user can access.
+Challenge     | "Are you who you claim to be?"    | "Do you have permission to do this?"
+Mechanism     | Passwords, MFA, Biometrics, JWTs. | Roles, Permissions, Access Control Lists.
+Executed      | Occurs first upon logging in.     | Occurs after authentication checks.
+Example Code  | Checking password hash in DB.     | Middleware checking user.role === 'admin'.
+--------------------------------------------------------------------------------
+
+
+5. MULTI-FACTOR AUTHENTICATION (MFA/2FA) BASICS [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+MFA adds extra defense-in-depth by requiring two or more independent credentials:
+
+* Three Factors of Authentication:
+  1. Something You Know: Password, PIN, security questions.
+  2. Something You Have: Smartphone (TOTP app), hardware key (YubiKey), SMS code.
+  3. Something You Are: Biometrics (Fingerprint, Face ID).
+
+* TOTP (Time-based One-time Password) Flow:
+  - **Shared Secret Key**: During setup, server generates a random cryptographic secret key and displays it to the user as a QR Code.
+  - **QR Code Scan**: User scans QR code with an authenticator app (Google Authenticator, Authy). The app stores the key locally.
+  - **Code Generation**: Both the app and the server run the TOTP algorithm (RFC 6238), combining the shared secret key with the current unix timestamp (typically in 30-second intervals) to generate a matching 6-digit code.
+  - **Verification**: User inputs the 6-digit code. The server compares it. If matching (allowing a small window of clock skew), access is granted.
+  - *Benefit*: Fully offline code generation for the client; much more secure than SMS codes (vulnerable to SIM swapping and interception).
+
+* Recovery / Backup Codes:
+  - During setup, the server generates a list of 8-12 random one-time-use backup strings.
+  - If the user loses their smartphone/authenticator device, they can input a backup code to bypass MFA and recover their account.
+================================================================================

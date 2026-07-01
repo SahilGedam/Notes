@@ -89,4 +89,20 @@ Operational   | Managing two separate systems   | Single unified Kafka architect
   - A storage optimization policy. Instead of deleting old logs by age, Kafka periodically 
     reclaims space by keeping only the *latest version* of a message for each key, removing 
     outdated updates.
+
+
+7. DEAD LETTER QUEUE (DLQ) [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+In message queue architectures (Kafka, RabbitMQ, SQS), message processing can fail due to persistent issues (e.g., malformed payloads, database constraints, serialization bugs - "poison pills").
+
+* What is a Dead Letter Queue?
+  - A DLQ is a dedicated, separate queue/topic where a message broker or consumer routes messages that cannot be processed successfully after a maximum number of retry attempts.
+
+* Purpose & Workflow:
+  1. **Isolate Failures**: Prevents a bad message ("poison pill") from blocking the main queue partition (which would stall subsequent valid messages).
+  2. **Enable Auditing & Debugging**: Isolates failed payloads in a quarantine zone so developers can inspect the payload, look at exception headers, and fix the bug.
+  3. **Recovery (Re-drive)**: Once the issue is resolved (e.g., bug fixed or database is back online), a script or console tool can "re-drive" the messages from the DLQ back into the primary queue for processing.
+
+* Example Implementation (Spring Kafka / RabbitMQ):
+  - Configure a retry template with a `DeadLetterPublishingRecoverer`. If message processing fails 3 times, the recoverer intercepts the exception and automatically publishes the message payload to `my-topic-dlq` along with metadata headers (stack trace, origin topic, partition, exception message).
 ================================================================================

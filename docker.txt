@@ -92,3 +92,32 @@ A `Dockerfile` is a text document containing instructions to build a Docker Imag
     mongo-data:
   ```
 ================================================================================
+
+5. DEPLOYMENT STRATEGIES & PIPELINES [Importance: 9/10]
+--------------------------------------------------------------------------------
+Deploying updates to users without causing service downtime is a critical backend concern.
+
+* 1. Blue-Green Deployment:
+  - You maintain two identical physical production environments: **Blue** (Active/running prod) and **Green** (Idle).
+  - When releasing v2, you deploy and test it completely in the Green environment.
+  - Once verified, you change the router/load-balancer configurations to point all incoming traffic to the Green environment. The Blue environment is kept idle for quick rollbacks.
+  - **Pros**: Zero downtime, instant rollback (switch router back).
+  - **Cons**: Double infrastructure costs (hosting two copies of hardware/servers).
+
+* 2. Rolling Deployment:
+  - Incrementally updates instances of the application until all run the new version.
+  - If you have 4 running container instances, the deployment server takes one down, updates it to v2, performs a health check, brings it online, and moves to the next container.
+  - **Pros**: Cost-effective (no duplicate environment needed).
+  - **Cons**: Slow deployment; during the rollout, both v1 and v2 run in production simultaneously (requires backwards-compatible database schemas).
+
+* 3. Canary Deployment:
+  - Deploys the new version (v2) to a small subset of instances (e.g. 5% of traffic).
+  - You monitor logs, latency, and error rates of the Canary nodes. If no anomalies occur, you rollout the update to the remaining 95% of instances.
+  - **Pros**: Highly safe; minimizes blast radius of potential bugs.
+  - **Cons**: Complex load balancer routing setup.
+
+* Environment Variables in Build & Deployment:
+  - Configuration settings (database URLs, API secrets, log levels) must be isolated from the build artifact.
+  - At build time, code is compiled into a single immutable container image.
+  - At run time (deployment), the container manager (Docker, Kubernetes) injects the target environment variables (`.env` properties) dynamically. Never check secrets into Git repos.
+================================================================================

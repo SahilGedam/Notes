@@ -102,3 +102,20 @@ Both commands integrate changes from one branch into another:
   4. Stage the files: `git add <filename>`
   5. Complete the merge/rebase: `git commit` or `git rebase --continue`.
 ================================================================================
+
+6. TEAM WORKFLOWS & COLLABORATION [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+In modern software engineering, Git is utilized with collaboration platforms (GitHub, GitLab, Bitbucket) to coordinate changes across teams.
+
+* Pull Request (PR) / Merge Request (MR):
+  - A Pull Request is a mechanism to notify team members that you have completed a feature branch and want to merge it into a shared branch (e.g. `develop` or `main`).
+  - Allows the team to review changes, run automated tests (CI), and discuss modifications before the code is integrated.
+
+* Code Review:
+  - An engineering practice where team members inspect each other's source code in a PR.
+  - **Goals**: Identify bugs early, ensure alignment with clean code standards/architectural patterns, and share knowledge across developers.
+  - **Best Practices**:
+    - Keep PRs small and focused (easier and faster to review).
+    - Use branching rules to prevent direct pushes to default branches (`main`/`develop`) without passing code reviews.
+    - Resolve merge conflicts on your local feature branch by merging or rebasing target changes before request approval.
+================================================================================
