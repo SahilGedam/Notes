@@ -1,0 +1,413 @@
+# DELOITTE DFE (ANGULAR + NODE)
+## 3–6 YOE COMPLETE INTERVIEW PREPARATION ROADMAP
+
+**LEVEL 1** = MUST KNOW (90% chance of being asked)
+**LEVEL 2** = SHOULD KNOW (60% chance)
+**LEVEL 3** = GOOD TO KNOW (20% chance)
+
+### For every topic prepare:
+1. Definition
+2. Why it exists
+3. Internal working
+4. Advantages
+5. Disadvantages
+6. Real project usage
+7. Alternatives
+8. Performance implications
+9. Interview comparison questions
+10. Small coding example
+
+---
+
+# ANGULAR (45%)
+
+## LEVEL 1 (MASTER THESE)
+
+### Angular Architecture
+**Depth**
+- ✓ How Angular starts
+- ✓ Bootstrapping
+- ✓ Root Module
+- ✓ Standalone Components
+- ✓ Component Tree
+- ✓ Dependency Graph
+
+**Questions**
+- Explain Angular architecture.
+- How Angular application starts?
+- Difference between AngularJS and Angular.
+- Standalone Components.
+- BootstrapApplication().
+
+### Components
+**Depth**
+- ✓ Component lifecycle
+- ✓ Component communication
+- ✓ Smart vs Dumb Components
+- ✓ Dynamic Components
+- ✓ ViewChild
+- ✓ ContentChild
+- ✓ ViewContainerRef
+
+**Questions**
+- How component gets rendered?
+- Difference between templateUrl and template.
+- How component communicates with another component?
+- Difference between ViewChild and ContentChild.
+
+### Lifecycle Hooks
+**MASTER COMPLETE ORDER**
+1. constructor
+2. ngOnChanges
+3. ngOnInit
+4. ngDoCheck
+5. ngAfterContentInit
+6. ngAfterContentChecked
+7. ngAfterViewInit
+8. ngAfterViewChecked
+9. ngOnDestroy
+
+**Questions**
+- Difference constructor vs ngOnInit
+- Difference ngAfterViewInit vs ngAfterContentInit
+- When ngOnChanges runs
+- Why ngOnDestroy
+- Memory leaks
+
+### Dependency Injection
+**Depth**
+- Injector
+- Provider
+- Hierarchy
+- Singleton
+- providedIn
+- InjectionToken
+
+**Questions**
+- Explain DI internally.
+- How injector finds dependency?
+- Difference providers array vs providedIn root
+
+### Change Detection ⭐⭐⭐⭐⭐
+**MASTER THIS**
+
+**Depth**
+- Zone.js
+- Default Strategy
+- OnPush
+- ChangeDetectorRef
+- markForCheck()
+- detectChanges()
+- detach()
+
+**Questions**
+- How Change Detection works?
+- How Angular knows data changed?
+- Difference Default vs OnPush
+- Why OnPush improves performance?
+
+### RxJS ⭐⭐⭐⭐⭐
+**Depth**
+- Observable
+- Observer
+- Subscription
+- Cold
+- Hot
+- Subject
+- BehaviorSubject
+- ReplaySubject
+- AsyncSubject
+- Operators: map, filter, tap, take, takeUntil, switchMap, mergeMap, concatMap, exhaustMap, forkJoin, combineLatest, zip, retry, catchError
+
+**Questions**
+- Difference Observable vs Promise
+- Difference Subject vs BehaviorSubject
+- Difference switchMap vs mergeMap
+- Difference mergeMap vs concatMap
+- takeUntil
+- Difference forkJoin vs combineLatest
+- Real project usage
+
+### Routing
+**Depth**
+- Lazy Loading
+- Guards
+- Resolver
+- ActivatedRoute
+- Nested Routes
+- Dynamic Routes
+
+**Questions**
+- How lazy loading works?
+- CanActivate
+- CanDeactivate
+- Resolver
+- Query params
+- Path params
+
+### Forms
+**Depth**
+- Reactive Forms
+- FormArray
+- Nested Forms
+- Validators
+- Async Validators
+
+**Questions**
+- Reactive vs Template
+- Custom Validator
+- Cross-field validation
+- Dynamic forms
+
+### HTTP
+**Depth**
+- HttpClient
+- Interceptor
+- Retry
+- Caching
+- Global Error Handling
+
+**Questions**
+- How interceptor works?
+- How Authorization header added?
+- How retry implemented?
+
+### Performance ⭐⭐⭐⭐⭐
+**Depth**
+- OnPush
+- TrackBy
+- Pure Pipes
+- Lazy Loading
+- Preloading
+- Image Lazy Loading
+- Memoization
+- Virtual Scroll
+- Bundle Optimization
+- Tree Shaking
+
+**Questions**
+- How optimize Angular app?
+- Largest performance issue you solved?
+
+---
+
+# JAVASCRIPT (25%)
+
+## LEVEL 1
+- Execution Context
+- Call Stack
+- Scope
+- Hoisting
+- Closures ⭐⭐⭐⭐⭐
+- Prototype ⭐⭐⭐⭐⭐
+- Inheritance
+- `this`
+- Arrow Function
+- Promise
+- Async Await
+- Event Loop ⭐⭐⭐⭐⭐
+- Microtask
+- Macrotask
+- Memory
+- Garbage Collection
+- Deep Copy
+- Shallow Copy
+- Debounce
+- Throttle
+
+**Questions**
+- Explain Event Loop.
+- Explain Closure.
+- Difference var let const
+- Difference == vs ===
+- Difference call apply bind
+- Difference Arrow vs Function
+- Difference Promise vs Async Await
+- Difference Map vs Set
+- Difference Object vs Map
+- Difference Map vs forEach
+- Difference Slice vs Splice
+- Difference Deep vs Shallow copy
+
+---
+
+# TYPESCRIPT
+
+## LEVEL 1
+- Interface
+- Type
+- Generics
+- Utility Types
+- Readonly
+- Partial
+- Pick
+- Omit
+- Record
+- Unknown
+- Never
+
+**Questions**
+- Interface vs Type
+- Unknown vs Any
+- Never
+- Generic examples
+
+---
+
+# NODE
+
+## LEVEL 1
+- Architecture
+- Event Loop
+- Express
+- Middleware
+- REST
+- JWT
+- bcrypt
+- CRUD
+- Streams
+- Error Handling
+
+**Questions**
+- Explain middleware.
+- Explain JWT.
+- Authentication flow.
+- Express request lifecycle.
+- PUT vs PATCH.
+
+---
+
+# WEB
+
+- Browser Rendering
+- DOM
+- CSSOM
+- Render Tree
+- Reflow
+- Repaint
+- Event Bubbling
+- Capturing
+- Delegation
+- Storage: Cookie, LocalStorage, SessionStorage, IndexedDB
+- HTTP: Methods, Headers, Status Codes, Caching
+- Security: CORS ⭐⭐⭐⭐⭐, XSS ⭐⭐⭐⭐⭐, CSRF ⭐⭐⭐⭐⭐, SQL Injection
+
+**Questions**
+- Explain CORS.
+- Explain browser rendering.
+- Difference cookies and local storage.
+
+---
+
+# HTML + CSS
+
+- Semantic HTML
+- Accessibility
+- SEO Basics
+- Flexbox
+- Grid
+- Specificity
+- Box Model
+- Position
+- Responsive Design
+
+---
+
+# SQL
+
+- JOIN
+- GROUP BY
+- HAVING
+- Indexes
+- Normalization
+- Transactions
+- ACID
+
+---
+
+# GIT
+
+- Merge
+- Rebase
+- Cherry Pick
+- Stash
+- Reset
+- Revert
+
+---
+
+# DSA (ONLY 5%)
+
+- Arrays
+- Strings
+- HashMap
+- Set
+- Stack
+- Queue
+- Binary Search
+- Sliding Window
+- Two Pointer
+
+**Questions**
+- Two Sum
+- Valid Parentheses
+- Palindrome
+- Reverse String
+- Binary Search
+- Longest Substring Without Repeating Characters
+- Merge Intervals
+
+---
+
+# PROJECT DISCUSSION (VERY IMPORTANT)
+
+**Prepare answers for:**
+- Architecture
+- Folder Structure
+- Authentication
+- Authorization
+- State Management
+- Caching
+- Performance
+- Deployment
+- Biggest Challenge
+- Hardest Bug
+- Optimization
+- Why Angular?
+- Why Node?
+- Why this architecture?
+
+---
+
+# INTERVIEW QUESTION TYPES
+
+**TYPE 1: Definition**
+- "What is RxJS?"
+
+**TYPE 2: Difference**
+- "Observable vs Promise"
+
+**TYPE 3: Internal Working**
+- "How Change Detection works internally?"
+
+**TYPE 4: Why**
+- "Why OnPush?"
+
+**TYPE 5: Scenario**
+- "API called multiple times. How will you prevent it?"
+
+**TYPE 6: Debugging**
+- "Memory leak happening."
+
+**TYPE 7: Performance**
+- "Application became slow."
+
+**TYPE 8: Architecture**
+- "Design dashboard."
+
+**TYPE 9: Coding**
+- Write: Debounce, Throttle, Flatten array, Group by, Simple CRUD API, Angular component, Reactive Form, Observable example
+
+**TYPE 10: Project Based**
+- "Explain your current project."
+- Expect nearly 40% of the interview to revolve around your actual project.
