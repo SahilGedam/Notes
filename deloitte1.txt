@@ -1,0 +1,787 @@
+# JavaScript Interview Questions & Answers (3 Years Angular Developer)
+
+# 1. How many ways can we create objects in JavaScript?
+
+There are multiple ways to create objects in JavaScript:
+
+1. Object Literal (Most Common)
+```javascript
+const person = {
+  name: "John",
+  age: 25
+};
+```
+
+2. Object Constructor
+```javascript
+const person = new Object();
+person.name = "John";
+```
+
+3. Constructor Function
+```javascript
+function Person(name) {
+    this.name = name;
+}
+
+const p1 = new Person("John");
+```
+
+4. ES6 Class
+```javascript
+class Person {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+const p = new Person("John");
+```
+
+5. Object.create()
+```javascript
+const person = {
+    greet() {
+        console.log("Hello");
+    }
+};
+
+const obj = Object.create(person);
+```
+
+6. Singleton Object
+```javascript
+const Config = {
+    apiUrl: "localhost"
+};
+```
+
+Interview Tip:
+Object Literal is the most commonly used way in real projects.
+
+# 2. What is IIFE and why is it used?
+
+IIFE stands for Immediately Invoked Function Expression.
+
+It executes immediately after it is defined.
+
+Example:
+
+```javascript
+(function () {
+    console.log("Executed");
+})();
+```
+
+Why do we use it?
+
+- Avoid polluting global scope
+- Create private variables
+- Execute initialization code immediately
+- Before ES6 modules, it was commonly used for encapsulation
+
+# 3. Explain Closure
+
+Closure means an inner function remembers variables of its outer function even after the outer function has finished execution.
+
+Example:
+
+```javascript
+function counter() {
+    let count = 0;
+
+    return function () {
+        count++;
+        return count;
+    };
+}
+
+const increment = counter();
+
+console.log(increment()); //1
+console.log(increment()); //2
+```
+
+Uses:
+
+- Data hiding
+- Private variables
+- Event handlers
+- Callbacks
+- Memoization
+
+# 4. Explain JavaScript Execution
+
+JavaScript executes code in two phases.
+
+1. Creation Phase
+- Memory allocation happens
+- Variables are initialized
+- Functions are stored completely in memory
+2. Execution Phase
+- Code executes line by line
+- Variable values are assigned
+- Functions are called
+
+JavaScript Runtime consists of:
+
+- Call Stack
+- Heap Memory
+- Web APIs
+- Callback Queue
+- Microtask Queue
+- Event Loop
+
+The Event Loop continuously checks whether the Call Stack is empty. If it is empty, it moves tasks from the queues into the Call Stack.
+
+# 5. Difference between let and var
+
+var
+
+- Function scoped
+- Can redeclare
+- Hoisted and initialized as undefined
+- Can access before declaration
+- Introduced in ES5
+
+let
+
+- Block scoped
+- Cannot redeclare in same scope
+- Hoisted but remains in Temporal Dead Zone
+- Cannot access before declaration
+- Introduced in ES6
+
+Example:
+
+```javascript
+if (true) {
+    var a = 10;
+    let b = 20;
+}
+
+console.log(a); //10
+console.log(b); //ReferenceError
+```
+
+# 6. Explain First Class Functions
+
+JavaScript treats functions as first-class citizens.
+
+Functions can:
+
+- Be stored in variables
+- Passed as arguments
+- Returned from another function
+- Stored inside objects
+
+Example:
+
+```javascript
+function greet() {
+    console.log("Hello");
+}
+
+function execute(fn) {
+    fn();
+}
+
+execute(greet);
+```
+
+# 7. Difference between slice() and splice()
+
+slice()
+
+- Returns new array
+- Original array remains unchanged
+
+Example:
+
+```javascript
+const arr = [1,2,3,4];
+
+const result = arr.slice(1,3);
+
+console.log(result);
+// [2,3]
+```
+
+splice()
+
+- Modifies original array
+- Can add or remove elements
+
+Example:
+
+```javascript
+const arr = [1,2,3,4];
+
+arr.splice(1,2);
+
+console.log(arr);
+// [1,4]
+```
+
+# 8. What is Prototype Chain?
+
+Every JavaScript object has a hidden reference to another object called its prototype.
+
+If a property is not found in the current object, JavaScript searches in its prototype.
+
+Example:
+
+```javascript
+const animal = {
+    eats: true
+};
+
+const dog = Object.create(animal);
+
+console.log(dog.eats);
+```
+
+Prototype lookup:
+
+dog
+↓
+animal
+↓
+Object.prototype
+↓
+null
+# 9. What is Function Currying?
+
+Currying converts a function with multiple parameters into multiple nested functions with one parameter each.
+
+Example:
+
+```javascript
+function add(a) {
+    return function (b) {
+        return a + b;
+    };
+}
+
+console.log(add(2)(5));
+```
+
+Advantages:
+
+- Reusability
+- Partial Application
+- Cleaner Functional Programming
+
+# 10. Difference between call(), apply() and bind()
+
+All three methods are used to change the value of "this".
+
+call()
+
+Arguments passed individually.
+
+```javascript
+person.call(obj,1,2);
+```
+
+apply()
+
+Arguments passed as array.
+
+```javascript
+person.apply(obj,[1,2]);
+```
+
+bind()
+
+Returns a new function.
+
+```javascript
+const fn = person.bind(obj);
+
+fn();
+```
+
+# 11. Singleton Pattern
+
+Singleton Pattern ensures only one instance of an object exists throughout the application.
+
+Example:
+
+```javascript
+const AppConfig = {
+    apiUrl: "localhost",
+    timeout: 3000
+};
+```
+
+Used for:
+
+- Configuration
+- Logger
+- Global Settings
+- Shared State
+
+# Angular Interview Questions
+
+# 12. What is Router State?
+
+Router State represents the current state of Angular Router.
+
+It contains:
+
+- Current URL
+- Route Parameters
+- Query Parameters
+- Route Data
+- ActivatedRoute Tree
+
+Example:
+
+```typescript
+this.route.snapshot.params['id'];
+
+this.route.queryParams.subscribe(params => {
+    console.log(params);
+});
+```
+
+# 13. Explain Routing
+
+Angular Routing allows navigation between components without reloading the page.
+
+Steps:
+
+1. Define routes
+
+```typescript
+const routes: Routes = [
+    {
+        path: 'home',
+        component: HomeComponent
+    }
+];
+```
+
+2. Import RouterModule
+
+```typescript
+RouterModule.forRoot(routes)
+```
+
+3. Navigate
+
+```typescript
+this.router.navigate(['/home']);
+```
+
+4. Display routed component
+
+```html
+<router-outlet></router-outlet>
+```
+
+# 14. Input and Output Data Binding
+
+Parent Component
+
+```html
+<app-child
+    [user]="user"
+    (save)="saveUser($event)">
+</app-child>
+```
+
+Child Component
+
+```typescript
+@Input() user: any;
+@Output() save = new EventEmitter<any>();
+
+submit() {
+    this.save.emit(this.user);
+}
+```
+
+# 15. Explain Interceptors
+
+Interceptors intercept every outgoing HTTP request and incoming HTTP response.
+
+Uses:
+
+- Add JWT Token
+- Logging
+- Error Handling
+- Refresh Token
+- Request Modification
+
+Example:
+
+```typescript
+intercept(req, next) {
+
+    const cloned = req.clone({
+        setHeaders: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    return next.handle(cloned);
+}
+```
+
+# 16. Have you worked with Cookies?
+
+Yes.
+
+In Angular I have used ngx-cookie-service.
+
+Operations:
+
+```typescript
+cookieService.set('token', token);
+
+cookieService.get('token');
+
+cookieService.delete('token');
+```
+
+Uses:
+
+- Authentication
+- Session Management
+- User Preferences
+
+# 17. Error Handling in Observables
+
+Use catchError operator.
+
+Example:
+
+```typescript
+this.userService.getUsers().pipe(
+
+    catchError(error => {
+
+        console.error(error);
+
+        return throwError(() => error);
+
+    })
+
+).subscribe();
+```
+
+For global API errors, we generally use HTTP Interceptors.
+
+# 18. HTTP Request in Angular
+
+Angular uses HttpClient.
+
+Example:
+
+```typescript
+constructor(private http: HttpClient) {}
+
+this.http.get('/api/users').subscribe();
+```
+
+Methods:
+
+- GET
+- POST
+- PUT
+- PATCH
+- DELETE
+
+# 19. Explain Decorators
+
+Decorators add metadata to classes.
+
+Common decorators:
+
+@Component
+@Injectable
+@NgModule
+@Directive
+@Pipe
+@Input
+@Output
+@ViewChild
+@HostBinding
+@HostListener
+
+# 20. Types of Data Binding
+
+There are four types.
+
+1. Interpolation
+
+```html
+{{title}}
+```
+
+2. Property Binding
+
+```html
+<img [src]="imageUrl">
+```
+
+3. Event Binding
+
+```html
+<button (click)="save()">
+```
+
+4. Two Way Binding
+
+```html
+<input [(ngModel)]="name">
+```
+
+# 21. What are Templates?
+
+Templates define the HTML UI of a component.
+
+Templates can contain:
+
+- HTML
+- Angular Directives
+- Pipes
+- Bindings
+- Expressions
+
+Example:
+
+```html
+<h1>{{title}}</h1>
+```
+
+# 22. Difference between Component and Directive
+
+Component
+
+- Has HTML Template
+- Used for UI
+- Uses @Component decorator
+
+Directive
+
+- No Template
+- Changes behavior of existing DOM
+- Uses @Directive decorator
+
+# 23. Constructor vs ngOnInit
+
+Constructor
+- Dependency Injection
+- Object initialization
+- Called before Angular initializes component
+
+ngOnInit
+- Lifecycle Hook
+- Called once after Angular initializes component
+- API calls are generally placed here
+
+# 24. Angular Lifecycle Hooks
+
+Execution Order
+
+Constructor
+↓
+ngOnChanges
+↓
+ngOnInit
+↓
+ngDoCheck
+↓
+ngAfterContentInit
+↓
+ngAfterContentChecked
+↓
+ngAfterViewInit
+↓
+ngAfterViewChecked
+↓
+ngOnDestroy
+# 25. AngularJS vs Angular 2+
+
+AngularJS
+
+- JavaScript
+- MVC Architecture
+- Controllers
+- Slower
+- Two-way binding by default
+
+Angular 2+
+
+- TypeScript
+- Component Based
+- Components
+- Faster
+- Better Performance
+- Ivy Compiler
+- Better Tooling
+
+# 26. GitHub and Code Merging Process
+
+In my current project we follow Git Flow.
+
+Typical workflow:
+
+1. Pull latest develop branch
+2. Create feature branch
+3. Develop feature
+4. Commit with meaningful message
+5. Push feature branch
+6. Create Pull Request
+7. Resolve merge conflicts if any
+8. Code Review
+9. Merge into develop after approval
+
+# 27. Best Coding Practices
+
+- Follow SOLID Principles
+- DRY (Don't Repeat Yourself)
+- Meaningful variable names
+- Reusable Components
+- Lazy Loading
+- Strong Typing
+- Avoid using any
+- Proper Folder Structure
+- Code Reviews
+- Linting
+- Error Handling
+- Unsubscribe Observables
+- Use Async Pipe whenever possible
+
+# 28. Unit Testing Frameworks
+
+Commonly used:
+
+- Jasmine
+- Karma
+
+Nowadays many companies also use:
+
+- Jest
+
+# 29. Performance Optimization
+
+Techniques used:
+
+- Lazy Loading
+- Standalone Components
+- OnPush Change Detection
+- TrackBy in ngFor
+- Angular CDK Virtual Scroll
+- Route Preloading
+- Image Lazy Loading
+- Tree Shaking
+- AOT Compilation
+- Code Splitting
+- Cache API Responses
+- Debounce Search Inputs
+- Pure Pipes
+- shareReplay()
+- Avoid unnecessary change detection
+- Avoid unnecessary API calls
+
+# 30. Explain Observable and Observer
+
+Observable
+
+Produces data over time.
+
+Observer
+
+Consumes data emitted by Observable.
+
+Example:
+
+```typescript
+this.http.get('/users').subscribe({
+
+    next: (data) => console.log(data),
+
+    error: (err) => console.error(err),
+
+    complete: () => console.log("Completed")
+
+});
+```
+
+# 31. RxJS Operators Used
+
+Operators I have used in projects:
+
+- map()
+- filter()
+- tap()
+- switchMap()
+- mergeMap()
+- concatMap()
+- exhaustMap()
+- debounceTime()
+- distinctUntilChanged()
+- catchError()
+- retry()
+- take()
+- takeUntil()
+- forkJoin()
+- combineLatest()
+- shareReplay()
+- finalize()
+
+Examples:
+
+switchMap → Search API
+
+takeUntil → Prevent Memory Leaks
+
+debounceTime → Search Box
+
+shareReplay → Cache API Response
+
+# 32. What is NgRx Store?
+
+NgRx is a state management library based on the Redux pattern.
+
+Main building blocks:
+
+- Store → Holds application state
+- Actions → Describe events
+- Reducers → Update state
+- Selectors → Read state
+- Effects → Handle API calls and other side effects
+
+Use NgRx when multiple components need to share complex state or when state management becomes difficult with services alone.
+
+# 33. Experience with Angular Material and Bootstrap
+
+Yes.
+
+I have worked extensively with Angular Material components such as:
+
+- MatTable
+- MatPaginator
+- MatDialog
+- MatSnackBar
+- MatMenu
+- MatToolbar
+- MatSelect
+- MatDatepicker
+- MatExpansionPanel
+- Angular CDK Virtual Scroll
+
+I have also used Bootstrap for:
+
+- Grid System
+- Responsive Layouts
+- Forms
+- Cards
+- Modals
+- Utility Classes
+
+In recent Angular projects, we primarily used Angular Material for enterprise UI components and Bootstrap or custom CSS/SCSS/Tailwind for responsive layouts and styling.
