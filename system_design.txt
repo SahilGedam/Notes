@@ -1,0 +1,165 @@
+================================================================================
+                            SYSTEM DESIGN MASTER NOTES
+================================================================================
+
+1. SCALABILITY: HORIZONTAL vs. VERTICAL SCALING [Importance: 9/10]
+--------------------------------------------------------------------------------
+Scalability is the capability of a system to handle a growing amount of work by adding 
+resources to the system.
+
+* Vertical Scaling (Scaling Up):
+  - **Definition**: Adding more power (CPU, RAM, SSD) to an existing single server/machine.
+  - **Pros**: Simple to manage (no code changes needed), no network latency between nodes.
+  - **Cons**: Hard hardware limit (there is only so much RAM/CPU a single machine can have), 
+    single point of failure (SPOF), and high downtime during upgrades.
+
+* Horizontal Scaling (Scaling Out):
+  - **Definition**: Adding more machines/servers to your pool of resources.
+  - **Pros**: Infinite scale potential, high availability/fault tolerance (if one server fails, 
+    others handle traffic), and cost-effective (uses commodity hardware).
+  - **Cons**: Requires a Load Balancer, code must be stateless (session sharing/sticky sessions), 
+    and introduces network latency and complexity (data consistency).
+================================================================================
+
+
+2. LOAD BALANCERS [Importance: 9/10]
+--------------------------------------------------------------------------------
+A Load Balancer (LB) sits between the client and the backend servers, distributing incoming 
+network traffic across multiple servers.
+
+* Key Algorithms:
+  - **Round Robin**: Distributes requests sequentially to the list of servers. Best when 
+    servers have identical specs and request processing time is uniform.
+  - **Weighted Round Robin**: Assigns a weight/capacity score to each server. Servers with 
+    higher specs receive more requests.
+  - **Least Connections**: Directs traffic to the server with the fewest active connections. 
+    Best for long-lived connections (e.g., chat applications).
+  - **IP Hash**: The client's IP address is hashed to determine which server receives the 
+    request. Ensures a client consistently hits the same server (session persistence).
+
+* Layer 4 vs. Layer 7 Load Balancing:
+  - **Layer 4 (Transport Layer)**: Routes traffic based on network info (IP address and 
+    TCP/UDP port). It does not look at the message content (extremely fast, low resource use).
+  - **Layer 7 (Application Layer)**: Routes traffic based on application data (HTTP headers, 
+    cookies, query parameters, URL path). Allows smart routing (e.g., `/api/v1/users` goes 
+    to User Service; `/static/*` goes to CDN/S3).
+================================================================================
+
+
+3. CACHING STRATEGIES & EVICTION POLICIES [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+Caching stores copies of frequently accessed data in high-speed memory (e.g. Redis, Memcached) 
+to reduce database load and network latency.
+
+* Caching Patterns:
+  1. **Cache-Aside (Lazy Loading)**:
+     - Application first checks the cache.
+     - If Cache Hit: Returns data.
+     - If Cache Miss: Queries database, writes data to cache, and returns it.
+     - *Pros*: Cache only contains requested data; database failures are tolerated.
+     - *Cons*: Cache miss penalty on first request; potential stale data if DB is updated directly.
+  2. **Write-Through**:
+     - Application writes data directly to the cache, and the cache synchronously writes 
+       it to the database.
+     - *Pros*: Data is never stale; fast reads.
+     - *Cons*: High write latency (waits for both cache and DB writes to finish).
+  3. **Write-Back (Write-Behind)**:
+     - Application writes data to the cache, which immediately returns success. The cache 
+       asynchronously flushes updates to the database in batches.
+     - *Pros*: Extremely fast write performance.
+     - *Cons*: Risk of data loss if the cache crashes before flushing to the database.
+
+* Cache Eviction Policies:
+  - **LRU (Least Recently Used)**: Discards the least recently accessed items first.
+  - **LFU (Least Frequently Used)**: Discards items that are requested the least often.
+  - **FIFO (First In First Out)**: Evicts the oldest cache items first, regardless of access frequency.
+  - **TTL (Time to Live)**: Sets an expiration timer on cache keys.
+================================================================================
+
+
+4. DATABASE PARTITIONING & SHARDING [Importance: 9/10]
+--------------------------------------------------------------------------------
+As databases grow, a single database server cannot handle the storage or throughput capacity.
+
+* Partitioning vs. Sharding:
+  - **Partitioning**: Dividing a database table into smaller sub-tables within the *same* 
+    database instance (e.g. splitting a `sales` table by year).
+  - **Sharding (Horizontal Partitioning)**: Distributing database rows across *multiple* 
+    independent database instances/servers.
+
+* Sharding Keys & Distribution Methods:
+  - **Range-Based Sharding**: Splitting data based on ranges of an attribute (e.g., User IDs 1-10k 
+    go to Shard A, 10k-20k to Shard B). 
+    - *Cons*: Can lead to uneven data distribution (hotspots).
+  - **Hash-Based / Key-Based Sharding**: Applying a hash function to the sharding key 
+    (e.g., `hash(UserID) % Number of Shards`) to determine the target shard.
+    - *Cons*: Re-sharding (adding/removing shards) requires moving a massive amount of data.
+  - **Consistent Hashing**: A hashing technique where addition/removal of a shard requires 
+    remapping only a fraction of keys (highly used in distributed databases like Cassandra, DynamoDB).
+================================================================================
+
+
+5. CAP THEOREM & CONSISTENCY MODELS [Importance: 8.5/10]
+--------------------------------------------------------------------------------
+In a distributed system, you can only guarantee two out of the following three properties at 
+the same time:
+
+* 1. **Consistency (C)**: Every read receives the most recent write or an error.
+* 2. **Availability (A)**: Every non-failing node returns a non-error response (but not 
+     guaranteed to contain the most recent write).
+* 3. **Partition Tolerance (P)**: The system continues to operate despite arbitrary message loss 
+     or network failures between nodes.
+
+* Trade-offs:
+  - Since network partitions (P) are inevitable in real-world distributed systems, we must choose:
+    - **CP (Consistency + Partition Tolerance)**: Blocks writes or reads until consistency is restored, 
+      reducing availability (e.g., HBase, MongoDB).
+    - **AP (Availability + Partition Tolerance)**: Allows writes and reads to proceed, returning stale 
+      data or causing eventual consistency (e.g., Cassandra, DynamoDB).
+
+* ACID vs. BASE:
+  - **ACID (Relational DBs)**: Atomicity, Consistency, Isolation, Durability. Strict consistency.
+  - **BASE (NoSQL DBs)**: Basically Available, Soft state, Eventual consistency. High scalability focus.
+================================================================================
+
+
+6. COMMUNICATION PROTOCOLS: REST, GraphQL, gRPC, WebSockets [Importance: 9/10]
+--------------------------------------------------------------------------------
+Choosing the right communication layer defines API performance and developer experience.
+
+* **REST (Representational State Transfer)**:
+  - Uses standard HTTP methods (GET, POST, PUT, DELETE). Stateless, resource-oriented.
+  - *Best for*: Public APIs, CRUD-based applications.
+* **GraphQL**:
+  - A query language for APIs. Client specifies the exact fields it needs in a single request.
+  - *Best for*: Complex client-facing UIs where over-fetching or under-fetching data is an issue.
+* **gRPC (Google Remote Procedure Call)**:
+  - Uses HTTP/2 for transport and Protocol Buffers (Protobuf) for binary serialization. 
+    Extremely low latency and payload size. Supports bi-directional streaming.
+  - *Best for*: Internal microservice-to-microservice communication.
+* **WebSockets**:
+  - Full-duplex persistent connection over a single TCP socket.
+  - *Best for*: Real-time, low-latency applications (e.g., chat apps, live dashboards, gaming).
+================================================================================
+
+
+7. MESSAGE QUEUES & EVENT-DRIVEN ARCHITECTURE [Importance: 9.5/10]
+--------------------------------------------------------------------------------
+Decoupling services through asynchronous message passing improves performance and reliability.
+
+* Message Broker vs. Event Streaming Platform:
+  - **Message Broker (e.g. RabbitMQ)**:
+    - Focuses on target delivery. Once a message is consumed and acknowledged, it is deleted.
+    - Uses routing exchanges to direct messages to specific queues.
+  - **Event Streaming Platform (e.g. Apache Kafka)**:
+    - Focuses on high-throughput, persistent streams of events.
+    - Messages are kept on a partition log for a configured retention period, allowing 
+      multiple consumers to read/replay history independently.
+
+* Key Patterns:
+  - **Publish-Subscribe (Pub/Sub)**: A publisher broadcasts an event to a topic, and all 
+    subscribed services (consumers) receive it. Decoupled sender and receiver.
+  - **Compensating Transactions (Saga Pattern)**: In microservices, when a transaction spans 
+    multiple databases, Saga manages business logic by executing local transactions 
+    sequentially. If one fails, compensating undo transactions are triggered backwards.
+================================================================================
