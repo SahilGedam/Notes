@@ -10,9 +10,22 @@
   applications due to its modularity, reusability, and maintainability.
 
 * Architecture Paradigm:
-  Modern Angular (v2+) uses a Component-Based Architecture. It has moved away 
-  from the traditional MVC (Model-View-Controller) / MVVM pattern used in 
-  legacy AngularJS (v1.x).
+  Modern Angular (v2+) uses a Component-Based Architecture. While AngularJS (v1.x) was explicitly MVC/MVVM, modern Angular still conceptually inherits and implements the **MVVM (Model-View-ViewModel)** architectural pattern.
+
+  Here is how MVVM maps to modern Angular components:
+  1. **Model (M)**: 
+     - Represents the data and business logic of the application.
+     - In Angular, this corresponds to TypeScript interfaces/classes, HTTP services, state stores (e.g., NgRx, Signals state), and domain models.
+  2. **View (V)**: 
+     - The user interface (what the user sees and interacts with).
+     - In Angular, this is the HTML Template and associated CSS. It is declarative and does not contain business logic.
+  3. **ViewModel (VM)**: 
+     - The bridge between the Model and the View. It prepares data from the Model so that the View can easily consume it, and handles user interactions (commands).
+     - In Angular, this is the Component Class (`.component.ts`). It exposes properties (data) and methods (logic/events) to the template.
+  
+  4. **Data Binding (The Glue)**:
+     - The automatic synchronization of data between the View and the ViewModel.
+     - Angular's change detection engine and data-binding features (Property binding, Event binding, Two-way binding `[(ngModel)]`, or modern `model()` signals) act as the binder that coordinates the View and the ViewModel automatically, eliminating the need to write manual DOM manipulation code.
 
 * Powerful Core Features:
   - Component-based structure.
