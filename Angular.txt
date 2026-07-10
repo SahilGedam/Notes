@@ -50,6 +50,18 @@
   }).catch(err => console.error(err));
   ```
 
+* Modules Hierarchy & Architecture:
+  - Feature Modules: Group related components, directives, and pipes implementing a specific feature set (e.g., AdminModule, UserModule).
+  - Shared Module: Contains common components, directives, and pipes that are imported and reused across multiple feature modules (e.g., CommonModule, buttons, input fields).
+  - Core Module: Used for singleton services, global HTTP interceptors, or guard classes that should only be instantiated once at the root level. Eagerly loaded in AppModule (traditional).
+  
+* Component Types:
+  - Standalone Components: Components that manage their own imports directly without requiring an NgModule.
+  - Smart Components (Container Components): Focus on how things work. They handle API requests, interact with services, manage state, and pass data down to child components.
+  - Dumb Components (Presentational Components): Focus on how things look. They receive data via `@Input()` or `input()`, render it, and emit events via `@Output()` or `output()`. They have no dependencies on services or state.
+  - Reusable Components: Generic, highly configurable components designed to be used in multiple parts of the application (e.g., custom dropdowns, pagination).
+  - Dynamic Components: Components instantiated at runtime using `ViewContainerRef.createComponent()`. Useful for modals, alerts, and highly dynamic UI dashboards.
+
 
 2. DIRECTIVES & PIPES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
@@ -138,6 +150,33 @@
   - Impure Pipes (`{ pure: false }`): Run on every change detection cycle (can be 
     expensive).
 
+* Core Directives & Pipes Details:
+  - `ngClass`: Conditionally applies CSS classes. E.g., `[ngClass]="{'active': isActive, 'disabled': isDisabled}"` or `[ngClass]="currentTheme"`.
+  - `ngStyle`: Conditionally applies inline styles. E.g., `[ngStyle]="{'color': isError ? 'red' : 'blue', 'font-size.px': fontSize}"`.
+  - Built-in formatting pipes:
+    - `DatePipe`: Formats date objects. E.g., `{{ birthday | date:'dd/MM/yyyy' }}`
+    - `CurrencyPipe`: Formats numbers to currency. E.g., `{{ amount | currency:'USD':'symbol':'1.2-2' }}`
+    - `UpperCasePipe` / `LowerCasePipe`: Formats text casing.
+    - `AsyncPipe`: Subscribes to an Observable or Promise and returns the latest value it has emitted. Automatically unsubscribes on destroy to prevent memory leaks.
+
+* Custom Pipe Example:
+  Generate via: `ng g pipe exponent`
+  ```typescript
+  import { Pipe, PipeTransform } from '@angular/core';
+
+  @Pipe({
+    name: 'exponent',
+    pure: true,
+    standalone: true
+  })
+  export class ExponentPipe implements PipeTransform {
+    transform(value: number, exponent: number = 1): number {
+      return Math.pow(value, exponent);
+    }
+  }
+  ```
+  Usage: `{{ 2 | exponent:3 }}` (Outputs: 8)
+
 
 3. DATA BINDING & COMPONENT COMMUNICATION [Importance: 9.5/10]
 --------------------------------------------------------------------------------
@@ -203,6 +242,25 @@
     projected nodes from the child component.
   - `ngProjectAs`: Lets a wrapper element masquerade as a different selector for
     slot matching.
+
+* Advanced View Access & DOM References:
+  - `ElementRef`: A wrapper around a native DOM element. Use `.nativeElement` to access the underlying DOM node (use with caution to avoid XSS and direct DOM mutation).
+  - `TemplateRef`: Represents an embedded template (`<ng-template>`) that can be used to instantiate embedded views.
+  - `ViewChild` vs. `ContentChild`:
+    - `@ViewChild`: Used to query elements or child components within the component's own template.
+    - `@ContentChild`: Used to query elements or child components projected into the component using `<ng-content>`.
+
+* Multi-slot Content Projection:
+  You can project multiple content fragments into different designated slots using selectors:
+  ```html
+  <!-- Child Component Template -->
+  <div class="header-slot">
+    <ng-content select="header, [header-content]"></ng-content>
+  </div>
+  <div class="body-slot">
+    <ng-content select=".body-content"></ng-content>
+  </div>
+  ```
 
 
 4. LIFECYCLE HOOKS [Importance: 9/10]
@@ -281,6 +339,12 @@
   - Constructor: A native TypeScript class feature. Only use it for Dependency Injection.
   - ngOnInit: An Angular-specific hook. Use it for data initialization and binding logic, 
     as inputs are not yet available in the constructor.
+
+* Expected Lifecycle Questions:
+  - Q: Difference between ngOnInit and Constructor?
+    - A: Constructor is a standard TypeScript class initialization method. It runs first, but Angular inputs/bindings are not yet set up. `ngOnInit` is an Angular hook called after inputs are bound and ready.
+  - Q: Difference between AfterViewInit and AfterContentInit?
+    - A: `AfterContentInit` is called after content projected into `<ng-content>` has been initialized. `AfterViewInit` is called after the component's own template views and child component views are fully initialized.
 
 
 5. CHANGE DETECTION & PERFORMANCE OPTIMIZATION [Importance: 10/10]
@@ -372,6 +436,30 @@
      <input [value]="name" (input)="name = $event.target.value" />
      ```
 
+* Change Detection Deep Dive Q&A:
+  - Q: What is Change Detection?
+    - A: The mechanism by which Angular synchronizes the state of the component class with the rendered DOM view.
+  - Q: What is the Default Strategy?
+    - A: Angular checks every component in the component tree for changes on every asynchronous event (event bindings, timers, HTTP calls).
+  - Q: What is the OnPush Strategy?
+    - A: A performance-oriented strategy where Angular only checks the component if:
+      - The reference of an `@Input()` property changes.
+      - An event occurs inside the component or its children.
+      - The `async` pipe emits a new value.
+      - We manually trigger change detection.
+  - Q: `markForCheck()` vs `detectChanges()`?
+    - A: `markForCheck()` marks the component and all parent components to be checked in the next change detection cycle. `detectChanges()` immediately triggers change detection synchronously for the component and its children.
+  - Q: When should OnPush be used?
+    - A: OnPush should be used for pure presentational (dumb) components, high-performance components, or components that consume immutable data streams (like RxJS Observables or Signals).
+
+* Advanced Performance Optimizations:
+  - Virtual Scroll: Renders only the visible list elements in the viewport to reduce DOM nodes. Implemented using `@angular/cdk/scrolling`.
+  - Tree Shaking: A build-time process that removes unused code from final bundles, minimizing load times.
+  - AOT (Ahead-of-Time) Compilation: Compiles templates and TypeScript during the build phase instead of runtime, improving startup speed.
+  - Build Optimizer: Further optimizes bundle size by marking pure functions and enabling better tree-shaking.
+  - Image Lazy Loading (`NgOptimizedImage`): Use the `NgOptimizedImage` directive (v15+) to improve Largest Contentful Paint (LCP) by prioritizing/lazy-loading images automatically.
+  - API Caching: Storing API responses in memory/services to prevent duplicate network calls.
+
 
 6. ROUTING & NAVIGATION [Importance: 8.5/10]
 --------------------------------------------------------------------------------
@@ -457,6 +545,31 @@
     }
     ```
 
+* Child Routes:
+  Enables nesting route templates. Child routes are loaded into the parent's `<router-outlet>`.
+  ```typescript
+  {
+    path: 'parent',
+    component: ParentComponent,
+    children: [
+      { path: 'child1', component: Child1Component },
+      { path: 'child2', component: Child2Component }
+    ]
+  }
+  ```
+
+* Router Events:
+  The router emits events on every navigation transition. We can subscribe to these events (e.g. `NavigationStart`, `NavigationEnd`, `NavigationCancel`, `NavigationError`):
+  ```typescript
+  constructor(private router: Router) {
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe(() => {
+      // e.g. Track page views or reset scroll position
+    });
+  }
+  ```
+
 
 7. DEPENDENCY INJECTION (DI) [Importance: 9.5/10]
 --------------------------------------------------------------------------------
@@ -476,6 +589,25 @@
      ```typescript
      http = inject(HttpClient);
      ```
+
+* Dependency Injection & Services Deep Dive:
+  - Why use Services?: To separate business logic and data access from UI presentation, facilitating reusability, testing, and clean architecture.
+  - Component vs. Service: Components govern the view logic and user interactions; Services hold business logic, shared state, and external API wrappers.
+  - Injector Hierarchy:
+    - NullInjector: The absolute top. Throws an error if dependency is not found.
+    - PlatformInjector: Configured by platform-level providers.
+    - RootInjector: Application-wide injector (instantiated by `providedIn: 'root'`).
+    - ElementInjector: Created for components/directives using the `providers` property in their decorator. Configured in hierarchical structure matching the DOM.
+  
+* Injection Scopes & @Injectable():
+  - `@Injectable({ providedIn: 'root' })`: Registers the service as a singleton in the root injector. Instantiated lazily.
+  - Element-level Providers:
+    ```typescript
+    @Component({
+      selector: 'app-child',
+      providers: [ChildService] // New instance created for every instance of this component
+    })
+    ```
 
 
 8. HTTP CLIENT & ERROR HANDLING [Importance: 8.5/10]
@@ -519,6 +651,33 @@
          })
        );
        ```
+
+* HTTP Client Methods & Options:
+  - GET: `this.http.get<User>('/api/users')`
+  - POST: `this.http.post<User>('/api/users', payload)`
+  - PUT: `this.http.put<User>('/api/users/1', payload)`
+  - PATCH: `this.http.patch<User>('/api/users/1', payload)`
+  - DELETE: `this.http.delete<void>('/api/users/1')`
+  
+* Request Options (Headers & Params):
+  ```typescript
+  import { HttpHeaders, HttpParams } from '@angular/common/http';
+
+  const headers = new HttpHeaders().set('Authorization', 'Bearer token');
+  const params = new HttpParams().set('page', '1').set('limit', '10');
+
+  this.http.get('/api/data', { headers, params }).subscribe();
+  ```
+
+* Retry Logic:
+  Use RxJS `retry()` or `retryWhen()` to re-attempt failed requests automatically:
+  ```typescript
+  import { retry } from 'rxjs';
+
+  this.http.get('/api/flaky').pipe(
+    retry(3) // Retry up to 3 times before propagating error
+  ).subscribe();
+  ```
 
 
 9. FORMS IN ANGULAR [Importance: 9/10]
@@ -601,6 +760,23 @@
   this.form.markAllAsTouched(); // Triggers UI validation errors
   ```
 
+* Template-Driven Forms vs. Reactive Forms:
+  | Feature                | Template-Driven                    | Reactive                             |
+  |------------------------|------------------------------------|--------------------------------------|
+  | Setup                  | Declarative (in HTML template)     | Programmatic (in TS class)           |
+  | Data Flow              | Asynchronous (two-way binding)     | Synchronous (explicit observables)    |
+  | Form Model             | Managed implicitly by Angular       | Managed explicitly by developer      |
+  | Validation             | Directives (HTML attributes)       | Validator functions (TS logic)        |
+  | Testing                | Harder to test (requires DOM)     | Easy to unit test (no DOM needed)    |
+
+* Template-Driven Form Example:
+  ```html
+  <form #userForm="ngForm" (ngSubmit)="onSubmit(userForm.value)">
+    <input name="username" ngModel required minlength="3">
+    <button [disabled]="userForm.invalid">Submit</button>
+  </form>
+  ```
+
 
 10. RxJS & REACTIVE PROGRAMMING [Importance: 10/10]
 --------------------------------------------------------------------------------
@@ -654,6 +830,53 @@
      }
      ```
   4. `AsyncPipe` in templates: Handles subscription and unsubscription automatically.
+
+* RxJS Primitives Explained:
+  - Observable: A lazy push collection of multiple values over time.
+  - Observer: A consumer of values delivered by an Observable. Implements `next`, `error`, and `complete` callbacks.
+  - Subscription: Represents the execution of an Observable. Used to cancel (unsubscribe) the execution.
+  - Memory Leaks: Occur when subscriptions are kept active after a component is destroyed, holding memory references. Prevent using `takeUntil`, `takeUntilDestroyed`, or `AsyncPipe`.
+  - Cold Observables: Produce data only when subscribed to. Each subscriber gets its own independent source of data (e.g., HTTP request).
+  - Hot Observables: Produce data regardless of subscriptions. Data is shared among all subscribers (e.g., DOM click events, WebSockets).
+
+* Expected Questions:
+  - Q: Observable vs Promise?
+    - A: Promises are single-emission, eager, and non-cancellable. Observables are multi-emission, lazy, and cancellable.
+  - Q: Subject vs BehaviorSubject?
+    - A: `Subject` does not hold a value or require an initial state; late subscribers miss emitted values. `BehaviorSubject` requires an initial value and replays the current value immediately to new subscribers.
+  - Q: ReplaySubject vs Subject?
+    - A: `ReplaySubject` stores a buffer of historical values and replays them to new subscribers, whereas `Subject` only delivers future values.
+  - Q: Async Pipe vs subscribe()?
+    - A: `AsyncPipe` manages subscribing, emitting values to template, and automatically unsubscribing on destroy. `.subscribe()` in TS requires manual cleanup to avoid memory leaks.
+
+* RxJS Operators Cheat Sheet & Code Examples:
+  - `map()`: Transforms each emitted value.
+    `stream$.pipe(map(x => x * 10))`
+  - `tap()`: Performs side effects (logging, debugging) without mutating the stream.
+    `stream$.pipe(tap(x => console.log('Emitted:', x)))`
+  - `filter()`: Filters emissions based on a predicate.
+    `stream$.pipe(filter(x => x > 5))`
+  - `switchMap()`: Maps to an observable, cancels the previous active inner observable. Ideal for search/auto-complete.
+  - `mergeMap()`: Maps to an observable, runs all inner observables in parallel. Ideal for independent parallel requests.
+  - `concatMap()`: Maps to an observable, queues inner observables to run sequentially. Ideal for sequential writes/orders.
+  - `exhaustMap()`: Maps to an observable, ignores new outer emissions until current inner observable completes. Ideal for double-submit prevention.
+  - `distinctUntilChanged()`: Only emits if the current value is different from the previous.
+  - `take(n)`: Emits only the first `n` values.
+  - `catchError()`: Catches errors on the stream and gracefully returns a fallback observable.
+  - `finalize()`: Runs a callback when the observable completes or errors.
+  - `shareReplay(1)`: Shares a single subscription source and replays the last value to late subscribers (turns cold to hot).
+  - `combineLatest([a$, b$])`: Emits an array of the latest values from all source streams whenever any stream emits.
+  - `forkJoin([a$, b$])`: Emits the final values of all input observables once they all complete (similar to `Promise.all`).
+
+* Expected Operator Questions:
+  - Q: Why switchMap?
+    - A: Prevents race conditions. If a user types a new search query, it cancels the previous API request and starts the new one.
+  - Q: Why not mergeMap?
+    - A: `mergeMap` does not cancel active requests, which could cause out-of-order data display if a slower request finishes after a faster one.
+  - Q: Why takeUntil?
+    - A: To cleanly unsubscribe from streams when a component/directive is destroyed, avoiding memory leaks.
+  - Q: Why shareReplay?
+    - A: Prevents redundant HTTP requests by caching the response and sharing the same result with multiple subscribers.
 
 
 11. CODE SPLITTING & LAZY LOADING [Importance: 9/10]
@@ -876,6 +1099,14 @@
   // @if (userResource.value()) { {{ userResource.value().name }} }
   ```
 
+* Signals vs. Observables Comparison:
+  | Feature            | Signals                                | Observables                          |
+  |--------------------|----------------------------------------|--------------------------------------|
+  | Timing             | Synchronous access                     | Asynchronous streams                 |
+  | Subscription       | Automatic dependency tracking           | Manual/Explicit (`.subscribe()`)     |
+  | Best For           | Local state, template rendering        | Event streams, HTTP calls, WebSockets|
+  | Glitch-Free        | Yes (no transient intermediate states) | No (can suffer from double emits)    |
+
 
 13. DIRECTIVES — ADVANCED FEATURES [Importance: 8.5/10]
 --------------------------------------------------------------------------------
@@ -946,5 +1177,39 @@
   // Custom transform:
   label = input('', { transform: (v: string) => v.trim().toUpperCase() });
   ```
+
+
+14. SECURITY IN ANGULAR [Importance: 9/10]
+--------------------------------------------------------------------------------
+* XSS (Cross-Site Scripting) Protection:
+  Angular treats all values as untrusted by default. When values are inserted into the DOM, Angular sanitizes them to prevent script injection.
+
+* DomSanitizer:
+  If you explicitly trust a value, use `DomSanitizer` to bypass security filters:
+  ```typescript
+  import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+
+  constructor(private sanitizer: DomSanitizer) {}
+
+  getTrustedHtml(unsafeHtml: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(unsafeHtml);
+  }
+  ```
+  Methods available:
+  - `bypassSecurityTrustHtml()`
+  - `bypassSecurityTrustScript()`
+  - `bypassSecurityTrustStyle()`
+  - `bypassSecurityTrustUrl()`
+  - `bypassSecurityTrustResourceUrl()`
+
+* JWT Authentication Flow:
+  1. Client sends credentials via POST request.
+  2. Server responds with JWT.
+  3. Client stores JWT (e.g. in LocalStorage or HttpOnly Cookies) and attaches it to request headers via HttpInterceptor.
+
+* LocalStorage vs. SessionStorage vs. Cookies:
+  - LocalStorage: Persistent across browser sessions. Easy to read, but vulnerable to XSS.
+  - SessionStorage: Scoped to the current browser tab.
+  - Cookies (HttpOnly): Highly secure against XSS. Automatically attached to requests.
 
 ================================================================================
