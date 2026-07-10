@@ -68,13 +68,49 @@
 
 2. DATA TYPES & COERCION [Importance: 8.5/10]
 --------------------------------------------------------------------------------
-* Categories of Data Types:
-  1. Primitive Types: Stored directly in the execution stack. They are immutable and 
-     copied by value.
-     - `String`, `Number`, `Boolean`, `BigInt`, `Undefined`, `Null`, `Symbol`
-  2. Non-Primitive Types (Objects): Stored in the memory heap. They are mutable and 
-     references to them are copied by value (sharing).
-     - `Object` (includes Arrays, Functions, Dates, etc.)
+* Stack Memory vs. Heap Memory:
+  - Stack Memory:
+    - Used for static memory allocation and execution context tracking.
+    - Stores local variables of primitive types and reference pointers to objects in the heap.
+    - Access is fast, managed automatically by the call stack structure (LIFO).
+  - Heap Memory:
+    - Used for dynamic memory allocation.
+    - Stores objects (including arrays, functions, dates, etc.).
+    - Access is slower than the stack, and space is managed by the JavaScript Garbage Collector.
+
+* Primitive Types vs. Reference Types:
+  - Primitive Types:
+    - String, Number, Boolean, BigInt, Undefined, Null, Symbol.
+    - Stored directly in the Stack memory because they have a fixed size.
+    - Immutable: The value itself cannot be changed. Reassigning a variable creates a new value in memory.
+  - Reference Types (Objects):
+    - Plain Objects, Arrays, Functions, Dates, RegExp, etc.
+    - The actual data is stored in the Heap memory because its size is dynamic.
+    - A reference pointer (address) to that location in the Heap is stored in the Stack variable.
+    - Mutable: Properties and elements can be changed without changing the reference address.
+
+* Pass by Value vs. Pass by Reference (Call by Sharing):
+  - JavaScript is strictly **pass-by-value**. However, how that value is interpreted depends on the data type:
+  - Primitives (Pass by Value):
+    - When passing a primitive to a function or assigning to another variable, a copy of the actual value is made.
+    - Changes to the copy do not affect the original variable.
+  - Objects (Pass by Value of Reference / Call by Sharing):
+    - When passing an object, a copy of the reference pointer (address) is passed by value.
+    - As a result, both variables point to the same object in Heap memory. Mutating a property inside a function affects the original object.
+    - Crucially: Reassigning the parameter inside the function points it to a new memory address, breaking the link and leaving the original object unchanged.
+    - Example:
+      ```javascript
+      function update(num, obj) {
+        num = 100; // Copy of primitive value updated, original remains 10
+        obj.name = "Updated"; // Mutates heap object through shared reference
+        obj = { name: "Reassigned" }; // Reassigns local parameter reference, original unchanged
+      }
+      let x = 10;
+      let y = { name: "Original" };
+      update(x, y);
+      console.log(x); // 10
+      console.log(y.name); // "Updated" (not "Reassigned")
+      ```
 
 * `typeof` Operator Output Examples:
   ```javascript
@@ -157,113 +193,229 @@
 
 3. VARIABLES & SCOPING [Importance: 9/10]
 --------------------------------------------------------------------------------
-* Scope Types:
-  1. Global Scope: Variables declared outside any function or block, accessible 
-     anywhere in the code.
-  2. Local / Function Scope: Variables declared inside a function, accessible only 
-     within that function.
-  3. Block Scope: Variables declared using `let` and `const` inside `{}` blocks, 
-     inaccessible outside that block. Note: `var` is NOT block-scoped.
+* Global Scope vs. Function Scope vs. Block Scope:
+  - Global Scope:
+    - Variables declared outside any function or curly braces `{}` are in the global scope. They are accessible from anywhere in the application.
+    - Global variables declared with `var` are added as properties to the global object (`window` or `globalThis`). Variables declared with `let` and `const` are not.
+  - Function (Local) Scope:
+    - Variables declared inside a function (using `var`, `let`, or `const`) are scoped to that function. They cannot be accessed from outside the function.
+  - Block Scope:
+    - Variables declared inside curly braces `{}` (such as in an `if` block, `for` loop, or raw block) using `let` or `const` are block-scoped. They cannot be accessed outside that block.
+    - Note: `var` is NOT block-scoped; it ignores block boundaries and leaks to the enclosing function or global scope.
 
-* var vs. let vs. const:
-  - `var`: Function-scoped. Can be redeclared. Hoisted and initialized to `undefined`.
-  - `let`: Block-scoped. Cannot be redeclared. Hoisted but not initialized (TDZ).
-  - `const`: Same scoping and hoisting properties as `let`, but cannot be reassigned 
-    and must be initialized during declaration.
-  - Single-Statement Context Restriction:
-    `let` begins declarations, not statements. You cannot use a lone `let` declaration 
-    as the body of a block:
+* Difference between var, let, and const:
+  | Feature | `var` | `let` | `const` |
+  |---------|-------|-------|---------|
+  | Scope | Function Scope | Block Scope | Block Scope |
+  | Hoisting | Hoisted & initialized to `undefined` | Hoisted but uninitialized (TDZ) | Hoisted but uninitialized (TDZ) |
+  | Reassignable | Yes | Yes | No |
+  | Redeclarable | Yes (in same scope) | No | No |
+  | Global Object Property | Yes (when global) | No | No |
+
+* What is Hoisting?
+  - Hoisting is the JavaScript engine's behavior of moving declarations to the top of their containing scope during the compilation phase, before execution.
+  - Value initializations are NOT hoisted; only the declarations are.
+  - Function Declarations: Fully hoisted (both the name and body are loaded), allowing you to call the function before defining it in the code.
+  - `var` variables: Hoisted and initialized to `undefined`.
+  - `let` and `const` variables: Hoisted but left uninitialized, putting them in the Temporal Dead Zone (TDZ).
+  - Classes and Imports: Hoisted but cannot be accessed until declared.
+
+* What is Temporal Dead Zone (TDZ)?
+  - The TDZ is the period between entering a block scope and the actual execution reaching the line where a variable is declared.
+  - Attempting to access or reference a variable within its TDZ throws a `ReferenceError`.
+  - Example:
     ```javascript
-    if (true) let a = 1; // SyntaxError: Lexical declaration cannot appear in a single-statement context
+    {
+      // TDZ for variable 'num' starts here
+      // console.log(num); // ReferenceError: Cannot access 'num' before initialization
+      let num = 10; // TDZ ends
+      console.log(num); // 10
+    }
     ```
 
-* Hoisting:
-  The process whereby the JavaScript interpreter processes declarations of functions, 
-  variables, classes, and imports before executing the code.
-  - Declarations are hoisted, not initializations.
-  - Function declarations are fully hoisted (can be called before defined).
-  - `var` declarations are hoisted and initialized to `undefined`.
-  - `let` and `const` declarations are hoisted but remain uninitialized.
+* Lexical Scope vs. Scope Chain:
+  - Lexical Scope (Static Scope):
+    - JavaScript uses lexical scoping, meaning a variable's scope is determined by its position within the physical source code (at compile time), not where or how the function is called (dynamic).
+    - Inner functions have access to variables declared in their outer nesting scopes.
+  - Scope Chain:
+    - The hierarchical chain of accessible scopes determined lexically.
+    - When a variable is referenced, the JavaScript engine tries to find it in the current local scope. If not found, it traverses upward to the outer enclosing scope, continuing until it reaches the global scope. If the variable is still not found, it throws a `ReferenceError`.
+    - Example:
+      ```javascript
+      const globalVar = "global";
+      function outer() {
+        const outerVar = "outer";
+        function inner() {
+          const innerVar = "inner";
+          console.log(innerVar, outerVar, globalVar); // Resolves up the scope chain
+        }
+        inner();
+      }
+      outer();
+      ```
 
-* Temporal Dead Zone (TDZ):
-  The period from the start of the block until the execution reaches the declaration line. 
-  Accessing a variable in the TDZ throws a `ReferenceError`.
-  ```javascript
-  {
-    // TDZ for variable 'a' starts here
-    console.log(a); // ReferenceError
-    let a = 10;     // TDZ ends
-  }
-  ```
-
-* Scope Chain:
-  If a variable is not found in the local scope, the JS engine searches the outer 
-  lexical scopes sequentially until it reaches the global scope. If it is still not 
-  found, a `ReferenceError` is thrown.
+* Variable Shadowing:
+  - Variable shadowing occurs when a variable declared within a specific scope (like a block or function) has the same name as a variable in an outer scope.
+  - The inner variable "shadows" (blocks access to) the outer variable within that inner scope.
+  - Illegal Shadowing: You cannot shadow a block-scoped variable (`let` or `const`) using `var` within the same block scope. It throws a `SyntaxError` (Identifier has already been declared).
+  - Example:
+    ```javascript
+    let x = 10;
+    if (true) {
+      let x = 20; // Valid Shadowing
+      console.log(x); // 20
+    }
+    console.log(x); // 10
+    
+    // Illegal Shadowing Example:
+    /*
+    let y = 10;
+    if (true) {
+      var y = 20; // SyntaxError: Identifier 'y' has already been declared
+    }
+    */
+    ```
 
 
 4. FUNCTIONS & CLOSURES [Importance: 10/10]
 --------------------------------------------------------------------------------
-* Function Declarations vs. Expressions:
-  - Function Declaration: Declared as a standalone statement. Hoisted.
+* Function Declaration vs. Function Expression:
+  - Function Declaration:
+    - Declared using the `function` keyword as a standalone statement.
+    - Fully Hoisted: Can be called before its definition in the code because the JS engine loads declarations into memory before execution.
+    - Example:
+      ```javascript
+      greet(); // "Hello" (works due to hoisting)
+      function greet() { return "Hello"; }
+      ```
+    - Scope: In strict mode, function declarations inside a block `{}` are block-scoped.
+  - Function Expression:
+    - Created when a function is defined within an expression (typically assigned to a variable).
+    - Not Hoisted: The variable is hoisted (according to `var`, `let`, or `const` rules), but the function definition is not initialized until the execution reaches that line.
+    - Example:
+      ```javascript
+      greetExpr(); // ReferenceError or TypeError
+      const greetExpr = function() { return "Hello"; };
+      ```
+
+* Arrow Function vs. Normal Function:
+  Arrow functions (introduced in ES6) and normal functions have key differences:
+  1. `this` Binding:
+     - Normal Function: Has a dynamic `this` context. The value of `this` is determined by how the function is invoked (the caller).
+     - Arrow Function: Does not have its own `this`. It inherits `this` lexically from its enclosing parent scope.
+  2. Constructor / `new` operator:
+     - Normal Function: Can be used as a constructor function with `new` (except when it's an ES6 shorthand method). It has a prototype property.
+     - Arrow Function: Cannot be used as a constructor (throws `TypeError: ... is not a constructor`) and does not have a `prototype` property.
+  3. `arguments` Object:
+     - Normal Function: Has access to the local `arguments` object containing all passed parameters.
+     - Arrow Function: Does not have its own `arguments` object (inherits it from the outer lexical scope). Use Rest Parameters (`...args`) instead.
+  4. Duplicate Parameter Names:
+     - Normal Function: Permitted in non-strict mode (though deprecated).
+     - Arrow Function: Never allowed, even in non-strict mode (throws a `SyntaxError`).
+  5. Syntax & Return:
+     - Arrow Function: Offers implicit returns for single-line expressions (e.g., `(x) => x * 2`). Multiline bodies with `{}` require an explicit `return`.
+
+* First-Class Functions:
+  - Definition: A programming language is said to have First-Class Functions when functions in that language are treated like any other variable.
+  - Characteristics:
+    1. Can be stored in a variable: `const myFunc = function() {};`
+    2. Can be passed as an argument to another function (Callback): `addEventListener('click', myFunc);`
+    3. Can be returned from another function (Closure / Higher-Order): `return function() {};`
+
+* Anonymous Functions vs. Named Functions:
+  - Anonymous Function:
+    - A function without a name. Often used as immediate callbacks or in function expressions.
+    - Example:
+      ```javascript
+      setTimeout(function() { console.log("Run"); }, 1000);
+      ```
+  - Named Function:
+    - A function defined with a specific name identifier. Useful for recursion, debugging (appears in call stacks), and readability.
+    - Named Function Expression (NFE): A function expression that contains a name. The name is local ONLY to the function's own body (useful for recursive calls inside the expression).
+      ```javascript
+      const factorial = function fact(n) {
+        if (n <= 1) return 1;
+        return n * fact(n - 1); // 'fact' is accessible here
+      };
+      // console.log(fact); // ReferenceError: fact is not defined
+      ```
+
+* Callback Functions:
+  - Definition: A function passed into another function as an argument, which is then invoked inside the outer function to complete some routine or action.
+  - Synchronous Callback: Executed immediately (e.g., `Array.prototype.forEach(callback)`).
+  - Asynchronous Callback: Executed at a later time (e.g., inside `setTimeout` or after an API request resolves).
+  - Example:
     ```javascript
-    function greet() { return "Hello"; }
+    function processInput(callback) {
+      const name = "User";
+      callback(name);
+    }
+    processInput(name => console.log("Hello " + name));
     ```
-  - Function Expression: Created inside an expression. Not hoisted.
+
+* Higher-Order Functions (HOF):
+  - Definition: A function that operates on other functions, either by taking one or more functions as arguments (callbacks) or by returning a function.
+  - Examples: `map()`, `filter()`, `reduce()`, decorators, and curry generators.
+  - Example:
     ```javascript
-    const greet = function() { return "Hello"; };
+    const multiplier = (factor) => (num) => num * factor;
+    const double = multiplier(2);
+    console.log(double(5)); // 10
     ```
-  - Scope in Block: In strict mode, function declarations in blocks are block-scoped.
 
-* Arrow Functions:
-  A concise syntax introduced in ES6.
-  ```javascript
-  const arrowAdd = (a, b) => a + b;
-  ```
-  - Multiline: Braces `{}` require an explicit `return` statement.
-  - Lexical `this`: Arrow functions do not bind their own `this`. They inherit `this` 
-    from the enclosing lexical environment in which they are defined.
+* Pure Functions:
+  - Definition: A function that satisfies two conditions:
+    1. Deterministic: Always returns the same output for the same set of arguments.
+    2. No Side Effects: Does not modify external state (variables outside its scope, global state, files, databases) or mutate its input arguments.
+  - Example:
+    ```javascript
+    // Pure:
+    const add = (a, b) => a + b;
+    
+    // Impure (depends on external variable):
+    let tax = 0.05;
+    const calculateTotal = (subtotal) => subtotal * (1 + tax);
+    
+    // Impure (modifies external/input state):
+    const addToArray = (arr, val) => {
+      arr.push(val); // Mutates input argument
+      return arr;
+    };
+    ```
 
-* Immediately Invoked Function Expressions (IIFE):
-  Functions that run immediately after definition (pronounced "Iffy").
-  ```javascript
-  (function() {
-    // Executed immediately
-  })();
-  ```
+* Generator Functions:
+  - Definition: Special functions that can pause their execution and resume later, yielding multiple values over time.
+  - Declared using the `function*` syntax and pause execution using the `yield` keyword.
+  - Returns a Generator object that adheres to both the iterable and iterator protocols. Calling `.next()` returns `{ value: any, done: boolean }`.
+  - Example:
+    ```javascript
+    function* counter() {
+      yield 1;
+      yield 2;
+      return 3;
+    }
+    const gen = counter();
+    console.log(gen.next()); // { value: 1, done: false }
+    console.log(gen.next()); // { value: 2, done: false }
+    console.log(gen.next()); // { value: 3, done: true }
+    ```
 
-* new Function Syntax:
-  Allows dynamically creating a function from strings:
-  ```javascript
-  let sum = new Function('a', 'b', 'return a + b');
-  console.log(sum(1, 2)); // 3
-  ```
-
-* Callbacks:
-  Passing a function as an argument to another function.
-  ```javascript
-  function multiplyBy2(sum) {
-    console.log(sum * 2);
-  }
-
-  function operationOnSum(num1, num2, callback) {
-    let sum = num1 + num2;
-    callback(sum);
-  }
-
-  operationOnSum(5, 5, multiplyBy2); // Outputs 20
-  ```
-
-* Higher-Order Functions:
-  Functions that take other functions as arguments, return them, or both (due to 
-  functions being first-class citizens).
-  ```javascript
-  function higherOrder2() {
-    return function() { return "Result"; };
-  }
-  let x = higherOrder2();
-  x(); // Returns "Result"
-  ```
+* Async Functions:
+  - Definition: Functions declared with the `async` keyword, allowing them to write asynchronous code using `await` in a synchronous-looking style.
+  - Return Value: Always returns a Promise. If the function returns a non-promise value, it is automatically wrapped in a resolved promise.
+  - `await` keyword: Can only be used inside async functions (or top-level modules). It pauses execution until the awaited promise settles.
+  - Example:
+    ```javascript
+    async function fetchUserData() {
+      try {
+        const response = await fetch('/api/user');
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Failed to fetch:", error);
+      }
+    }
+    ```
 
 * Closures:
   A closure is the combination of a function bundled together with references to 
@@ -299,57 +451,147 @@
   console.log(add(1)(2)(3)); // 6
   ```
 
-* "this" Keyword & call(), apply(), bind():
-  - `this` Keyword: Refers to the object that the function is a property of (the invoking object).
-    - If called globally (non-strict mode): `this` refers to `window` / `globalThis`.
-    - If called globally (strict mode): `this` is `undefined`.
-    - Arrow functions: Inherit `this` lexically from their enclosing parent context (they do not have their own `this`).
-    - Normal functions: `this` dynamically refers to the object invoking the function.
-  - call(), apply(), bind() are methods used to explicitly set the `this` context:
-    - `call()`: Invokes the function immediately with a given `this` value and arguments passed one by one.
-    - `apply()`: Invokes the function immediately with a given `this` value and arguments passed as a single array.
-    - `bind()`: Returns a new function with `this` bound to the specified object, to be executed later.
+* The "this" Keyword:
+  - Definition: The `this` keyword is a reference to the object that is currently executing the function. Its value is not static; it is determined at runtime based on how the function is invoked.
+  - "this" inside Normal Functions:
+    - Global Invocation: In non-strict mode, `this` refers to the global object (`window` in browsers, `global` in Node.js). In strict mode, `this` is `undefined`.
+    - Method Invocation: When a function is called as a method of an object (e.g., `obj.method()`), `this` points to the object before the dot (the invoking object).
+    - Constructor Invocation: Inside a constructor function or class constructor called with `new`, `this` points to the newly created object instance.
+    - Event Handler Invocation: In DOM event listeners, `this` points to the HTML element that received the event.
+  - "this" inside Arrow Functions:
+    - Arrow functions do **not** have their own `this` binding. Instead, they capture the `this` value of the enclosing lexical context at the time they are defined.
+    - Changing `this` context on an arrow function using `call()`, `apply()`, or `bind()` has no effect; the lexical `this` remains unchanged.
+    - Example:
+      ```javascript
+      const obj = {
+        name: "Alice",
+        normalMethod: function() {
+          console.log("Normal:", this.name); // "Alice" (points to obj)
+        },
+        arrowMethod: () => {
+          console.log("Arrow:", this.name); // undefined (points to global/window context)
+        }
+      };
+      ```
+
+* Setting "this" Context (call, apply, bind):
+  - call(thisArg, arg1, arg2, ...): Invokes the function immediately, setting `this` to `thisArg` and passing arguments individually.
+  - apply(thisArg, [argsArray]): Invokes the function immediately, setting `this` to `thisArg` and passing arguments as a single array.
+  - bind(thisArg, arg1, arg2, ...): Returns a new copy of the function with its `this` value permanently bound to `thisArg`, to be executed later.
   
-  - Interview Code Example:
+  - Key Comparison Table:
+    | Method | Invocation | Argument Format | Return Value |
+    |--------|------------|-----------------|--------------|
+    | `call()` | Immediate | Individual parameters (comma-separated) | The return value of the invoked function |
+    | `apply()` | Immediate | Array of parameters (or array-like object) | The return value of the invoked function |
+    | `bind()` | Deferred (returns new function) | Individual parameters (can also pre-bind partially) | A brand new bound function |
+
+  - Example: Basic usage of call, apply, and bind:
     ```javascript
-    let person1 = {
-      name: 'Sahil'
-    };
-    
-    function printDetails(age, food_choice) {
-      console.log(this.name, "is", age, "years old and is", food_choice);
+    const person = { name: "Sahil" };
+    function greet(age, hobby) {
+      console.log(`Hello, my name is ${this.name}. I am ${age} years old and love ${hobby}.`);
     }
     
-    printDetails.call(person1, 28, 'vegetarian'); // call (arguments individually)
-    printDetails.apply(person1, [28, 'vegetarian']); // apply (arguments as array)
+    // call & apply invoke immediately:
+    greet.call(person, 28, "coding");
+    greet.apply(person, [28, "coding"]);
     
-    let func = printDetails.bind(person1, 28, 'Vegetarian'); // bind (returns new function)
-    func();
+    // bind returns a new function:
+    const boundGreet = greet.bind(person, 28, "coding");
+    boundGreet(); // Executes: Hello, my name is Sahil...
     ```
-  - Function Borrowing Example:
+
+  - Scenario 1: Function Borrowing:
+    An object can borrow a method from another object without copying it.
     ```javascript
-    var person = {
-      age: 23,
-      getAge: function() { return this.age; }
+    const user1 = {
+      name: "Vivian",
+      age: 45,
+      getDetails: function(role) {
+        return `${this.name} is ${this.age} years old and works as a ${role}.`;
+      }
     };
-    var person2 = { age: 54 };
-    person.getAge.call(person2); // Returns 54 (person2 borrows getAge method)
+    
+    const user2 = {
+      name: "Alice",
+      age: 30
+    };
+    
+    // user2 borrows getDetails method from user1:
+    const details = user1.getDetails.call(user2, "Software Engineer");
+    console.log(details); // "Alice is 30 years old and works as a Software Engineer."
+    ```
+
+  - Scenario 2: Partial Application / Function Currying via bind:
+    Pre-specifying initial arguments of a function when creating a new bound function.
+    ```javascript
+    function multiply(a, b) {
+      return a * b;
+    }
+    
+    // Pre-bind 'a' parameter to 2 (creates a doubling function)
+    const double = multiply.bind(null, 2); 
+    console.log(double(5)); // 10 (2 * 5)
+    
+    // Pre-bind 'a' parameter to 3 (creates a tripling function)
+    const triple = multiply.bind(null, 3);
+    console.log(triple(5)); // 15 (3 * 5)
     ```
 
 
 5. OBJECTS & MEMORY MODEL [Importance: 9/10]
 --------------------------------------------------------------------------------
-* Object Basics:
-  ```javascript
-  let user = {}; // Object literal syntax
-  user.name = "John"; // Dot access
-  user["likes birds"] = true; // Bracket notation (required for multiword keys)
-  delete user.name; // Property removal
-  ```
+* Object Basics & Reflection API:
+  - Object.keys(obj): Returns an array of a given object's own enumerable string-keyed property names.
+    ```javascript
+    const user = { name: "Sahil", age: 28 };
+    console.log(Object.keys(user)); // ["name", "age"]
+    ```
+  - Object.values(obj): Returns an array of a given object's own enumerable string-keyed property values.
+    ```javascript
+    console.log(Object.values(user)); // ["Sahil", 28]
+    ```
+  - Object.entries(obj): Returns an array of a given object's own enumerable string-keyed property `[key, value]` pairs.
+    ```javascript
+    console.log(Object.entries(user)); // [["name", "Sahil"], ["age", 28]]
+    ```
+  - Object.prototype.hasOwnProperty(prop): Returns a boolean indicating whether the object has the specified property as its own property (as opposed to inheriting it).
+    Note: Modern best practice is to use `Object.hasOwn(obj, prop)` because `hasOwnProperty` can be shadowed or unavailable on objects created with `Object.create(null)`.
+    ```javascript
+    const parent = { inheritedProp: true };
+    const child = Object.create(parent);
+    child.ownProp = true;
+    console.log(child.hasOwnProperty('ownProp'));       // true
+    console.log(child.hasOwnProperty('inheritedProp')); // false (inherited)
+    ```
 
-* Object Property Loop & Checks:
-  - Checking existence: `"key" in obj`
-  - Iterating: `for (let key in obj) { ... }`
+* Object.assign(target, ...sources):
+  - Copies all enumerable own properties from one or more source objects to a target object. It returns the modified target object.
+  - Used for merging objects or cloning objects (shallow copy).
+  - Example:
+    ```javascript
+    const target = { a: 1 };
+    const source1 = { b: 2 };
+    const source2 = { c: 3 };
+    Object.assign(target, source1, source2);
+    console.log(target); // { a: 1, b: 2, c: 3 }
+    ```
+
+* Object Destructuring & Spread Operator:
+  - Object Destructuring: Allows unpacking properties from objects into distinct variables.
+    ```javascript
+    const person = { name: "Vivian", age: 45, role: "Engineer" };
+    const { name, age, ...rest } = person; // rest collects remaining keys
+    console.log(name, age); // "Vivian" 45
+    console.log(rest);      // { role: "Engineer" }
+    ```
+  - Spread Operator (`...`): Used to copy or merge own enumerable properties from one object into another.
+    ```javascript
+    const baseConfig = { host: "localhost", port: 80 };
+    const userConfig = { ...baseConfig, port: 443, debug: true }; // Merges and overrides port
+    console.log(userConfig); // { host: "localhost", port: 443, debug: true }
+    ```
 
 * Memory Model (Pass by Value / Sharing):
   JavaScript is strictly **pass-by-value**.
@@ -376,23 +618,52 @@
   console.log(c === d); // false (different references in heap)
   ```
 
-* Restricting Object Mutations:
-  - `Object.preventExtensions(obj)`: Prevents adding new properties.
-  - `Object.seal(obj)`: Prevents adding/removing properties; sets `configurable: false`.
-    Note: Existing property *values* can still be changed (unless also `writable: false`).
-  - `Object.freeze(obj)`: Prevents adding/removing/updating properties; sets 
-    `configurable: false` and `writable: false`. Note: This is a shallow freeze — 
-    nested objects remain mutable.
-
 * Shallow vs. Deep Copy:
-  - Shallow Copy: Copies only the first level of keys. Nested objects are still shared 
-    by reference.
-    - Example: `Object.assign({}, original)` or using spread `const clone = { ...original }`.
-  - Deep Copy: Copies all nested levels recursively.
-    - Legacy Method: `JSON.parse(JSON.stringify(obj))` (fails with functions, Symbols, 
-      RegExp, and loses `undefined` fields / Date objects are converted to strings).
-    - Modern Native API: `structuredClone(obj)` (fully deep clones structures, supports 
-      Dates, Sets, Maps, Arrays, etc. natively).
+  - Shallow Copy: Copies only the top-level keys. Nested objects are not duplicated; their reference pointers are shared.
+    - Methods: Object spread `{ ...obj }` or `Object.assign({}, obj)`.
+    - Mutating nested properties on the clone affects the original object.
+  - Deep Copy: Recursively copies all properties, ensuring nested objects are fully duplicated.
+    - Methods:
+      1. Native modern API: `structuredClone(obj)`. Fully clones objects, Dates, Maps, Sets, Arrays, etc.
+      2. Serialization fallback: `JSON.parse(JSON.stringify(obj))` (Note: Loses methods, symbols, undefined values, and converts Date objects to strings).
+  - Comparison Example:
+    ```javascript
+    const original = { name: "Alice", address: { city: "New York" } };
+    
+    // Shallow copy:
+    const shallow = { ...original };
+    shallow.address.city = "Boston"; // Modifies original.address.city as well!
+    
+    // Deep copy:
+    const deep = structuredClone(original);
+    deep.address.city = "Chicago"; // Does NOT affect original
+    ```
+
+* Restricting Object Mutations (Object.freeze vs Object.seal):
+  - Object.seal(obj):
+    - Prevents adding new properties and deletes existing properties (sets `configurable: false` on all properties).
+    - Crucially: Existing property **values** can still be modified if they are writable.
+    - Check with: `Object.isSealed(obj)`.
+  - Object.freeze(obj):
+    - Maximum protection. Prevents adding, removing, and changing property values (sets both `configurable: false` and `writable: false`).
+    - Crucially: The freeze is **shallow**. Nested objects can still be mutated unless recursively frozen.
+    - Check with: `Object.isFrozen(obj)`.
+  - Comparison Example:
+    ```javascript
+    const user = { name: "John", meta: { age: 30 } };
+    
+    // Object.seal Example:
+    Object.seal(user);
+    user.name = "Jane"; // Allowed
+    delete user.name; // Silent failure (or TypeError in strict mode)
+    user.newProp = "test"; // Silent failure (or TypeError in strict mode)
+    
+    // Object.freeze Example:
+    const frozen = { name: "John", meta: { age: 30 } };
+    Object.freeze(frozen);
+    frozen.name = "Jane"; // Silent failure (or TypeError in strict mode)
+    frozen.meta.age = 35; // Allowed! (nested mutation because freeze is shallow)
+    ```
 
 * Object Property Descriptors:
   You can control properties with fine-grained configuration using `Object.defineProperty(obj, prop, descriptor)`:
@@ -484,55 +755,91 @@
 
 7. ASYNCHRONOUS JAVASCRIPT & PROMISES [Importance: 10/10]
 --------------------------------------------------------------------------------
-* Promises:
-  An object representing the eventual completion or failure of an asynchronous operation.
-  - States:
-    - `pending`: Initial state.
-    - `fulfilled`: Completed successfully.
-    - `rejected`: Operation failed.
-  - Promise objects are immutable (once settled, their state can never change).
-
-* Chaining:
-  Methods like `.then()`, `.catch()`, and `.finally()` associate actions with settled 
-  promises and return new promises, allowing chaining:
-  ```javascript
-  doTask1()
-    .then(res => doTask2(res))
-    .catch(err => handleError(err))
-    .finally(() => cleanup());
-  ```
-
-* Promise Concurrency Utilities:
-  1. `Promise.all([p1, p2])`: Fulfills when all fulfill; rejects if *any* reject.
-  2. `Promise.allSettled([p1, p2])`: Fulfills when all settle (fulfilled or rejected).
-  3. `Promise.any([p1, p2])`: Fulfills when *any* fulfills; rejects with `AggregateError` 
-     if all reject.
-  4. `Promise.race([p1, p2])`: Settles when the first promise settles (resolves or 
-     rejects).
-
-* Modern Promise helpers:
-  - `Promise.resolve(val)`: Creates a resolved promise.
-  - `Promise.reject(reason)`: Creates a rejected promise.
-  - `Promise.withResolvers()` (ES2024): Returns an object containing a new promise 
-    along with its resolve and reject functions:
+* Callbacks & Callback Hell:
+  - Callback: A function passed into another function as an argument, which is executed at a later time (often after an asynchronous operation finishes).
+  - Callback Hell (Pyramid of Doom): A situation where multiple nested callbacks are chained together, making the code extremely hard to read, maintain, and debug.
+  - Example:
     ```javascript
-    const { promise, resolve, reject } = Promise.withResolvers();
-    setTimeout(() => resolve("Success"), 1000);
+    getData(function(a) {
+      getMoreData(a, function(b) {
+        getEvenMoreData(b, function(c) {
+          console.log(c);
+        });
+      });
+    });
+    ```
+
+* Promises:
+  - Definition: An object representing the eventual completion (or failure) of an asynchronous operation and its resulting value.
+  - Promise States:
+    1. `pending`: Initial state, neither fulfilled nor rejected.
+    2. `fulfilled`: Meaning that the operation was completed successfully.
+    3. `rejected`: Meaning that the operation failed.
+  - Promise Chaining: Using `.then()` to handle fulfillment, `.catch()` to handle rejection, and `.finally()` to run cleanup code regardless of the outcome. Each method returns a new Promise, allowing linear chains instead of nested callbacks.
+    ```javascript
+    fetchData()
+      .then(result => processData(result))
+      .then(processed => saveData(processed))
+      .catch(error => console.error("Error occurred:", error))
+      .finally(() => console.log("Operation finished."));
     ```
 
 * async / await:
-  Syntactic sugar built on top of promises to write async code in a synchronous style.
-  `await` pauses execution of the async function until the promise settles.
+  - Syntactic sugar built on top of promises to write asynchronous code that reads like synchronous code.
+  - `async` keyword: Placed before a function declaration to make it return a Promise.
+  - `await` keyword: Can only be used inside an `async` function. It pauses code execution until the promise settles (resolves or rejects).
+  - Error Handling: Managed cleanly using standard `try...catch` blocks.
   ```javascript
-  async function fetchData() {
+  async function performTask() {
     try {
-      let data = await apiCall();
-      console.log(data);
+      const data = await fetchData();
+      const processed = await processData(data);
+      console.log(processed);
     } catch (err) {
-      console.error(err);
+      console.error("Caught error:", err);
     }
   }
   ```
+
+* Promise Concurrency Utilities:
+  1. `Promise.all(iterable)`:
+     - Fulfills when **all** promises in the input resolve; returns an array of results.
+     - Rejects immediately if **any** input promise rejects (fail-fast behavior).
+  2. `Promise.allSettled(iterable)`:
+     - Waits for **all** input promises to settle (either fulfill or reject).
+     - Returns an array of objects describing the outcome of each promise (e.g., `{ status: "fulfilled", value: val }` or `{ status: "rejected", reason: err }`). Never rejects.
+  3. `Promise.any(iterable)`:
+     - Fulfills as soon as **any** (the first) input promise fulfills.
+     - Rejects with an `AggregateError` only if **all** input promises reject.
+  4. `Promise.race(iterable)`:
+     - Settles (fulfills or rejects) as soon as **one** of the input promises settles.
+
+* Timers (setTimeout and setInterval):
+  - `setTimeout(callback, delay, ...args)`:
+    - Schedules a single execution of a callback function after the specified delay (in milliseconds).
+    - Returns a numeric timer ID. Can be cancelled before execution using `clearTimeout(timerId)`.
+  - `setInterval(callback, delay, ...args)`:
+    - Repeatedly invokes a callback function at fixed intervals of the specified delay.
+    - Returns a numeric interval ID. Can be stopped using `clearInterval(intervalId)`.
+
+* The JavaScript Concurrency Model & Event Loop:
+  - Call Stack:
+    - A single-threaded, Last-In-First-Out (LIFO) stack that keeps track of the function execution context currently running.
+  - Web APIs:
+    - APIs provided by the browser environment (e.g., DOM methods, `fetch()`, `setTimeout`). They execute tasks outside the JavaScript engine's single thread. When a Web API completes its task, it pushes the callback to the appropriate queue.
+  - Callback Queue (Task Queue):
+    - A queue containing callbacks from standard asynchronous Web APIs like `setTimeout`, `setInterval`, or DOM event handlers.
+  - Microtask Queue:
+    - A higher-priority queue containing callbacks from Promise settlements (`.then`, `.catch`, `.finally`), `queueMicrotask`, or `MutationObserver`.
+  - The Event Loop:
+    - The coordination mechanism that continuously monitors the Call Stack and the queues.
+    - **Step-by-step Execution Flow**:
+      1. Check if the Call Stack is empty.
+      2. If the Call Stack is empty, drain the **entire** Microtask Queue (including any microtasks added while draining).
+      3. Render updates (if in browser and needed).
+      4. Pull the first task from the Callback Queue and push it onto the Call Stack.
+      5. Repeat the process.
+    - Note: Because microtasks have absolute priority, they will always execute before the next timer callback.
 
 * `this` in Context of Async Callbacks:
   - Inside standard callbacks, `this` can dynamically bind based on the caller or default 
@@ -592,19 +899,79 @@
 
 9. DATA STRUCTURES & COLLECTIONS [Importance: 8/10]
 --------------------------------------------------------------------------------
-* Array Methods: Map, Filter, Reduce:
-  - `map()`: Creates a new array by applying a function to each element.
+* Array Iteration & Transformation Methods:
+  - map(callback): Creates a new array populated with the results of calling a provided function on every element in the calling array.
     ```javascript
-    let double = arr.map(x => x * 2);
+    const numbers = [1, 2, 3];
+    const doubled = numbers.map(x => x * 2); // [2, 4, 6]
     ```
-  - `filter()`: Creates a new array containing elements that pass a conditional check.
+  - filter(callback): Creates a shallow copy of a portion of a given array, filtered down to just the elements from the given array that pass the test implemented by the provided function.
     ```javascript
-    let evens = arr.filter(x => x % 2 === 0);
+    const words = ['spray', 'limit', 'elite', 'exuberant'];
+    const longWords = words.filter(word => word.length > 6); // ["exuberant"]
     ```
-  - `reduce()`: Reduces an array to a single value by applying a reducer function.
+  - reduce(callback, initialValue): Executes a user-supplied "reducer" callback function on each element of the array, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the array is a single value.
     ```javascript
-    let sum = numbers.reduce((accumulator, item) => accumulator + item, 0);
+    const arr = [1, 2, 3, 4];
+    const sum = arr.reduce((accumulator, currentValue) => accumulator + currentValue, 0); // 10
     ```
+  - forEach(callback): Executes a provided function once for each array element. Unlike `map`, it always returns `undefined` and does not chain.
+    ```javascript
+    const items = ['a', 'b', 'c'];
+    items.forEach(item => console.log(item));
+    ```
+
+* Array Search & Condition Methods:
+  - find(callback): Returns the value of the first element in the provided array that satisfies the provided testing function. If no values satisfy the testing function, `undefined` is returned.
+    ```javascript
+    const list = [5, 12, 8, 130, 44];
+    const found = list.find(element => element > 10); // 12
+    ```
+  - findIndex(callback): Returns the index of the first element in the array that satisfies the provided testing function. Otherwise, it returns `-1`.
+    ```javascript
+    const index = list.findIndex(element => element > 10); // 1
+    ```
+  - some(callback): Tests whether at least one element in the array passes the test implemented by the provided function. Returns a boolean.
+    ```javascript
+    const hasNegative = [1, -2, 3].some(x => x < 0); // true
+    ```
+  - every(callback): Tests whether all elements in the array pass the test implemented by the provided function. Returns a boolean.
+    ```javascript
+    const allPositive = [1, 2, 3].every(x => x > 0); // true
+    ```
+
+* Array Sorting, Flattening & Restructuring:
+  - sort(compareFunction): Sorts the elements of an array in place and returns the reference to the same array. By default, it converts elements to strings and sorts them according to UTF-16 code unit values (which can yield unexpected results for numbers: e.g., `[10, 2].sort()` returns `[10, 2]`).
+    ```javascript
+    const nums = [40, 100, 1, 5, 25, 10];
+    nums.sort((a, b) => a - b); // Ascending sort: [1, 5, 10, 25, 40, 100]
+    ```
+  - flat(depth): Creates a new array with all sub-array elements concatenated into it recursively up to the specified depth. Defaults to `1`.
+    ```javascript
+    const nested = [1, 2, [3, 4, [5, 6]]];
+    console.log(nested.flat());    // [1, 2, 3, 4, [5, 6]]
+    console.log(nested.flat(2));   // [1, 2, 3, 4, 5, 6]
+    console.log(nested.flat(Infinity)); // Flattens all nested arrays
+    ```
+  - flatMap(callback): Returns a new array formed by applying a given callback function to each element of the array, and then flattening the result by one level. It is equivalent to a `map()` followed by a `flat(1)`, but slightly more efficient.
+    ```javascript
+    const sentence = ["hello world", "good morning"];
+    const wordsList = sentence.flatMap(x => x.split(" ")); // ["hello", "world", "good", "morning"]
+    ```
+
+* Essential Array Interview Questions & Key Differences:
+  - map() vs. forEach():
+    - `map()` returns a new array and does not mutate the original array (if pure). It is chainable (e.g., `.map().filter()`).
+    - `forEach()` does not return anything (`undefined`), executes side effects, and is not chainable.
+  - filter() vs. find():
+    - `filter()` returns a new array containing all elements that match the condition (can be empty).
+    - `find()` returns only the first matching element value (or `undefined` if no match is found).
+  - slice() vs. splice():
+    - `slice(start, end)`: Returns a shallow copy of a portion of an array into a new array object. It **does not mutate** the original array.
+    - `splice(start, deleteCount, ...items)`: Changes the contents of an array by removing or replacing existing elements and/or adding new elements in place. It **mutates** the original array.
+  - push() vs. concat():
+    - `push(...items)`: Adds one or more elements to the end of an array and returns the new length. It **mutates** the original array in place.
+    - `concat(...items)`: Merges two or more arrays/values. It returns a brand new array and **does not mutate** the original arrays.
 
 * Object and Array Destructuring:
   Extracted assignments from arrays and objects:
@@ -927,5 +1294,92 @@
     console.error('Unhandled rejection:', reason);
   });
   ```
+
+================================================================================
+
+
+18. MODERN ES6+ FEATURES SUMMARY [Importance: 9/10]
+--------------------------------------------------------------------------------
+* Template Literals:
+  - Enclosed by backticks (`` ` ``) instead of single/double quotes.
+  - Supports multi-line strings directly, and string interpolation using `${expression}`.
+  - Example:
+    ```javascript
+    const name = "Sahil";
+    const msg = `Hello, ${name}!
+    Welcome to the team.`;
+    ```
+
+* Spread Operator vs. Rest Operator:
+  - Both use the `...` syntax, but serve opposite purposes:
+  - Spread Operator (Unpacks elements):
+    - Expands arrays or objects into individual elements or properties.
+    - Used in function arguments, array literals, or object literals.
+    - Example: `const newArr = [...oldArr, 4, 5];`
+  - Rest Operator (Packs elements):
+    - Gathers multiple remaining elements/arguments into a single array.
+    - Used in function parameter declarations or destructuring assignments.
+    - Example:
+      ```javascript
+      function sum(...numbers) { // Rest gathers arguments
+        return numbers.reduce((a, b) => a + b);
+      }
+      ```
+
+* Destructuring Assignment:
+  - Allows unpacking values from arrays or properties from objects into distinct variables.
+  - Example:
+    ```javascript
+    // Object destructuring with renaming and defaults:
+    const { name, role: userRole, age = 18 } = { name: "Alice", role: "Admin" };
+    // Array destructuring:
+    const [first, second, ...rest] = [1, 2, 3, 4, 5];
+    ```
+
+* Default Parameters:
+  - Allows parameters to be initialized with default values if no value or `undefined` is passed.
+  - Example:
+    ```javascript
+    function multiply(a, b = 1) {
+      return a * b;
+    }
+    multiply(5); // Returns 5 (b defaults to 1)
+    ```
+
+* Optional Chaining (`?.`):
+  - Safely reads nested properties or calls methods without throwing an error if a reference is nullish (`null` or `undefined`). Returns `undefined` instead.
+  - Example:
+    ```javascript
+    const user = { profile: { getName: () => "Bob" } };
+    console.log(user?.profile?.getName?.()); // "Bob"
+    console.log(user?.address?.city); // undefined (does not throw)
+    ```
+
+* Nullish Coalescing Operator (`??`):
+  - A logical operator that returns its right-hand side operand when its left-hand side operand is `null` or `undefined`.
+  - Contrast with logical OR (`||`): `||` returns the right-hand operand for *any* falsy value (e.g., `""`, `0`, `false`), which is often a bug when those falsy values are valid inputs.
+  - Example:
+    ```javascript
+    const count = 0;
+    console.log(count ?? 10); // 0 (since 0 is not null/undefined)
+    console.log(count || 10); // 10 (since 0 is falsy)
+    ```
+
+* Modules (Import / Export):
+  - Allows splitting code into reusable files using ES Modules syntax:
+  - Named Exports/Imports:
+    ```javascript
+    // file: utils.js
+    export const log = (msg) => console.log(msg);
+    // file: main.js
+    import { log } from './utils.js';
+    ```
+  - Default Exports/Imports:
+    ```javascript
+    // file: api.js
+    export default function fetchApi() {}
+    // file: main.js
+    import fetchApi from './api.js';
+    ```
 
 ================================================================================
