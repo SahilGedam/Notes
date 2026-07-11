@@ -859,49 +859,168 @@
        ```
 
 * RxJS Primitives Explained:
-  - Observable: A lazy push collection of multiple values over time.
-  - Observer: A consumer of values delivered by an Observable. Implements `next`, `error`, and `complete` callbacks.
-  - Subscription: Represents the execution of an Observable. Used to cancel (unsubscribe) the execution.
-  - Memory Leaks: Occur when subscriptions are kept active after a component is destroyed, holding memory references. Prevent using `takeUntil`, `takeUntilDestroyed`, or `AsyncPipe`.
-  - Cold Observables: Produce data only when subscribed to. Each subscriber gets its own independent source of data (e.g., HTTP request).
-  - Hot Observables: Produce data regardless of subscriptions. Data is shared among all subscribers (e.g., DOM click events, WebSockets).
+  - Observable: A lazy push collection of multiple values over time. It doesn't run until it is subscribed to.
+    * Example:
+      ```typescript
+      const numberStream$ = new Observable<number>(subscriber => {
+        subscriber.next(1);
+        subscriber.next(2);
+        const timer = setTimeout(() => {
+          subscriber.next(3);
+          subscriber.complete();
+        }, 1000);
+        
+        return () => clearTimeout(timer); // Cleanup logic upon unsubscription
+      });
+      ```
+  - Observer: A consumer (or listener) of values delivered by an Observable. It is an object containing callbacks:
+    * Example:
+      ```typescript
+      const observer = {
+        next: (val: number) => console.log('Received value:', val),
+        error: (err: any) => console.error('Error occurred:', err),
+        complete: () => console.log('Stream completed')
+      };
+      numberStream$.subscribe(observer);
+      ```
+  - Subscription: Represents the execution of an Observable (i.e. the active link between Observable and Observer). Mainly used to cancel/dispose of the execution.
+    * Example:
+      ```typescript
+      const sub = numberStream$.subscribe(val => console.log(val));
+      sub.unsubscribe(); // Cancels execution and triggers cleanup
+      ```
+      * Pro Tip: You can group subscriptions using `sub.add(otherSub)` to unsubscribe from multiple streams in a single call.
+  - Memory Leaks: Occur when subscriptions are kept active after a component is destroyed, holding memory references to the component and preventing garbage collection.
+    * Mitigation strategies:
+      1. Use `AsyncPipe` (auto-unsubscribes on destroy).
+      2. Use `takeUntil()` with a destroyer subject.
+      3. Use `takeUntilDestroyed()` (v16+) in constructor contexts.
+      4. Use finite operators like `take(1)` or `first()` for one-time emissions.
+  - Cold Observables: Produce data inside the observable itself on a per-subscription basis. The data producer is created *inside* the observable.
+    * Key behavior: Every subscriber gets its own independent execution and receives the exact same set of values from the beginning.
+    * Examples: HTTP requests (`http.get()`), `of(1, 2, 3)`, `interval()`.
+  - Hot Observables: Produce data outside of the observable. The data producer is shared across all subscribers.
+    * Key behavior: Subscribers share the same stream and only receive future values emitted after they subscribe (multicasting).
+    * Examples: DOM events (`click`, `mousemove`), `Subjects`, WebSockets.
+    * Note: A cold observable can be made hot using multicasting operators like `share()` or `shareReplay()`.
 
 * Expected Questions:
   - Q: Observable vs Promise?
-    - A: Promises are single-emission, eager, and non-cancellable. Observables are multi-emission, lazy, and cancellable.
-  - Q: Subject vs BehaviorSubject?
-    - A: `Subject` does not hold a value or require an initial state; late subscribers miss emitted values. `BehaviorSubject` requires an initial value and replays the current value immediately to new subscribers.
-  - Q: ReplaySubject vs Subject?
-    - A: `ReplaySubject` stores a buffer of historical values and replays them to new subscribers, whereas `Subject` only delivers future values.
+    - A:
+      | Feature | Promise | Observable |
+      | :--- | :--- | :--- |
+      | **Emissions** | Single value or error | Zero, one, or multiple values over time |
+      | **Evaluation** | Eager (starts execution immediately upon creation) | Lazy (starts only when subscribed to) |
+      | **Cancellation** | Non-cancellable | Cancellable (by calling `unsubscribe()`) |
+      | **Operators** | None (only `.then()`, `.catch()`) | Powerful pipeable operators (`map`, `filter`, `switchMap`, etc.) |
+      | **Sync/Async** | Always asynchronous | Can be synchronous or asynchronous |
+
+  - Q: Subject vs BehaviorSubject vs ReplaySubject vs AsyncSubject?
+    - A: All of these are types of `Subject` (multicast observables that also implement `Observer`):
+      1. `Subject`: Standard multicast stream. Late subscribers miss previously emitted values.
+         - *Example*: Click event coordinator, cross-component event bus.
+      2. `BehaviorSubject`: Stores the **latest emitted value** and requires an **initial value**. Emits the initial or latest value immediately to any new subscriber.
+         - *Example*: App state management (e.g., current user, cart state, dark mode theme).
+      3. `ReplaySubject`: Buffers a specified number of historical values and replays them to new subscribers.
+         - *Example*: Caching historical search history, replaying recent notifications.
+      4. `AsyncSubject`: Emits only the **last value** of the stream, and only **when it completes**.
+         - *Example*: Long-running calculation where you only care about the final outcome (similar to Promise).
+
   - Q: Async Pipe vs subscribe()?
     - A: 
-      - `AsyncPipe`:
-        1. Declarative & Clean: No need to store subscription references or write lifecycle hooks (`ngOnDestroy`) in TypeScript.
-        2. Automatic Cleanup: Unsubscribes automatically when the component is destroyed, preventing memory leaks.
-        3. OnPush Compatibility: Automatically calls `markForCheck()` when new values arrive, making it work seamlessly with `ChangeDetectionStrategy.OnPush`.
-      - `.subscribe()` in TS:
-        1. Imperative: Requires manual cleanup (`takeUntil`, `Subscription.unsubscribe()`), increasing boilerplate.
-        2. Manual Change Detection: If using `OnPush`, you must manually inject `ChangeDetectorRef` and call `markForCheck()` inside the subscription callback to update the view.
-        3. Best for Side Effects: Use `.subscribe()` when you need to perform side-effects in TypeScript (e.g., routing, opening dialogs, showing toasts) rather than just displaying data in the view.
+      * `AsyncPipe`:
+        1. **Declarative & Clean**: No need to store subscription references or write lifecycle hooks (`ngOnDestroy`) in TypeScript.
+        2. **Automatic Cleanup**: Unsubscribes automatically when the component is destroyed, preventing memory leaks.
+        3. **OnPush Compatibility**: Automatically calls `markForCheck()` when new values arrive, making it work seamlessly with `ChangeDetectionStrategy.OnPush`.
+        4. **Drawback**: Hard to use if you need to perform complex side effects in TypeScript before rendering, or if you need to use the value in multiple places without duplicate subscription overhead (use `shareReplay` or `as` syntax like `*ngIf="data$ | async as data"`).
+      * `.subscribe()` in TS:
+        1. **Imperative**: Requires manual cleanup (`takeUntil`, `Subscription.unsubscribe()`), increasing boilerplate.
+        2. **Manual Change Detection**: If using `OnPush`, you must manually inject `ChangeDetectorRef` and call `markForCheck()` inside the subscription callback to update the view.
+        3. **Best for Side Effects**: Use `.subscribe()` when you need to perform side-effects in TypeScript (e.g., routing, opening dialogs, showing toasts, saving to localStorage) rather than just displaying data in the view.
 
 * RxJS Operators Cheat Sheet & Code Examples:
   - `map()`: Transforms each emitted value.
-    `stream$.pipe(map(x => x * 10))`
-  - `tap()`: Performs side effects (logging, debugging) without mutating the stream.
-    `stream$.pipe(tap(x => console.log('Emitted:', x)))`
-  - `filter()`: Filters emissions based on a predicate.
-    `stream$.pipe(filter(x => x > 5))`
-  - `switchMap()`: Maps to an observable, cancels the previous active inner observable. Ideal for search/auto-complete.
-  - `mergeMap()`: Maps to an observable, runs all inner observables in parallel. Ideal for independent parallel requests.
-  - `concatMap()`: Maps to an observable, queues inner observables to run sequentially. Ideal for sequential writes/orders.
-  - `exhaustMap()`: Maps to an observable, ignores new outer emissions until current inner observable completes. Ideal for double-submit prevention.
+    ```typescript
+    stream$.pipe(map(x => x * 10)) // Emits 10, 20, 30...
+    ```
+  - `tap()`: Performs side effects (logging, debugging, triggering external UI) without mutating the stream.
+    ```typescript
+    stream$.pipe(tap(x => console.log('Log:', x)))
+    ```
+  - `filter()`: Filters emissions based on a predicate function.
+    ```typescript
+    stream$.pipe(filter(x => x > 5)) // Only emits values > 5
+    ```
   - `distinctUntilChanged()`: Only emits if the current value is different from the previous.
-  - `take(n)`: Emits only the first `n` values.
+    ```typescript
+    stream$.pipe(distinctUntilChanged()) // [1, 1, 2, 2, 1] -> [1, 2, 1]
+    ```
+  - `take(n)`: Emits only the first `n` values and then completes.
+    ```typescript
+    stream$.pipe(take(1)) // Emits first value, then completes stream
+    ```
   - `catchError()`: Catches errors on the stream and gracefully returns a fallback observable.
-  - `finalize()`: Runs a callback when the observable completes or errors.
-  - `shareReplay(1)`: Shares a single subscription source and replays the last value to late subscribers (turns cold to hot).
-  - `combineLatest([a$, b$])`: Emits an array of the latest values from all source streams whenever any stream emits.
-  - `forkJoin([a$, b$])`: Emits the final values of all input observables once they all complete (similar to `Promise.all`).
+    ```typescript
+    stream$.pipe(catchError(err => of([]))) // Gracefully recovers with an empty array
+    ```
+  - `finalize()`: Runs a callback function when the observable completes or errors.
+    ```typescript
+    stream$.pipe(finalize(() => this.loading = false)) // Perfect for turning off spinners
+    ```
+  - `shareReplay(1)`: Shares a single subscription source and replays the last value to late subscribers (converts cold to hot).
+    ```typescript
+    readonly data$ = this.http.get('/api').pipe(shareReplay(1)); // Prevents duplicate API requests
+    ```
+  - `combineLatest([a$, b$])`: Emits an array of the latest values from all source streams whenever any stream emits, provided all source streams have emitted at least once.
+    ```typescript
+    combineLatest([user$, settings$]).pipe(
+      map(([user, settings]) => `User: ${user.name}, Theme: ${settings.theme}`)
+    )
+    ```
+  - `forkJoin([a$, b$])`: Emits the final values of all input observables once they all complete (equivalent to `Promise.all`).
+    ```typescript
+    forkJoin({
+      user: this.http.get('/user'),
+      posts: this.http.get('/posts')
+    }).subscribe(({ user, posts }) => { ... });
+    ```
+
+* Flattening Operators (switchMap, mergeMap, concatMap, exhaustMap):
+  These are used when an outer observable emits, and we want to map it to an inner observable (like an HTTP call).
+  
+  - `switchMap()` (Switch/Cancel): Cancels the previous active inner observable whenever a new outer value arrives.
+    - *Best for*: Read/Search queries, autocomplete, tabs switching.
+    - *Example*:
+      ```typescript
+      searchTerms$.pipe(
+        debounceTime(300),
+        switchMap(term => this.api.search(term)) // Cancels pending search requests if user types again
+      )
+      ```
+  - `mergeMap()` (Parallel): Runs all inner observables in parallel. Does not cancel any active inner stream.
+    - *Best for*: Independent parallel tasks like deleting multiple items or downloading multiple files simultaneously.
+    - *Example*:
+      ```typescript
+      itemIds$.pipe(
+        mergeMap(id => this.api.deleteItem(id)) // Deletes all items in parallel, order doesn't matter
+      )
+      ```
+  - `concatMap()` (Queue/Sequential): Queues inner observables and runs them one-by-one in the exact order they arrived.
+    - *Best for*: Sequential writes/updates, operations where order must be guaranteed.
+    - *Example*:
+      ```typescript
+      orderRequests$.pipe(
+        concatMap(order => this.api.postOrder(order)) // Processes orders strictly in order
+      )
+      ```
+  - `exhaustMap()` (Ignore/Lock): Ignores all new outer emissions until the current active inner observable completes.
+    - *Best for*: Form submissions, saving buttons, login actions (double-click prevention).
+    - *Example*:
+      ```typescript
+      submitClick$.pipe(
+        exhaustMap(() => this.api.submitForm(data)) // Ignores extra clicks while the form is submitting
+      )
+      ```
 
 * Expected Operator Questions:
   - Q: Why switchMap?
