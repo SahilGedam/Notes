@@ -859,7 +859,9 @@
        ```
 
 * RxJS Primitives Explained:
-  - Observable: A lazy push collection of multiple values over time. It doesn't run until it is subscribed to.
+  - Observable: An Observable is a stream of data that emits values over time. 
+  It allows us to receive asynchronous data such as HTTP responses, user events, route changes, or WebSocket messages. 
+  We subscribe to an Observable to receive the emitted values.
     * Example:
       ```typescript
       const numberStream$ = new Observable<number>(subscriber => {
