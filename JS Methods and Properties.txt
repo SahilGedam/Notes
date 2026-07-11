@@ -1,141 +1,989 @@
 ================================================================================
-                     JAVASCRIPT METHODS & PROPERTIES
+                     JAVASCRIPT METHODS & PROPERTIES (INTERVIEW EDITION)
 ================================================================================
 
-1. ARRAY METHODS & PROPERTIES [Importance: 8.5/10]
+This document serves as an interview-ready study guide detailing core JavaScript methods 
+and properties. For each method, we specify:
+- What it does (Definition)
+- Return value
+- Mutability (Does it modify the original source?)
+- Interview Gotchas / Tips
+- Clean code examples
+
 --------------------------------------------------------------------------------
+1. ARRAY METHODS & PROPERTIES
+--------------------------------------------------------------------------------
+
 * Property:
-  - `length`: Returns or sets the number of elements in an array.
-    ```javascript
-    const arr = [1, 2, 3];
-    console.log(arr.length); // 3
-    ```
+  - `length`
+    * Definition: Returns or sets the number of elements in an array.
+    * Return Value: An integer representing the size of the array.
+    * Mutability: Modifying the `length` property directly CAN mutate the array.
+    * Interview Gotchas: 
+      - Decreasing `length` truncates the array permanently (deletes elements).
+      - Increasing `length` creates empty slots (sparse array), which are not `undefined` but empty.
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3];
+      console.log(arr.length); // 3
+      
+      // Truncation
+      arr.length = 2;
+      console.log(arr); // [1, 2]
+      
+      // Expansion
+      arr.length = 5;
+      console.log(arr); // [1, 2, <3 empty items>]
+      console.log(arr[3]); // undefined (but the key doesn't actually exist in the array)
+      ```
 
 * Mutator Methods (Modify the original array in-place):
-  - `push(...items)`: Adds items to the end; returns the new length.
-  - `pop()`: Removes the last item; returns that item.
-  - `unshift(...items)`: Adds items to the beginning; returns the new length.
-  - `shift()`: Removes the first item; returns that item.
-  - `splice(start, deleteCount, ...items)`: Adds/removes elements at an index; returns deleted items.
-  - `sort(compareFn)`: Sorts elements in-place; default is alphabetical sorting.
-  - `reverse()`: Reverses the order of elements in-place.
-  - `fill(value, start, end)`: Fills elements with a static value.
-  - `copyWithin(target, start, end)`: Copies array elements within the array.
+  
+  - `push(...items)`
+    * Definition: Appends one or more elements to the end of an array.
+    * Return Value: The new `length` of the array.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas: Remember that it returns the *new length*, NOT the modified array. A common mistake is `const newArr = arr.push(item)` expecting `newArr` to be the array.
+    * Example:
+      ```javascript
+      const fruits = ['apple', 'banana'];
+      const newLength = fruits.push('orange', 'mango');
+      console.log(newLength); // 4
+      console.log(fruits); // ['apple', 'banana', 'orange', 'mango']
+      ```
 
-  ```javascript
-  const arr = [1, 2, 3];
-  arr.push(4);          // arr is now [1, 2, 3, 4]
-  arr.splice(1, 1, 9);  // Removes 1 item at index 1 and inserts 9 -> [1, 9, 3, 4]
-  ```
+  - `pop()`
+    * Definition: Removes the last element from an array.
+    * Return Value: The removed element, or `undefined` if the array is empty.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas: Returns the *removed element*, not the updated array. Useful for implementing stack behavior (LIFO).
+    * Example:
+      ```javascript
+      const stack = [10, 20, 30];
+      const poppedElement = stack.pop();
+      console.log(poppedElement); // 30
+      console.log(stack); // [10, 20]
+      ```
+
+  - `unshift(...items)`
+    * Definition: Adds one or more elements to the beginning of an array.
+    * Return Value: The new `length` of the array.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas:
+      - Returns the *new length*.
+      - Performance: It runs in O(N) time because all existing elements must be re-indexed (shifted right). `push` is O(1) amortized.
+    * Example:
+      ```javascript
+      const arr = [2, 3];
+      const newLength = arr.unshift(0, 1);
+      console.log(newLength); // 4
+      console.log(arr); // [0, 1, 2, 3]
+      ```
+
+  - `shift()`
+    * Definition: Removes the first element from an array.
+    * Return Value: The removed element, or `undefined` if the array is empty.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas:
+      - Performance: Runs in O(N) time because all remaining elements must shift left to fill index 0.
+      - Useful for implementing queue behavior (FIFO) in combination with `push()`.
+    * Example:
+      ```javascript
+      const queue = ['Alice', 'Bob', 'Charlie'];
+      const served = queue.shift();
+      console.log(served); // 'Alice'
+      console.log(queue); // ['Bob', 'Charlie']
+      ```
+
+  - `splice(start, deleteCount, ...items)`
+    * Definition: Changes the contents of an array by removing or replacing existing elements and/or adding new elements in place.
+    * Return Value: An array containing the deleted elements. If no elements are deleted, returns an empty array.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas: 
+      - Do not confuse with `slice`. `splice` mutates, `slice` does not.
+      - If `deleteCount` is omitted, it deletes all elements from `start` to the end.
+      - Supports negative `start` indices (counts from the end).
+    * Example:
+      ```javascript
+      // Syntax: splice(startIndex, howManyToDelete, item1ToAdd, item2ToAdd, ...)
+      const numbers = [1, 2, 3, 4, 5];
+      const deleted = numbers.splice(1, 2, 'a', 'b'); 
+      
+      console.log(deleted); // [2, 3] (elements removed)
+      console.log(numbers); // [1, 'a', 'b', 4, 5] (modified array)
+      ```
+
+  - `sort(compareFn)`
+    * Definition: Sorts the elements of an array in place and returns the reference to the same sorted array.
+    * Return Value: The sorted array (reference to the original).
+    * Mutability: Mutates the original array.
+    * Interview Gotchas:
+      - CRITICAL: Default sorting behavior is **alphabetical (lexicographical)**. Elements are converted to strings first!
+      - Sorting numbers like `[10, 2, 5]` without a compare function yields `[10, 2, 5]` sorting to `[10, 2, 5]` or `[10, 5, 2]`? No: standard sorts it as `[10, 2, 5]` -> `[10, 2, 5]` is not sorted, it converts to string: "10" comes before "2", so `[10, 2, 5]` sorted becomes `[10, 2, 5]` or `[10, 2, 5]`. Actually: `[10, 2, 5].sort()` returns `[10, 2, 5]` alphabetically sorted: "10", "2", "5". Correct output is `[10, 2, 5]` -> `[10, 2, 5]`.
+      - To sort numbers numerically, you MUST provide a comparator: `(a, b) => a - b` for ascending, or `(b, a) => b - a` for descending.
+    * Example:
+      ```javascript
+      const badSort = [10, 2, 5, 1].sort();
+      console.log(badSort); // [1, 10, 2, 5] (Tricky! Alphabetical sort)
+
+      const goodSort = [10, 2, 5, 1].sort((a, b) => a - b);
+      console.log(goodSort); // [1, 2, 5, 10] (Correct numeric sort)
+      ```
+
+  - `reverse()`
+    * Definition: Reverses the order of elements of an array in place.
+    * Return Value: Reference to the reversed array.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas: It mutates the array. If you need a reversed copy without modifying the original, clone it first (e.g., `[...arr].reverse()` or using the modern ES2023 `toReversed()` method).
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3];
+      arr.reverse();
+      console.log(arr); // [3, 2, 1]
+      ```
+
+  - `fill(value, start, end)`
+    * Definition: Fills specified elements in an array with a static value.
+    * Return Value: The modified array.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas: 
+      - If you fill an array with objects (e.g., `new Array(3).fill({})`), each slot references the **exact same object** in memory. Modifying one will modify all!
+      - `end` index is exclusive.
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3, 4];
+      arr.fill(9, 1, 3); // fills index 1 and 2
+      console.log(arr); // [1, 9, 9, 4]
+
+      // Object gotcha:
+      const objArr = new Array(2).fill({});
+      objArr[0].name = 'Sahil';
+      console.log(objArr[1].name); // 'Sahil' (Shared reference!)
+      ```
+
+  - `copyWithin(target, start, end)`
+    * Definition: Shallow copies part of an array to another location in the same array without modifying its length.
+    * Return Value: The modified array.
+    * Mutability: Mutates the original array.
+    * Interview Gotchas: Modifies the array size never, but overrides existing values. `end` is exclusive.
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3, 4, 5];
+      // Copy elements from index 3 to 5 (which is [4, 5]) and paste them starting at index 0
+      arr.copyWithin(0, 3, 5);
+      console.log(arr); // [4, 5, 3, 4, 5]
+      ```
 
 * Accessor Methods (Do not modify the original; return a new value/array):
-  - `concat(...arrays)`: Merges two or more arrays.
-  - `slice(start, end)`: Extracts a shallow copy of a portion of an array.
-  - `join(separator)`: Joins all elements into a string.
-  - `indexOf(element)` / `lastIndexOf(element)`: Returns the first/last index of an element, or -1.
-  - `includes(element)`: Returns `true` if the array contains the value.
-  - `flat(depth)`: Flattens nested sub-arrays up to a specified depth.
-  - `flatMap(callbackFn)`: Maps each element, then flattens the result by 1 level.
 
-  ```javascript
-  const nested = [1, [2, [3]]];
-  console.log(nested.flat(Infinity)); // [1, 2, 3] (original nested is unchanged)
-  ```
+  - `concat(...arrays)`
+    * Definition: Merges two or more arrays or values into a new array.
+    * Return Value: A new array instance.
+    * Mutability: Does NOT mutate original arrays (performs a shallow copy).
+    * Interview Gotchas: Performs a shallow copy. Nested objects in source arrays will share references in the output array.
+    * Example:
+      ```javascript
+      const arr1 = [1, 2];
+      const arr2 = [3, 4];
+      const combined = arr1.concat(arr2, 5);
+      console.log(combined); // [1, 2, 3, 4, 5]
+      console.log(arr1); // [1, 2] (unchanged)
+      ```
+
+  - `slice(start, end)`
+    * Definition: Returns a shallow copy of a portion of an array into a new array object.
+    * Return Value: A new array.
+    * Mutability: Does NOT mutate the original array.
+    * Interview Gotchas:
+      - Key distinction: `slice` does NOT mutate; `splice` MUTATES.
+      - Omitting parameters `slice()` clones the array (shallow copy).
+      - `end` is exclusive. Negative indices represent offset from the end.
+    * Example:
+      ```javascript
+      const arr = ['a', 'b', 'c', 'd'];
+      const sliced = arr.slice(1, 3); // Extracts index 1 and 2
+      console.log(sliced); // ['b', 'c']
+      console.log(arr); // ['a', 'b', 'c', 'd'] (original is safe)
+      ```
+
+  - `join(separator)`
+    * Definition: Joins all elements of an array into a single string, separated by the specified separator.
+    * Return Value: A string.
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas:
+      - Default separator is a comma `,` (not a space or empty string!).
+      - If elements are `null` or `undefined`, they are converted to empty strings `""`.
+    * Example:
+      ```javascript
+      const words = ['Hello', 'World'];
+      console.log(words.join()); // "Hello,World" (default comma)
+      console.log(words.join(' ')); // "Hello World"
+      console.log(words.join('')); // "HelloWorld"
+      ```
+
+  - `indexOf(element, fromIndex)` / `lastIndexOf(element, fromIndex)`
+    * Definition: Returns the first/last index at which a given element can be found in the array, or -1 if it is not present.
+    * Return Value: Index integer (or -1).
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas: Uses strict equality (`===`) for comparison. This means it cannot find NaN, and matching objects requires matching references, not matching structures.
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3, 2];
+      console.log(arr.indexOf(2)); // 1
+      console.log(arr.lastIndexOf(2)); // 3
+      console.log(arr.indexOf(5)); // -1
+      
+      const objArr = [ { id: 1 } ];
+      console.log(objArr.indexOf({ id: 1 })); // -1 (different object reference!)
+      ```
+
+  - `includes(element, fromIndex)`
+    * Definition: Determines whether an array includes a certain value among its entries, returning true or false.
+    * Return Value: Boolean.
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas:
+      - Unlike `indexOf`, `includes` handles `NaN` correctly because it uses the "SameValueZero" comparison algorithm.
+      - Still fails to match object structures (requires identical reference).
+    * Example:
+      ```javascript
+      const arr = [1, 2, NaN];
+      console.log(arr.indexOf(NaN)); // -1 (due to strict equality NaN !== NaN)
+      console.log(arr.includes(NaN)); // true (handles NaN correctly!)
+      ```
+
+  - `flat(depth)`
+    * Definition: Creates a new array with all sub-array elements concatenated into it recursively up to the specified depth.
+    * Return Value: A new flattened array.
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas: 
+      - Default depth is `1`.
+      - Pass `Infinity` to completely flatten an array of any nested depth.
+      - It automatically removes empty slots in sparse arrays.
+    * Example:
+      ```javascript
+      const nested = [1, [2, [3, [4]]]];
+      console.log(nested.flat()); // [1, 2, [3, [4]]] (depth = 1)
+      console.log(nested.flat(2)); // [1, 2, 3, [4]] (depth = 2)
+      console.log(nested.flat(Infinity)); // [1, 2, 3, 4]
+      ```
+
+  - `flatMap(callbackFn)`
+    * Definition: Maps each element using a mapping function, then flattens the result by one level. Essentially equivalent to a `map()` followed by a `flat(1)`.
+    * Return Value: A new array.
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas: Only flattens by **one** level of depth. Highly efficient compared to calling `map().flat()` sequentially because it avoids creating intermediate array allocations.
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3];
+      // For each element, return [element, element * 2] and flatten
+      const result = arr.flatMap(x => [x, x * 2]);
+      console.log(result); // [1, 2, 2, 4, 3, 6]
+      ```
 
 * Iteration / Helper Methods (Accept callbacks):
-  - `forEach(callback)`: Executes a function for each element (returns `undefined`).
-  - `map(callback)`: Creates a new array with results of calling the function on every element.
-  - `filter(callback)`: Creates a new array with elements that pass the test function.
-  - `reduce(callback, initialValue)`: Reduces the array to a single value (left-to-right).
-  - `some(callback)`: Returns `true` if at least one element passes the test.
-  - `every(callback)`: Returns `true` if all elements pass the test.
-  - `find(callback)`: Returns the value of the first element that satisfies the test.
-  - `findIndex(callback)`: Returns the index of the first element satisfying the test.
-  - `findLast(callback)` / `findLastIndex(callback)`: Finds elements starting from the end.
+
+  - `forEach(callback)`
+    * Definition: Executes a provided function once for each array element.
+    * Return Value: `undefined`.
+    * Mutability: Does NOT directly mutate, but the callback function can mutate the original array if it has references to it.
+    * Interview Gotchas:
+      - You **cannot break or return** early from a `forEach` loop. A `return` inside the callback just exits the current callback execution, not the outer loop. (Use standard `for`, `for...of`, `some`, or `every` if early break is needed).
+      - It skips empty elements.
+    * Example:
+      ```javascript
+      const items = ['a', 'b', 'c'];
+      items.forEach((item, index) => {
+        console.log(`${index}: ${item}`);
+      });
+      ```
+
+  - `map(callback)`
+    * Definition: Creates a new array populated with the results of calling a provided function on every element in the calling array.
+    * Return Value: A new array of the same length.
+    * Mutability: Does NOT mutate (unless callback explicitly mutates source).
+    * Interview Gotchas: 
+      - Always return a value in the callback! If you forget, the new array will fill with `undefined`.
+      - Do not use `map` if you do not plan to use the returned array (use `forEach` instead).
+    * Example:
+      ```javascript
+      const numbers = [1, 2, 3];
+      const squares = numbers.map(x => x * x);
+      console.log(squares); // [1, 4, 9]
+      ```
+
+  - `filter(callback)`
+    * Definition: Creates a shallow copy of a portion of a given array, filtered down to just the elements from the given array that pass the test implemented by the provided function.
+    * Return Value: A new array (can be empty if no elements pass).
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas: The callback must return a truthy value to keep the element, or a falsy value to discard it.
+    * Example:
+      ```javascript
+      const numbers = [1, 2, 3, 4, 5];
+      const evens = numbers.filter(x => x % 2 === 0);
+      console.log(evens); // [2, 4]
+      ```
+
+  - `reduce(callback, initialValue)`
+    * Definition: Executes a user-supplied "reducer" callback function on each element of the array, in order, passing in the return value from the calculation on the preceding element. The final result of running the reducer across all elements of the array is a single value.
+    * Return Value: The single accumulated value.
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas: 
+      - **CRITICAL**: Always provide an `initialValue`. If omitted, the first element (index 0) is used as the initial accumulator, and the iteration starts from index 1. This can cause runtime errors on empty arrays or unexpected type coercion.
+    * Example:
+      ```javascript
+      const numbers = [1, 2, 3, 4];
+      
+      // Syntax: reduce((accumulator, currentValue, index, array) => ..., initialValue)
+      const sum = numbers.reduce((acc, curr) => acc + curr, 0);
+      console.log(sum); // 10
+      ```
+
+  - `some(callback)`
+    * Definition: Tests whether at least one element in the array passes the test implemented by the provided function.
+    * Return Value: Boolean (`true` or `false`).
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas:
+      - Short-circuits: Stops iterating immediately and returns `true` the moment it finds a matching element.
+      - Returns `false` for an empty array (no elements can satisfy the condition).
+    * Example:
+      ```javascript
+      const scores = [50, 80, 45, 90];
+      const hasPassingScore = scores.some(score => score >= 90);
+      console.log(hasPassingScore); // true
+      ```
+
+  - `every(callback)`
+    * Definition: Tests whether all elements in the array pass the test implemented by the provided function.
+    * Return Value: Boolean.
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas:
+      - Short-circuits: Stops iterating and returns `false` the moment it finds an element that fails the condition.
+      - **Tricky**: Returns `true` for an empty array (vacuous truth!).
+    * Example:
+      ```javascript
+      const scores = [80, 85, 90];
+      const allPassed = scores.every(score => score >= 80);
+      console.log(allPassed); // true
+
+      console.log([].every(x => x > 10)); // true (Vacuous truth!)
+      ```
+
+  - `find(callback)`
+    * Definition: Returns the value of the first element in the provided array that satisfies the provided testing function.
+    * Return Value: The first matching element, or `undefined` if no elements satisfy the testing function.
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas: Stops searching as soon as it finds a match. Compare this with `filter` which scans the whole array and returns a list.
+    * Example:
+      ```javascript
+      const users = [{ id: 1, name: 'A' }, { id: 2, name: 'B' }];
+      const match = users.find(user => user.id === 2);
+      console.log(match); // { id: 2, name: 'B' }
+      ```
+
+  - `findIndex(callback)`
+    * Definition: Returns the index of the first element in an array that satisfies the provided testing function.
+    * Return Value: The index of the first matching element, or `-1` if no elements satisfy the testing function.
+    * Mutability: Does NOT mutate.
+    * Example:
+      ```javascript
+      const numbers = [5, 12, 8, 130];
+      const isLarge = (element) => element > 10;
+      console.log(numbers.findIndex(isLarge)); // 1 (since 12 is at index 1)
+      ```
+
+  - `findLast(callback)` / `findLastIndex(callback)`
+    * Definition: Iterates the array from right to left and returns the value / index of the first element that satisfies the testing function.
+    * Return Value: The element value / index (or `undefined` / `-1`).
+    * Mutability: Does NOT mutate.
+    * Interview Gotchas: Added in ES2023. Helpful for search problems where the target is more likely to be at the end, saving time.
+    * Example:
+      ```javascript
+      const numbers = [5, 12, 50, 130, 44];
+      console.log(numbers.findLast(n => n > 40)); // 44
+      console.log(numbers.findLastIndex(n => n > 40)); // 4 (index of 44)
+      ```
 
 * Static Utility Methods:
-  - `Array.isArray(obj)`: Returns `true` if the passed value is an Array.
-  - `Array.from(iterable)`: Creates an array from an array-like or iterable object.
-  - `Array.of(...items)`: Creates an array from arguments.
 
+  - `Array.isArray(obj)`
+    * Definition: Determines whether the passed value is an Array.
+    * Return Value: Boolean.
+    * Interview Gotchas: `typeof []` returns `"object"`. Therefore, you cannot use `typeof` to verify arrays. `Array.isArray()` is the most robust way to check.
+    * Example:
+      ```javascript
+      console.log(typeof []); // "object" (not helpful)
+      console.log(Array.isArray([])); // true
+      console.log(Array.isArray({})); // false
+      ```
 
-2. STRING METHODS & PROPERTIES [Importance: 7.5/10]
+  - `Array.from(iterable, mapFn)`
+    * Definition: Creates a new, shallow-copied Array instance from an iterable or array-like object.
+    * Return Value: A new array.
+    * Interview Gotchas:
+      - Excellent for converting `NodeList` (from DOM selection), `arguments` objects, `Set`, or `Map` into actual arrays so you can run array methods like `map` and `filter`.
+      - Accepts an optional second mapping function argument, which is more performant than doing `Array.from(x).map(...)`.
+    * Example:
+      ```javascript
+      // Convert Set to Array
+      const set = new Set([1, 2, 2, 3]);
+      const arr = Array.from(set);
+      console.log(arr); // [1, 2, 3]
+
+      // Generate sequence numbers
+      const sequence = Array.from({ length: 3 }, (val, index) => index);
+      console.log(sequence); // [0, 1, 2]
+      ```
+
+  - `Array.of(...items)`
+    * Definition: Creates a new Array instance from a variable number of arguments, regardless of number or type of the arguments.
+    * Return Value: A new array.
+    * Interview Gotchas: `Array.of(7)` creates an array with a single element `[7]`, whereas `Array(7)` creates an empty array with a length of 7.
+    * Example:
+      ```javascript
+      console.log(Array.of(7)); // [7]
+      console.log(Array(7));    // [<7 empty items>]
+      ```
+
 --------------------------------------------------------------------------------
+2. STRING METHODS & PROPERTIES
+--------------------------------------------------------------------------------
+
+Strings are **immutable** in JavaScript. None of these methods modify the original string; they always return a new string or a different type.
+
 * Property:
-  - `length`: Returns the code unit length of the string.
+  - `length`
+    * Definition: Returns the number of UTF-16 code units in the string.
+    * Example:
+      ```javascript
+      const str = "hello";
+      console.log(str.length); // 5
+      ```
 
 * Character Access:
-  - `charAt(index)`: Returns character at the specified index.
-  - `charCodeAt(index)`: Returns UTF-16 code unit value at the index.
-  - `at(index)`: Returns character at index (supports negative indexes for counting backwards).
+  
+  - `charAt(index)`
+    * Definition: Returns the character at the specified index.
+    * Return Value: A string of length 1, or an empty string if index is out of bounds.
+    * Example:
+      ```javascript
+      console.log("cat".charAt(1)); // "a"
+      console.log("cat".charAt(10)); // ""
+      ```
 
-* Manipulation (Strings are immutable; these return new strings):
-  - `slice(start, end)`: Extracts a section of a string.
-  - `substring(start, end)`: Extracts characters between two indices.
-  - `replace(pattern, replacement)`: Replaces the first match of a pattern (string or RegExp).
-  - `replaceAll(pattern, replacement)`: Replaces all matches.
-  - `toUpperCase()` / `toLowerCase()`: Converts casing.
-  - `trim()` / `trimStart()` / `trimEnd()`: Removes whitespace from ends.
-  - `padStart(targetLength, padString)` / `padEnd(...)`: Pads string to a target length.
-  - `repeat(count)`: Repeats string.
+  - `charCodeAt(index)`
+    * Definition: Returns an integer between 0 and 65535 representing the UTF-16 code unit at the given index.
+    * Return Value: Number (UTF-16 value), or `NaN` if out of bounds.
+    * Example:
+      ```javascript
+      console.log("ABC".charCodeAt(0)); // 65 (ASCII/Unicode value for 'A')
+      ```
+
+  - `at(index)`
+    * Definition: Takes an integer value and returns a new String consisting of the single UTF-16 code unit located at the specified offset.
+    * Return Value: String of length 1, or `undefined` if out of bounds.
+    * Interview Gotchas: Supports negative indices to search backward from the end of the string.
+    * Example:
+      ```javascript
+      const str = "Javascript";
+      console.log(str.at(-1)); // "t" (last character)
+      console.log(str.at(-2)); // "p"
+      ```
+
+* Manipulation:
+
+  - `slice(start, end)`
+    * Definition: Extracts a section of a string and returns it as a new string, without modifying the original string.
+    * Return Value: A new string.
+    * Example:
+      ```javascript
+      const str = "Mozilla";
+      console.log(str.slice(1, 4)); // "ozi"
+      ```
+
+  - `substring(start, end)`
+    * Definition: Returns the part of the string between the start and end indexes, or to the end of the string.
+    * Return Value: A new string.
+    * Interview Gotchas: 
+      - If `start` > `end`, `substring` swaps the two arguments (e.g., `substring(4, 1)` behaves like `substring(1, 4)`). `slice` would return an empty string.
+      - Negative arguments are treated as `0` in `substring`, whereas `slice` counts backward from the end.
+    * Example:
+      ```javascript
+      const text = "JavaScript";
+      console.log(text.substring(4, 0)); // "Java" (swapped and treated as 0 to 4)
+      console.log(text.slice(4, 0));     // "" (empty string)
+      ```
+
+  - `replace(pattern, replacement)`
+    * Definition: Returns a new string with one, some, or all matches of a pattern replaced by a replacement.
+    * Return Value: A new string.
+    * Interview Gotchas: If `pattern` is a string, it **only replaces the first occurrence**. To replace all occurrences, you must use a regular expression with the global `/g` flag, or use `replaceAll()`.
+    * Example:
+      ```javascript
+      const str = "apple apple";
+      console.log(str.replace("apple", "orange")); // "orange apple" (Only first is replaced!)
+      console.log(str.replace(/apple/g, "orange")); // "orange orange"
+      ```
+
+  - `replaceAll(pattern, replacement)`
+    * Definition: Returns a new string with all matches of a pattern replaced by a replacement.
+    * Return Value: A new string.
+    * Example:
+      ```javascript
+      const str = "apple apple";
+      console.log(str.replaceAll("apple", "orange")); // "orange orange"
+      ```
+
+  - `toUpperCase()` / `toLowerCase()`
+    * Definition: Returns the calling string value converted to uppercase / lowercase.
+    * Example:
+      ```javascript
+      console.log("Hello".toUpperCase()); // "HELLO"
+      console.log("Hello".toLowerCase()); // "hello"
+      ```
+
+  - `trim()` / `trimStart()` / `trimEnd()`
+    * Definition: Removes whitespace from both ends / start / end of a string. Whitespace includes space, tab, no-break space, and all line terminator characters.
+    * Example:
+      ```javascript
+      const str = "   hello   ";
+      console.log(str.trim()); // "hello"
+      console.log(str.trimStart()); // "hello   "
+      ```
+
+  - `padStart(targetLength, padString)` / `padEnd(targetLength, padString)`
+    * Definition: Pads the current string with another string (repeated, if needed) so that the resulting string reaches a given length. Pads from the start / end.
+    * Example:
+      ```javascript
+      console.log("5".padStart(3, "0")); // "005"
+      console.log("5".padEnd(3, "0"));   // "500"
+      ```
+
+  - `repeat(count)`
+    * Definition: Constructs and returns a new string which contains the specified number of copies of the string on which it was called, concatenated together.
+    * Example:
+      ```javascript
+      console.log("abc".repeat(3)); // "abcabcabc"
+      ```
 
 * Search & Splitting:
-  - `indexOf(substr)` / `lastIndexOf(substr)`: Finds indices of substrings.
-  - `includes(substr)`: Returns `true` if string contains the substring.
-  - `startsWith(substr)` / `endsWith(substr)`: Checks string boundaries.
-  - `split(separator)`: Splitting string into an array of substrings.
-  - `match(regex)` / `search(regex)`: Matches against regular expressions.
 
+  - `indexOf(substr, fromIndex)` / `lastIndexOf(substr, fromIndex)`
+    * Definition: Returns the index of the first/last occurrence of the specified substring.
+    * Return Value: Index or `-1`.
+    * Example:
+      ```javascript
+      const sentence = "The quick brown fox";
+      console.log(sentence.indexOf("brown")); // 10
+      ```
 
-3. OBJECT METHODS [Importance: 8.5/10]
+  - `includes(substr, position)`
+    * Definition: Performs a case-sensitive search to determine whether one string may be found within another string.
+    * Return Value: Boolean.
+    * Example:
+      ```javascript
+      console.log("Blue Whale".includes("Whale")); // true
+      ```
+
+  - `startsWith(substr, position)` / `endsWith(substr, endPosition)`
+    * Definition: Checks whether a string begins or ends with the characters of a specified string.
+    * Return Value: Boolean.
+    * Example:
+      ```javascript
+      console.log("Hello World".startsWith("Hello")); // true
+      ```
+
+  - `split(separator, limit)`
+    * Definition: Takes a pattern and divides a String into an ordered list of substrings by searching for the pattern, puts these substrings into an array, and returns the array.
+    * Return Value: Array of strings.
+    * Interview Gotchas: `split("")` splits a string into individual UTF-16 code units, which can break surrogate pairs (e.g., emojis).
+    * Example:
+      ```javascript
+      const text = "apple,banana,orange";
+      const fruits = text.split(",");
+      console.log(fruits); // ["apple", "banana", "orange"]
+      ```
+
+  - `match(regex)` / `search(regex)`
+    * Definition:
+      - `match`: Retrieves the result of matching a string against a regular expression.
+      - `search`: Executes a search for a match between a regular expression and this String object.
+    * Return Values:
+      - `match`: Returns an Array of matches, or `null`.
+      - `search`: Returns the index of the first match, or `-1`.
+    * Example:
+      ```javascript
+      const str = "The rain in Spain stays mainly in the plain.";
+      console.log(str.match(/ain/g)); // ["ain", "ain", "ain"]
+      console.log(str.search(/Spain/)); // 12
+      ```
+
 --------------------------------------------------------------------------------
+3. OBJECT METHODS
+--------------------------------------------------------------------------------
+
 * Static Management & Mutations:
-  - `Object.assign(target, ...sources)`: Copies enumerable properties to target.
-  - `Object.create(proto)`: Creates a new object with the specified prototype.
-  - `Object.defineProperty(obj, prop, descriptor)`: Defines a property with configurations.
-  - `Object.freeze(obj)`: Freezes object (prevents addition/removal/modification of values).
-  - `Object.seal(obj)`: Seals object (prevents addition/removal, but allows modification).
-  - `Object.preventExtensions(obj)`: Prevents adding new properties.
+
+  - `Object.assign(target, ...sources)`
+    * Definition: Copies all enumerable own properties from one or more source objects to a target object.
+    * Return Value: The target object.
+    * Mutability: **Mutates the target object** directly.
+    * Interview Gotchas: 
+      - Performs a **shallow copy**, not a deep copy. Sub-objects inside the source are copied by reference.
+      - Often used to clone objects by using an empty target: `const clone = Object.assign({}, obj)`. However, the ES6 spread operator `const clone = { ...obj }` is modern and preferred.
+    * Example:
+      ```javascript
+      const target = { a: 1 };
+      const source = { b: 2, c: { d: 4 } };
+      
+      const returnedTarget = Object.assign(target, source);
+      console.log(target); // { a: 1, b: 2, c: { d: 4 } } (target mutated!)
+      console.log(returnedTarget === target); // true
+      ```
+
+  - `Object.create(proto, propertiesObject)`
+    * Definition: Creates a new object, using an existing object as the prototype of the newly created object.
+    * Return Value: A new object with the specified prototype.
+    * Mutability: Does not modify the original proto object.
+    * Interview Gotchas: 
+      - To create an object with absolutely no prototype properties (not even `toString` or `valueOf`), pass `null` as the argument: `Object.create(null)`.
+    * Example:
+      ```javascript
+      const person = {
+        greet() { console.log(`Hello, my name is ${this.name}`); }
+      };
+      
+      const me = Object.create(person);
+      me.name = 'Sahil'; // name is set on 'me', but 'greet' is inherited
+      me.greet(); // "Hello, my name is Sahil"
+      
+      const pureObj = Object.create(null); // No prototype!
+      console.log(pureObj.toString); // undefined
+      ```
+
+  - `Object.defineProperty(obj, prop, descriptor)`
+    * Definition: Defines a new property directly on an object, or modifies an existing property on an object, and returns the object.
+    * Return Value: The object that was passed to the function.
+    * Mutability: Mutates the object.
+    * Descriptor Keys (Interview Essentials):
+      - `value`: The value associated with the property.
+      - `writable`: `true` if the value can be changed. Defaults to `false`.
+      - `enumerable`: `true` if it shows up in `for...in` and `Object.keys()`. Defaults to `false`.
+      - `configurable`: `true` if the type of descriptor can be changed or deleted. Defaults to `false`.
+    * Example:
+      ```javascript
+      const user = {};
+      Object.defineProperty(user, 'role', {
+        value: 'Admin',
+        writable: false,      // read-only
+        enumerable: true,
+        configurable: false   // cannot be deleted or re-configured
+      });
+      
+      user.role = 'User'; // Fails silently (or throws in strict mode)
+      console.log(user.role); // "Admin"
+      ```
+
+  - `Object.freeze(obj)`
+    * Definition: Freezes an object. A frozen object can no longer be changed: prevents new properties from being added, existing properties from being removed, and existing properties or their descriptors from being modified.
+    * Return Value: The frozen object.
+    * Mutability: Mutates the object by freezing it.
+    * Interview Gotchas:
+      - **SHALLOW FREEZE ONLY**: Nested objects are NOT frozen! If an object contains a sub-object, the properties of the sub-object can still be modified. You need a recursive function ("deepFreeze") to freeze nested objects.
+      - It also makes values non-writable and non-configurable.
+    * Example:
+      ```javascript
+      const user = {
+        name: 'Sahil',
+        details: { age: 28 }
+      };
+      Object.freeze(user);
+      
+      user.name = 'Amit'; // Silently fails (or throws in strict mode)
+      user.details.age = 29; // Works! (Because details is a separate object reference)
+      console.log(user.name); // "Sahil"
+      console.log(user.details.age); // 29
+      ```
+
+  - `Object.seal(obj)`
+    * Definition: Seals an object, preventing new properties from being added and marking all existing properties as non-configurable. Values of existing properties can still be changed as long as they are writable.
+    * Return Value: The sealed object.
+    * Mutability: Mutates the object.
+    * Interview Gotchas: Difference between `freeze` and `seal`:
+      - `freeze` makes properties **read-only** (cannot change existing values).
+      - `seal` allows **changing existing values**, but you cannot add or remove properties.
+    * Example:
+      ```javascript
+      const user = { name: 'Sahil' };
+      Object.seal(user);
+      
+      user.name = 'Rahul'; // Works! (Existing writable property can be modified)
+      delete user.name;    // Fails (Cannot delete properties)
+      user.age = 30;       // Fails (Cannot add new properties)
+      
+      console.log(user); // { name: 'Rahul' }
+      ```
+
+  - `Object.preventExtensions(obj)`
+    * Definition: Prevents new properties from ever being added to an object (i.e. prevents future extensions to the object).
+    * Return Value: The object.
+    * Mutability: Mutates the object.
+    * Interview Gotchas: You can still delete properties and modify existing properties. This is the least restrictive comparison:
+      - `preventExtensions`: Cannot add properties. (Can delete, can write).
+      - `seal`: Cannot add/delete properties. (Can write).
+      - `freeze`: Cannot add/delete/write properties. (Completely read-only).
+    * Example:
+      ```javascript
+      const user = { name: 'Sahil' };
+      Object.preventExtensions(user);
+      
+      user.age = 28;     // Fails (Cannot add properties)
+      delete user.name;  // Works! (Can delete properties)
+      console.log(user); // {}
+      ```
 
 * Static Inspection:
-  - `Object.keys(obj)`: Returns array of enumerable property names.
-  - `Object.values(obj)`: Returns array of enumerable property values.
-  - `Object.entries(obj)`: Returns array of `[key, value]` pairs.
-  - `Object.getPrototypeOf(obj)`: Returns prototype of the object.
-  - `Object.setPrototypeOf(obj, prototype)`: Sets the prototype.
-  - `Object.hasOwn(obj, prop)`: Modern standard to check if property exists directly on object.
 
-  ```javascript
-  const user = { name: 'Sahil', age: 28 };
-  console.log(Object.entries(user)); // [['name', 'Sahil'], ['age', 28]]
-  console.log(Object.hasOwn(user, 'name')); // true
-  ```
+  - `Object.keys(obj)`
+    * Definition: Returns an array of a given object's own enumerable string-keyed property names.
+    * Return Value: An array of strings representing keys.
+    * Interview Gotchas: It only returns **enumerable** keys that belong **directly** to the object (it ignores inherited prototype properties).
+    * Example:
+      ```javascript
+      const user = { name: 'Sahil', age: 28 };
+      console.log(Object.keys(user)); // ["name", "age"]
+      ```
 
+  - `Object.values(obj)`
+    * Definition: Returns an array of a given object's own enumerable string-keyed property values.
+    * Return Value: An array of values.
+    * Example:
+      ```javascript
+      const user = { name: 'Sahil', age: 28 };
+      console.log(Object.values(user)); // ["Sahil", 28]
+      ```
 
-4. NUMBER METHODS [Importance: 6/10]
+  - `Object.entries(obj)`
+    * Definition: Returns an array of a given object's own enumerable string-keyed property `[key, value]` pairs.
+    * Return Value: An array of nested arrays `[[key, value], [key, value]]`.
+    * Interview Gotchas: Excellent for converting objects into maps or looping over keys and values simultaneously using `for...of` destructuring.
+    * Example:
+      ```javascript
+      const user = { name: 'Sahil', role: 'Admin' };
+      console.log(Object.entries(user)); // [ ["name", "Sahil"], ["role", "Admin"] ]
+
+      // Interview usage:
+      for (const [key, value] of Object.entries(user)) {
+        console.log(`${key}: ${value}`);
+      }
+      ```
+
+  - `Object.getPrototypeOf(obj)`
+    * Definition: Returns the prototype (i.e. the value of the internal `[[Prototype]]` property) of the specified object.
+    * Return Value: The prototype object or `null`.
+    * Example:
+      ```javascript
+      const proto = {};
+      const obj = Object.create(proto);
+      console.log(Object.getPrototypeOf(obj) === proto); // true
+      ```
+
+  - `Object.setPrototypeOf(obj, prototype)`
+    * Definition: Sets the prototype (i.e., the internal `[[Prototype]]` property) of a specified object to another object or `null`.
+    * Return Value: The object.
+    * Interview Gotchas: Modifying prototype of an object after creation using `setPrototypeOf` is **extremely slow** in all JS engines and is discouraged for performance reasons. Use `Object.create()` instead when initializing the object.
+    * Example:
+      ```javascript
+      const animal = { speaks: true };
+      const dog = {};
+      Object.setPrototypeOf(dog, animal);
+      console.log(dog.speaks); // true
+      ```
+
+  - `Object.hasOwn(obj, prop)`
+    * Definition: Returns `true` if the specified object has the indicated property as its own property. If the property is inherited, or does not exist, it returns `false`.
+    * Return Value: Boolean.
+    * Interview Gotchas: 
+      - This is the **modern, recommended replacement** for `obj.hasOwnProperty(prop)`. 
+      - Why? `obj.hasOwnProperty` can fail if the object was created using `Object.create(null)` (as it has no prototype and therefore lacks the method) or if the property name `hasOwnProperty` has been overridden.
+    * Example:
+      ```javascript
+      // Legacy issue:
+      const obj1 = Object.create(null);
+      // obj1.hasOwnProperty('name'); // TypeError: obj1.hasOwnProperty is not a function
+
+      // Modern Solution:
+      const obj2 = Object.create(null);
+      obj2.name = 'Sahil';
+      console.log(Object.hasOwn(obj2, 'name')); // true (Works perfectly!)
+      ```
+
 --------------------------------------------------------------------------------
+4. NUMBER METHODS
+--------------------------------------------------------------------------------
+
 * Formatting & Conversion:
-  - `toFixed(digits)`: Formats number to fixed-point decimal notation string.
-  - `toPrecision(precision)`: Formats number to specified precision string.
-  - `toString(radix)`: Converts number to string representation (can specify base, e.g., 16 for hex).
+
+  - `toFixed(digits)`
+    * Definition: Formats a number using fixed-point notation.
+    * Return Value: **A string** representing the given number in decimal notation.
+    * Interview Gotchas: Note that it returns a **string**, not a number. If you need to convert it back to a number, wrap it in `Number()` or use the unary plus operator `+`.
+    * Example:
+      ```javascript
+      const num = 12.3456;
+      const formatted = num.toFixed(2);
+      console.log(formatted); // "12.35" (String, rounded up!)
+      console.log(typeof formatted); // "string"
+      console.log(+formatted); // 12.35 (Converted back to Number)
+      ```
+
+  - `toPrecision(precision)`
+    * Definition: Returns a string representing the Number object to the specified precision (total number of significant digits).
+    * Return Value: A string.
+    * Example:
+      ```javascript
+      const num = 5.12343;
+      console.log(num.toPrecision(3)); // "5.12" (Total of 3 digits)
+      console.log(num.toPrecision(1)); // "5"
+      ```
+
+  - `toString(radix)`
+    * Definition: Returns a string representing the specified Number object.
+    * Return Value: A string.
+    * Interview Gotchas: The `radix` parameter specifies the base (between 2 and 36) to use for representing numeric values. Base 2 = binary, 8 = octal, 16 = hexadecimal.
+    * Example:
+      ```javascript
+      const num = 255;
+      console.log(num.toString(16)); // "ff" (hexadecimal representation)
+      console.log(num.toString(2));  // "11111111" (binary representation)
+      ```
 
 * Static Checks:
-  - `Number.isInteger(value)`: Checks if value is a safe integer.
-  - `Number.isNaN(value)`: Checks if value is exactly `NaN` without type coercion.
-  - `Number.isFinite(value)`: Checks if value is a finite number.
 
+  - `Number.isInteger(value)`
+    * Definition: Determines whether the passed value is an integer.
+    * Return Value: Boolean.
+    * Example:
+      ```javascript
+      console.log(Number.isInteger(4));   // true
+      console.log(Number.isInteger(4.2)); // false
+      console.log(Number.isInteger("4")); // false (no type coercion)
+      ```
 
-5. MATH METHODS [Importance: 5/10]
+  - `Number.isNaN(value)`
+    * Definition: Determines whether the passed value is `NaN` and its type is `Number`.
+    * Return Value: Boolean.
+    * Interview Gotchas: 
+      - Always use `Number.isNaN()` instead of the global `isNaN()`. 
+      - The global `isNaN(value)` coerces the value to a number first, leading to confusing results (e.g., global `isNaN("hello")` is `true`). `Number.isNaN("hello")` is `false` because the value is a string, not NaN.
+    * Example:
+      ```javascript
+      console.log(isNaN("hello"));        // true (global isNaN coerces "hello" to NaN)
+      console.log(Number.isNaN("hello")); // false (type is String, not Number NaN)
+      console.log(Number.isNaN(NaN));     // true
+      ```
+
+  - `Number.isFinite(value)`
+    * Definition: Determines whether the passed value is a finite number.
+    * Return Value: Boolean.
+    * Example:
+      ```javascript
+      console.log(Number.isFinite(100));      // true
+      console.log(Number.isFinite(Infinity)); // false
+      console.log(Number.isFinite("100"));    // false (no type coercion)
+      ```
+
 --------------------------------------------------------------------------------
+5. MATH METHODS
+--------------------------------------------------------------------------------
+
+All Math methods are static and do not require instantiation. They accept numbers and return calculated values.
+
 * Math Operations:
-  - `Math.abs(x)`: Returns the absolute value of `x`.
-  - `Math.ceil(x)`: Rounds up to the nearest integer.
-  - `Math.floor(x)`: Rounds down to the nearest integer.
-  - `Math.round(x)`: Rounds to the nearest integer (standard rounding).
-  - `Math.trunc(x)`: Drops the decimal part (removes digits after the dot).
-  - `Math.max(...nums)` / `Math.min(...nums)`: Returns largest/smallest arguments.
-  - `Math.random()`: Returns a pseudo-random decimal number between 0 (inclusive) and 1 (exclusive).
-  - `Math.pow(base, exponent)`: Returns base to the power of exponent.
-  - `Math.sqrt(x)`: Returns square root.
-  - `Math.sign(x)`: Returns 1 (positive), -1 (negative), or 0.
+
+  - `Math.abs(x)`
+    * Definition: Returns the absolute value of a number (converts negative numbers to positive).
+    * Example:
+      ```javascript
+      console.log(Math.abs(-5)); // 5
+      ```
+
+  - `Math.ceil(x)`
+    * Definition: Always rounds a number up to the next largest integer.
+    * Example:
+      ```javascript
+      console.log(Math.ceil(4.01)); // 5
+      console.log(Math.ceil(-4.99)); // -4 (rounds up towards zero)
+      ```
+
+  - `Math.floor(x)`
+    * Definition: Always rounds a number down to the nearest integer.
+    * Example:
+      ```javascript
+      console.log(Math.floor(4.99)); // 4
+      console.log(Math.floor(-4.01)); // -5 (rounds down away from zero)
+      ```
+
+  - `Math.round(x)`
+    * Definition: Returns the value of a number rounded to the nearest integer.
+    * Example:
+      ```javascript
+      console.log(Math.round(4.5)); // 5
+      console.log(Math.round(4.4)); // 4
+      ```
+
+  - `Math.trunc(x)`
+    * Definition: Returns the integer part of a number by removing any fractional digits.
+    * Interview Gotchas: Different from `floor()` for negative numbers. `Math.floor(-4.2)` is `-5`, but `Math.trunc(-4.2)` simply cuts off the decimal to return `-4`.
+    * Example:
+      ```javascript
+      console.log(Math.trunc(4.9));   // 4
+      console.log(Math.trunc(-4.9));  // -4
+      ```
+
+  - `Math.max(...nums)` / `Math.min(...nums)`
+    * Definition: Returns the largest / smallest of zero or more numbers.
+    * Interview Gotchas: To find the max/min of an array, use the spread operator: `Math.max(...arr)`.
+    * Example:
+      ```javascript
+      const arr = [10, 5, 20];
+      console.log(Math.max(...arr)); // 20
+      console.log(Math.min(...arr)); // 5
+      ```
+
+  - `Math.random()`
+    * Definition: Returns a floating-point, pseudo-random number in the range `[0, 1)`, i.e., from 0 (inclusive) up to but not including 1 (exclusive).
+    * Example:
+      ```javascript
+      // Generate a random integer between min (inclusive) and max (inclusive)
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+      console.log(getRandomInt(1, 10)); // e.g. 7
+      ```
+
+  - `Math.pow(base, exponent)`
+    * Definition: Returns the base to the exponent power.
+    * Interview Gotchas: The exponentiation operator `base ** exponent` is modern and standard.
+    * Example:
+      ```javascript
+      console.log(Math.pow(2, 3)); // 8
+      console.log(2 ** 3);         // 8 (modern alternative)
+      ```
+
+  - `Math.sqrt(x)`
+    * Definition: Returns the square root of a number.
+    * Example:
+      ```javascript
+      console.log(Math.sqrt(9)); // 3
+      ```
+
+  - `Math.sign(x)`
+    * Definition: Returns whether the number is positive, negative, or zero.
+    * Return Value: `1` (positive), `-1` (negative), `0` (positive zero), `-0` (negative zero), or `NaN`.
+    * Example:
+      ```javascript
+      console.log(Math.sign(5));   // 1
+      console.log(Math.sign(-99)); // -1
+      console.log(Math.sign(0));   // 0
+      ```
 ================================================================================
