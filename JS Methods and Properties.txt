@@ -987,3 +987,233 @@ All Math methods are static and do not require instantiation. They accept number
       console.log(Math.sign(0));   // 0
       ```
 ================================================================================
+
+--------------------------------------------------------------------------------
+6. INTERVIEW-CRITICAL SEARCHING & SORTING ALGORITHMS & PATTERNS
+--------------------------------------------------------------------------------
+
+* Modern ES2023 Non-Mutating Array Methods:
+  - `toSorted(compareFn)`
+    * Definition: Non-mutating version of `sort()`. Returns a new array with elements sorted in ascending order.
+    * Return Value: A new sorted array.
+    * Mutability: Does NOT mutate the original array.
+    * Example:
+      ```javascript
+      const arr = [3, 1, 4, 2];
+      const sorted = arr.toSorted((a, b) => a - b);
+      console.log(sorted); // [1, 2, 3, 4]
+      console.log(arr);    // [3, 1, 4, 2] (original is preserved!)
+      ```
+
+  - `toReversed()`
+    * Definition: Non-mutating version of `reverse()`. Returns a new array with elements in reversed order.
+    * Return Value: A new reversed array.
+    * Mutability: Does NOT mutate the original array.
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3];
+      const reversed = arr.toReversed();
+      console.log(reversed); // [3, 2, 1]
+      console.log(arr);      // [1, 2, 3] (original is preserved!)
+      ```
+
+  - `toSpliced(start, deleteCount, ...items)`
+    * Definition: Non-mutating version of `splice()`. Returns a new array with some elements removed and/or replaced.
+    * Return Value: A new array.
+    * Mutability: Does NOT mutate the original array.
+    * Example:
+      ```javascript
+      const arr = ['a', 'b', 'c'];
+      const spliced = arr.toSpliced(1, 1, 'x', 'y');
+      console.log(spliced); // ['a', 'x', 'y', 'c']
+      console.log(arr);     // ['a', 'b', 'c'] (original is preserved!)
+      ```
+
+  - `with(index, value)`
+    * Definition: Returns a new array with the element at the given index replaced with the given value.
+    * Return Value: A new array.
+    * Mutability: Does NOT mutate the original array.
+    * Interview Gotchas: Great for updating state immutably (e.g., in React). It throws a `RangeError` if the index is out of bounds.
+    * Example:
+      ```javascript
+      const arr = [1, 2, 3];
+      const updated = arr.with(1, 99);
+      console.log(updated); // [1, 99, 3]
+      console.log(arr);     // [1, 2, 3] (original is preserved!)
+      ```
+
+* Custom Sorting Patterns (Crucial for Interviews):
+  - Sorting an array of objects by a string property (using `localeCompare` to handle accents and casing correctly):
+    ```javascript
+    const users = [
+      { name: 'Zach', age: 30 },
+      { name: 'Ana', age: 25 },
+      { name: 'äna', age: 22 }
+    ];
+    // Sort by name alphabetically (case-insensitive & accent-aware)
+    users.sort((a, b) => a.name.localeCompare(b.name));
+    console.log(users);
+    // [ { name: 'Ana', ... }, { name: 'äna', ... }, { name: 'Zach', ... } ]
+    ```
+  - Multi-Criteria Sorting (e.g., Sort by age descending, then by name ascending):
+    ```javascript
+    const staff = [
+      { name: 'Bob', age: 30 },
+      { name: 'Alice', age: 30 },
+      { name: 'Charlie', age: 25 }
+    ];
+    staff.sort((a, b) => {
+      if (b.age !== a.age) {
+        return b.age - a.age; // primary sort: age descending
+      }
+      return a.name.localeCompare(b.name); // secondary sort: name ascending
+    });
+    console.log(staff);
+    // [ { name: 'Alice', age: 30 }, { name: 'Bob', age: 30 }, { name: 'Charlie', age: 25 } ]
+    ```
+
+* Searching Algorithms in JS:
+  - Binary Search Implementation (O(log N)):
+    * Interview Context: Searching in a sorted array. Linear searching (`indexOf`, `find`) takes O(N) time. Binary search reduces it to O(log N).
+    ```javascript
+    function binarySearch(sortedArray, target) {
+      let left = 0;
+      let right = sortedArray.length - 1;
+      
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        const midVal = sortedArray[mid];
+        
+        if (midVal === target) {
+          return mid; // found index
+        } else if (midVal < target) {
+          left = mid + 1; // search right half
+        } else {
+          right = mid - 1; // search left half
+        }
+      }
+      return -1; // not found
+    }
+    const numbers = [10, 20, 30, 40, 50];
+    console.log(binarySearch(numbers, 40)); // 3
+    ```
+
+--------------------------------------------------------------------------------
+7. OTHER ESSENTIAL INTERVIEW-CRITICAL METHODS (SETS & MAPS)
+--------------------------------------------------------------------------------
+
+* `Set` Methods & Properties (Unique values collection):
+  - `add(value)`: Appends value; returns the Set object (chainable).
+  - `delete(value)`: Removes the value; returns `true` if element existed, else `false`.
+  - `has(value)`: Returns boolean indicating if the value exists. Runs in O(1) time (vs O(N) for array `includes`).
+  - `clear()`: Removes all elements.
+  - `size` (Property): Returns the number of values.
+  - Gotchas: Sets check uniqueness using SameValueZero algorithm (so `NaN` is considered equal to `NaN`, and duplicate objects are checked by reference).
+  - Example:
+    ```javascript
+    const mySet = new Set();
+    mySet.add(1).add(2).add(2); // chainable, 2 is duplicated
+    console.log(mySet.size); // 2
+    console.log(mySet.has(2)); // true
+    mySet.delete(1);
+    console.log(mySet.has(1)); // false
+    ```
+  - Intersection, Union & Difference patterns:
+    ```javascript
+    const setA = new Set([1, 2, 3]);
+    const setB = new Set([2, 3, 4]);
+
+    // Union
+    const union = new Set([...setA, ...setB]); // Set { 1, 2, 3, 4 }
+
+    // Intersection
+    const intersection = new Set([...setA].filter(x => setB.has(x))); // Set { 2, 3 }
+
+    // Difference (A - B)
+    const difference = new Set([...setA].filter(x => !setB.has(x))); // Set { 1 }
+    ```
+
+* `Map` Methods & Properties (Key-value pairs where keys can be ANY type):
+  - `set(key, value)`: Sets/updates key-value pair; returns the Map (chainable).
+  - `get(key)`: Returns value associated to key, or `undefined`.
+  - `has(key)`: Returns boolean if key exists. Runs in O(1) time.
+  - `delete(key)`: Removes key; returns `true` if key existed, else `false`.
+  - `clear()`: Removes all key-value pairs.
+  - `size` (Property): Returns number of key-value pairs.
+  - Interview Gotchas: 
+    - Objects only allow string/symbol keys. `Map` allows keys of **any type** (including functions, objects, arrays).
+    - Map keys are ordered by insertion (unlike objects historically).
+    - Map is iterable directly, whereas Objects require `Object.keys()` / `entries()`.
+  - Example:
+    ```javascript
+    const myMap = new Map();
+    const keyFunc = () => {};
+    
+    myMap.set('name', 'Sahil');
+    myMap.set(keyFunc, 'metadata'); // key is a function!
+    
+    console.log(myMap.get('name')); // "Sahil"
+    console.log(myMap.get(keyFunc)); // "metadata"
+    console.log(myMap.size); // 2
+    ```
+
+--------------------------------------------------------------------------------
+8. PRACTICAL ADVANCED INTERVIEW PATTERNS
+--------------------------------------------------------------------------------
+
+* Array De-duplication:
+  ```javascript
+  const duplicates = [1, 2, 2, 3, 4, 4, 5];
+  const unique = [...new Set(duplicates)];
+  console.log(unique); // [1, 2, 3, 4, 5]
+  ```
+
+* Array Grouping by Key (using `reduce`):
+  ```javascript
+  const items = [
+    { name: 'Apple', category: 'Fruit' },
+    { name: 'Carrot', category: 'Vegetable' },
+    { name: 'Banana', category: 'Fruit' }
+  ];
+
+  const grouped = items.reduce((accumulator, currentItem) => {
+    const key = currentItem.category;
+    if (!accumulator[key]) {
+      accumulator[key] = [];
+    }
+    accumulator[key].push(currentItem);
+    return accumulator;
+  }, {});
+
+  console.log(grouped);
+  /*
+  {
+    Fruit: [ { name: 'Apple', ... }, { name: 'Banana', ... } ],
+    Vegetable: [ { name: 'Carrot', ... } ]
+  }
+  */
+  ```
+
+* Debouncing (Highly requested in Frontend/JS interviews):
+  * Definition: Ensures a function is called only after a specified delay since the last call.
+  ```javascript
+  function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+      const context = this;
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func.apply(context, args);
+      }, delay);
+    };
+  }
+
+  // Usage:
+  const logSearch = debounce((query) => console.log('Searching for:', query), 300);
+  logSearch('a');
+  logSearch('ab');
+  logSearch('abc'); // Only "Searching for: abc" will be logged after 300ms.
+  ```
+
+================================================================================
+
