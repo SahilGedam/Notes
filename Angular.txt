@@ -842,7 +842,21 @@
        this.api.getData().pipe(takeUntilDestroyed()).subscribe();
      }
      ```
-  4. `AsyncPipe` in templates: Handles subscription and unsubscription automatically.
+  4. `AsyncPipe` in templates:
+     - Automatically subscribes to an Observable or Promise and returns the latest value it has emitted.
+     - When a new value is emitted, the `AsyncPipe` marks the component to be checked for changes (triggering Change Detection, even under `ChangeDetectionStrategy.OnPush`).
+     - Automatically unsubscribes when the component is destroyed to prevent memory leaks.
+     - Syntax / Example:
+       ```html
+       <!-- In template -->
+       <div *ngIf="data$ | async as data">
+         <p>{{ data.name }}</p>
+       </div>
+       ```
+       ```typescript
+       // In component
+       data$ = this.api.getData(); // Direct stream assignment, no manual subscribe() needed
+       ```
 
 * RxJS Primitives Explained:
   - Observable: A lazy push collection of multiple values over time.
@@ -860,7 +874,15 @@
   - Q: ReplaySubject vs Subject?
     - A: `ReplaySubject` stores a buffer of historical values and replays them to new subscribers, whereas `Subject` only delivers future values.
   - Q: Async Pipe vs subscribe()?
-    - A: `AsyncPipe` manages subscribing, emitting values to template, and automatically unsubscribing on destroy. `.subscribe()` in TS requires manual cleanup to avoid memory leaks.
+    - A: 
+      - `AsyncPipe`:
+        1. Declarative & Clean: No need to store subscription references or write lifecycle hooks (`ngOnDestroy`) in TypeScript.
+        2. Automatic Cleanup: Unsubscribes automatically when the component is destroyed, preventing memory leaks.
+        3. OnPush Compatibility: Automatically calls `markForCheck()` when new values arrive, making it work seamlessly with `ChangeDetectionStrategy.OnPush`.
+      - `.subscribe()` in TS:
+        1. Imperative: Requires manual cleanup (`takeUntil`, `Subscription.unsubscribe()`), increasing boilerplate.
+        2. Manual Change Detection: If using `OnPush`, you must manually inject `ChangeDetectorRef` and call `markForCheck()` inside the subscription callback to update the view.
+        3. Best for Side Effects: Use `.subscribe()` when you need to perform side-effects in TypeScript (e.g., routing, opening dialogs, showing toasts) rather than just displaying data in the view.
 
 * RxJS Operators Cheat Sheet & Code Examples:
   - `map()`: Transforms each emitted value.
