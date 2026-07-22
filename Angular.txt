@@ -1107,17 +1107,31 @@
 12. MODERN ANGULAR (v16 - v20) ADDITIONS [Importance: 9.5/10]
 --------------------------------------------------------------------------------
 * Angular Signals:
-  A fine-grained reactivity system introduced in v16. Updates only the specific DOM 
-  nodes that depend on the changed signal, bypassing global Zone.js checks.
-  
-  ```typescript
-  count = signal(0);
-  doubleCount = computed(() => this.count() * 2);
+  A fine-grained reactivity system introduced in Angular v16. A signal is a wrapper around a value that notifies interested consumers when that value changes.
 
-  increment() {
-    this.count.update(c => c + 1);
-  }
-  ```
+  - **What Problem They Solve:**
+    * **Bypass Zone.js overhead:** Traditional Angular relies on `Zone.js` to intercept async events and run global change detection (checking the entire component tree from top to bottom). Signals track dependencies dynamically, allowing Angular to update *only* the specific DOM nodes affected by the change (enabling true "Zoneless" Angular).
+    * **Eliminate boilerplate:** Replaces complex RxJS code (like `BehaviorSubject`, `combineLatest`, and manual subscriptions or async pipes) for standard, synchronous UI state tracking.
+    * **Automatic Dependency Tracking:** Computed signals automatically track which signals they depend on and recalculate only when those dependencies change.
+
+  - **Where I Used Them in Projects:**
+    * **Derived State / Computed Properties:** Used `computed()` to calculate shopping cart totals, filter a dynamic data table based on search queries/pagination inputs, and toggle UI states.
+    * **Async-to-Sync Conversion:** Used `toSignal()` (from `rxjs-interop`) to convert HTTP request Observables directly into signals so that templates can read data synchronously without requiring the `async` pipe or manual `.subscribe()`.
+    * **Two-Way Binding / Component Communication:** Used `model()` inputs (v17.2+) to bind settings/form controls between parent and child components effortlessly, and `input()`/`output()` to replace `@Input()`/`@Output()`.
+    * **Side Effects & Local Storage Syncing:** Used `effect()` to persist user preferences or theme selections to `localStorage` automatically whenever the preference signal changes.
+
+  - **Syntax & API Example:**
+    ```typescript
+    // Basic Signal
+    count = signal(0);
+
+    // Derived State (Computed)
+    doubleCount = computed(() => this.count() * 2);
+
+    increment() {
+      this.count.update(c => c + 1);
+    }
+    ```
 
 * `effect()`:
   Runs a side-effect function whenever its dependent signals change. Must be called
